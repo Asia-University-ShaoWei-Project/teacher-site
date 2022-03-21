@@ -1,0 +1,27 @@
+div.header{
+    clear: both;
+    height: 65px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 200px;
+    background: black;
+    /*background-color: rgba(251, 181, 56, 0.3);*/
+    margin: 0 auto;
+    position: fixed;
+}
+.index-products-title-line{
+    width: 330px;
+    max-width: 100%;
+    height: 1px;
+    display: inline-block;
+    vertical-align: middle;
+    background-color: #2a6bb4;
+}
+i{
+    padding: 5px;
+    color: white;
+}
+#LikeIcon a i:hover{
+    color: #b66dff;
+    font-size: 25px;
+}
