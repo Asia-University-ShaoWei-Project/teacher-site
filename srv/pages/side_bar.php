@@ -1,58 +1,67 @@
-<div id="LEFT" class="leftNav" style="position:fixed;z-index: 2">
-  <br>
+<?php
+$mock_course = array(
+  array(
+    "tag" => "info",
+    "title-us" => "Information",
+    "title-zh" => "公告"
+  ),
+  array(
+    "tag" => "CN",
+    "title-us" => "Computer Network",
+    "title-zh" => "計算機網路"
+  ),
+  array(
+    "tag" => "MWT",
+    "title-us" => "Multimedia Web Tech",
+    "title-zh" => "多媒體網路技術"
+  ),
+  array(
+    "tag" => "pub",
+    "title-us" => "Publisher",
+    "title-zh" => "學術"
+  ),
+);
+?>
+<section>
   <div>
-    <img id="divImage2" src="Teacher.jpg" style="border-radius: 5%">
+    <img id="divImage2" src="static/img/avatar.jpg" style="border-radius: 2%">
   </div>
-  <br>
-  <hr style="width: 70%;margin: 0 auto">
-  <br>
+  <hr>
+
   <div style="margin-left: 20%;text-align: left;font-size: 18px;">
     <p style="color: white">學歷： 國立中興大學資訊科學博士</p>
     <p style="color: white">辦公室： HB13</p>
     <p style="color: white">分機： 20013</p>
     <p style="color: white">E-mail： rikki@asia.edu.tw</p>
   </div>
-  <br>
+  <hr>
+  <table border="0">
+    <?php
+    foreach ($mock_course as $mock) { ?>
+    <tr>
+      <td class="side-bar-option" onclick="opt_ctrl_frame_display(<?php echo $mock['tag'] ?>)">
+        <span>
+          <?php echo $mock['title-zh'] . "<br />" . $mock['title-us'] ?>
+        </span>
+      </td>
+    </tr>
+    <?php
 
-  <hr style="width: 70%;margin: 0 auto">
-  <br>
-  <table border="0" style="width: 100%;text-align:left;margin-left: 10%">
-    <tr>
-      <td class="Button" onclick="f('MessageAnnouncement')">
-        <span>訊 息 公 告</span>
-      </td>
-    </tr>
-    <tr>
-      <td class="Button" onclick="f('PersonalInformation')">
-        <span>個 人 資 料</span>
-      </td>
-    </tr>
-    <tr>
-      <td class="Button" onclick="f('ComputerNetworks')">
-        <span>計 算 機 網 路</span>
-      </td>
-    </tr>
-    <tr>
-      <td class="Button" onclick="f('ComputerOrganization')">
-        <span>計 算 機 組 織</span>
-      </td>
-    </tr>
-    <tr>
-      <td class="Button" onclick="f('A1')">
-        <span>微 處 理 器 系 統</span>
-      </td>
-    </tr>
-    <tr>
-      <td class="Button" onclick="f('A2')">
-        <span>多 媒 體 網 站 技 術</span>
-      </td>
-    </tr>
+    } ?>
   </table>
   <br>
-
-  <hr style="width: 70%;margin: 0 auto">
-  <br>
+  <hr>
   <p class="BottomText">任何建議請寄: EMAIL rikki@asia.edu.tw</p>
   <p class="BottomText">亞洲大學資工系 陳瑞奇(Rikki Chen, CSIE, Asia Univ.)</p>
   <p class="BottomText">感謝您！</p>
-</div>
+</section>
+<script>
+function opt_ctrl_content_display(tag_elem) {
+  var content_elem = document.getElementById(tag_elem);
+  $(".Chose").css("display", "none");
+  $("#" + tag_elem).fadeIn(1300);
+  content_elem.style.display = "block";
+  // $(".index-news-icon").fadeIn(1400);
+  // $(".index-news-list-info-box").fadeIn(1950);
+}
+</script>

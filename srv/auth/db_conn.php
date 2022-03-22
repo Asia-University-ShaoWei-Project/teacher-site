@@ -1,16 +1,17 @@
 <?php
-
-$link = mysqli_connect(
-  "localhost",
-  "user",
-  "pwd",
-  "name"
-);
-
-if (!$db_connection) {
-  echo "(1)Error : Unable to connect to MySQL : " . PHP_EOL;
-  echo "(2)Debugging errno : " . mysqli_connect_errno() . PHP_EOL;
-  echo "(3)Debugging error : " . mysqli_connect_error() . PHP_EOL;
-  exit;
+class DB extends SQLite3
+{
+  function __construct(string $db_file_path)
+  {
+    $this->open($db_file_path);
+  }
 }
-$db_connection->set_charset("utf8");
+function NewDB(string $path): DB
+{
+  $db_file_path = $path . getenv('DB_FILE_NAME');
+  return new DB($db_file_path);
+}
+function Br()
+{
+  echo "<br />";
+}
