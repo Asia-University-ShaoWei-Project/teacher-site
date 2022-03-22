@@ -1,29 +1,53 @@
+
 version: '3'
+
 services:
-    php:
-      container_name: php
-      image: php:7.2-apache
-      restart: always
-      volumes:
-        - .:/var/www/html
-      ports:
-        - 80:80
-      depends_on:
-        - db
-        - adminer
-    db:
-      container_name: db
-      image: postgres:alpine
-      restart: always
-      environment:
-        - POSTGRES_DB=${DB_NAME}
-        - POSTGRES_USER=${DB_USER}
-        - POSTGRES_PASSWORD=${DB_PASSWORD}
-      ports:
-        - 5432:5432
-    adminer:
-      container_name: admin
-      image: adminer
-      restart: always
-      ports:
-        - 8080:8080
+  php_apache:
+    build: ./srv
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./srv:/var/www/html
+      - ./srv/php.ini-production:/usr/local/etc/php/php.ini
+    environment:
+      SECURE_KEY: ${SECURE_KEY}
+      DB_FILE_NAME: ${DB_FILE_NAME}
+
+    # links:
+    #   - "mysql"
+    # networks:
+    #   - web-db-net
+    # depends_on:
+    #   - mysql
+  # mysql:
+  #   image: mysql:5.7
+  #   ports:
+  #     - "3307:3306"
+    # command: --default-authentication-plugin=mysql_native_password
+    # volumes:
+    #   - ./sql/init:/var/lib/mysql
+    # environment:
+    #   MYSQL_ROOT_PASSWORD: pwd
+    #   # MYSQL_USER: user 
+    #   # MYSQL_PASSWORD: password
+    #   MYSQL_DATABASE: db
+    #   PMA_ARBITRARY: 1
+    #   PMA_HOST: mysql
+    # restart: always
+    # networks:
+    #   - web-db-net
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin:latest
+  #   ports:
+  #     - "8080:80"
+  #   depends_on:
+  #     - mysql
+  #   environment:
+  #     PMA_HOST: mysql
+  #     PMA_PORT: 3307
+# networks:
+#   web-db-net:
+#     driver: bridge
+
+
