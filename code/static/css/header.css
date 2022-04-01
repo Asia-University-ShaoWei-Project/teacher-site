@@ -1,0 +1,14 @@
+header {
+  width: 100%;
+  background: black;
+}
+.sign-header-button {
+  position: absolute;
+  top: 10px;
+  font-size: 30px;
+  padding: 5px;
+  color: white;
+}
+.sign-header-button:hover {
+  color: #f9830d;
+}

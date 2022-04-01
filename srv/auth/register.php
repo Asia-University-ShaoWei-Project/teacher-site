@@ -15,12 +15,13 @@
 <?php
 require_once('db_conn.php');
 $db = NewDB("./");
-$id = 'rikki';
+$id = 'teacher_name';
 $pwd = 'password';
 // $hash_pwd = register($db, $id, $pwd);
 $secure_key = getenv('SECURE_KEY');
 $hash_salt_password = sha1($pwd) . $secure_key;
 // $bcrypt = bcryptPassword($hash_salt_password);
+$db->close();
 
 function register(DB &$db, string $username, $password)
 {

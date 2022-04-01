@@ -1,453 +1,396 @@
-<content>
-  <!--  公告 列表區  -->
-  <?php
-  // tag
-  // content_opt
-  $mock_course_content = array(
-    array(
-      "tag" => "info",
-      "title-us" => "Information",
-      "title-zh" => "公告"
-    ),
-    array(
-      "tag" => "CN",
-      "title-us" => "Computer Network",
-      "title-zh" => "計算機網路"
-    ),
-    array(
-      "tag" => "MWT",
-      "title-us" => "Multimedia Web Tech",
-      "title-zh" => "多媒體網路技術"
-    ),
-    array(
-      "tag" => "pub",
-      "title-us" => "Publisher",
-      "title-zh" => "學術",
-      "content_opt" => array("Bulletin_board", "JournalPapers", "ComputerNetworks", "ComputerOrganization")
-    ),
-  );
-  $Word = array(
-    "MessageAnnouncement", "PersonalInformation", "ComputerNetworks", "ComputerOrganization"
-  );
-  $Chose = array();
-  for ($i = 0; $i < 4; $i++) { ?>
-  <div id="<?php echo $Word[$i] ?>" class="Chose">
-    <div id="index-news">
-      <div class="index-news-title-box">
-        <div class="index-news-icon">
-          <img src="PcWeb/image/<?php echo $Chose[$i] ?>.jpg">
-        </div>
-      </div>
-      <?php
-        switch ($i) {
-          case 0:
-            $Information = $db->query('SELECT name FROM Bulletin_board');
-            break;
-          case 1:
-            $Information = $db->query('SELECT name FROM JournalPapers');
-            break;
-          case 2:
-            $Information = $db->query('SELECT name FROM ComputerNetworks');
-            break;
-          case 3:
-            $Information = $db->query('SELECT name FROM ComputerOrganization');
-            break;
-        }
-        while ($row = $Information->fetchArray()) {
-        }
-        for ($i = 0; $i < mysqli_num_rows($Information); $i++) {
-          $rs = mysqli_fetch_row($Information);
-        ?>
-      <a class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <?php if ($login_status) { ?>
-          <h4 class="index-news-list-date-edit"
-            onclick="Edit_BB('BulletinBoard','<?php echo $rs[0] ?>','<?php echo $rs[1] ?>','<?php echo $rs[2] ?>')">
-            <!-- <h4 class="index-news-list-date-edit" onclick="Edit_BB('BulletinBoard','<?php echo $rs[0] ?>','<?php echo $rs[1] ?>','<?php echo $rs[2] ?>')"> -->
-            編輯
-          </h4>
-          <?php } ?>
-          <h4 class="index-news-list-date"><?php echo $rs[1] ?></h4>
-          <h3 class="index-news-list-title" style="width: 75%"><?php echo $rs[2] ?></h3>
-          <?php if ($login_status) { ?>
-          <div class="index-news-list-date-edit">
-            <form action="PcWeb/Login_v16/Login_v16/DeleteData.php" method="get">
-              <input type="hidden" name="DeleteFileName" value="BulletinBoard">
-              <input type="hidden" name="DeleteID" value='<?php echo $rs[0] ?>'>
-              <button type="submit"><i class="fa fa-trash" style="color: black;"></i></button>
-            </form>
-          </div>
-          <?php } ?>
-        </div>
-      </a>
-      <?php
-        }
-        if ($login_status) {
-        ?>
-      <a href="#" onclick="Insert_BB('BulletinBoard')" class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <h3 class="index-news-list-add">新增(+)</h3>
-        </div>
-      </a>
-      <?php } ?>
-    </div>
-  </div>
-
-
-  <?php
-    if ($i > 0) {
-    }
+<!-- https://getbootstrap.com/docs/5.1/content/typography/ -->
+<style>
+  main {
+    flex: 9;
+    display: flex;
+    flex-direction: row;
   }
-  ?>
 
-  <!--  個人資料 列表區  -->
-  <div id="PersonalInformation" class="Chose">
-    <div id="index-news">
-      <div class="index-news-title-box">
-        <div class="index-news-icon">
-          <img src="PcWeb/image/JournalPapers.jpg">
-        </div>
-      </div>
-      <?php
-      $Information = mysqli_query($link, "SELECT * FROM `JournalPapers`");
-      for ($i = 0; $i < mysqli_num_rows($Information); $i++) {
-        $rs = mysqli_fetch_row($Information);
-      ?>
-      <a class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <?php if ($login_status == 0) { ?>
-          <h4 class="index-news-list-date-edit"
-            onclick="Edit_Personal(1,'<?php echo $rs[0] ?>','<?php echo $rs[1] ?>','<?php echo $rs[2] ?>','<?php echo $rs[3] ?>','<?php echo $rs[4] ?>','','block','none')">
-            編輯</h4>
-          <?php } ?>
-          <h4 class="index-news-list-date"><?php echo $rs[1] ?></h4>
-          <h3 class="index-news-list-personal" style="width: 75%"><?php echo $rs[2] ?></h3>
-          <h4 class="index-news-list-date"><?php echo $rs[3] ?></h4>
-          <h4 class="index-news-list-date"><?php echo $rs[4] ?></h4>
-          <?php if ($login_status == 0) { ?>
-          <div class="index-news-list-date-edit">
-            <form action="PcWeb/Login_v16/Login_v16/DeleteData.php" method="get">
-              <input type="hidden" name="DeleteFileName" value="JournalPapers">
-              <input type="hidden" name="DeleteID" value='<?php echo $rs[0] ?>'>
-              <button type="submit"><i class="fa fa-trash" style="color: black;"></i></button>
-            </form>
-          </div>
-          <?php } ?>
-        </div>
-      </a>
-      <?php
-      } ?>
-      <?php
-      if ($login_status == 0) {
-      ?>
-      <a href="#" onclick="Insert_BB('JournalPapers')" class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <h3 class="index-news-list-add">新增(+)</h3>
-        </div>
-      </a>
-      <?php } ?>
-    </div>
-    <hr style="background-color: #f9830d;width: 85%;margin: 0 auto">
-    <div id="index-news">
-      <div class="index-news-title-box">
-        <div class="index-news-icon">
-          <img src="PcWeb/image/ConferencePapers.jpg">
-        </div>
-      </div>
-      <?php
-      $Information = mysqli_query($link, "SELECT * FROM `ConferencePapers`");
-      for ($i = 0; $i < mysqli_num_rows($Information); $i++) {
-        $rs = mysqli_fetch_row($Information);
-      ?>
-      <a class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <?php if ($login_status == 0) { ?>
-          <h4 class="index-news-list-date-edit"
-            onclick="Edit_Personal(2,'<?php echo $rs[0] ?>','<?php echo $rs[1] ?>','<?php echo $rs[2] ?>','<?php echo $rs[4] ?>','','<?php echo $rs[3] ?>','none','block')">
-            編輯</h4>
-          <?php } ?>
-          <h4 class="index-news-list-date"><?php echo $rs[1] ?></h4>
-          <h3 class="index-news-list-personal" style="width: 75%"><?php echo $rs[2] ?></h3>
-          <h4 class="index-news-list-date"><?php echo $rs[3] ?></h4>
-          <h4 class="index-news-list-date"><?php echo $rs[4] ?></h4>
-          <?php if ($login_status == 0) { ?>
-          <div class="index-news-list-date-edit">
-            <form action="PcWeb/Login_v16/Login_v16/DeleteData.php" method="get">
-              <input type="hidden" name="DeleteFileName" value="ConferencePapers">
-              <input type="hidden" name="DeleteID" value='<?php echo $rs[0] ?>'>
-              <button type="submit"><i class="fa fa-trash" style="color: black;"></i></button>
-            </form>
-          </div>
-          <?php } ?>
-        </div>
-      </a>
-      <?php
-      } ?>
-      <?php
-      if ($login_status == 0) {
-      ?>
-      <a href="#" onclick="Insert_BB('ConferencePapers')" class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <h3 class="index-news-list-add">新增(+)</h3>
-        </div>
-      </a>
-      <?php } ?>
-    </div>
-    <hr style="background-color: #f9830d;width: 85%;margin: 0 auto">
-    <div id="index-news">
-      <div class="index-news-title-box">
-        <div class="index-news-icon">
-          <img src="PcWeb/image/ResearchGrant.jpg">
-        </div>
-      </div>
-      <?php
-      $Information = mysqli_query($link, "SELECT * FROM `ResearchGrant`");
-      for ($i = 0; $i < mysqli_num_rows($Information); $i++) {
-        $rs = mysqli_fetch_row($Information);
-      ?>
-      <a class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <?php if ($login_status == 0) { ?>
-          <h4 class="index-news-list-date-edit"
-            onclick="Edit_Personal(3,'<?php echo $rs[0] ?>','<?php echo $rs[1] ?>','<?php echo $rs[2] ?>','<?php echo $rs[3] ?>','','','none','none')">
-            編輯</h4>
-          <?php } ?>
-          <h4 class="index-news-list-date"><?php echo $rs[1] ?></h4>
-          <h3 class="index-news-list-personal" style="max-width: 800px"><?php echo $rs[2] ?></h3>
-          <h4 class="index-news-list-date"><?php echo $rs[3] ?></h4>
-          <?php if ($login_status == 0) { ?>
-          <div class="index-news-list-date-edit">
-            <form action="PcWeb/Login_v16/Login_v16/DeleteData.php" method="get">
-              <input type="hidden" name="DeleteFileName" value="ResearchGrant">
-              <input type="hidden" name="DeleteID" value='<?php echo $rs[0] ?>'>
-              <button type="submit"><i class="fa fa-trash" style="color: black;"></i></button>
-            </form>
-          </div>
-          <?php } ?>
-        </div>
-      </a>
-      <?php
-      } ?>
-      <?php
-      if ($login_status == 0) {
-      ?>
-      <a href="#" onclick="Insert_BB('ResearchGrant')" class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <h3 class="index-news-list-add">新增(+)</h3>
-        </div>
-      </a>
-      <?php } ?>
-    </div>
-  </div>
-  <!--  計算機網路 列表區  -->
-  <div id="ComputerNetworks" class="Chose">
-    <div id="index-news">
-      <div class="index-news-title-box">
-        <div class="index-news-icon">
-          <img src="PcWeb/image/bulletin_board.jpg">
-        </div>
-      </div>
-      <?php
-      $Information = mysqli_query($link, "SELECT * FROM `IntroductionToComputerNetworks`");
-      $Course_slides = mysqli_query($link, "SELECT * FROM `Course_slides_1`");
-      $Homeworks = mysqli_query($link, "SELECT * FROM `Homeworks_1`");
-      for ($i = 0; $i < mysqli_num_rows($Information); $i++) {
-        $rs = mysqli_fetch_row($Information);
-      ?>
-      <a class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <?php if ($login_status == 0) { ?>
-          <h4 class="index-news-list-date-edit"
-            onclick="Edit_BB('IntroductionToComputerNetworks','<?php echo $rs[0] ?>','<?php echo $rs[1] ?>','<?php echo $rs[2] ?>')">
-            編輯</h4>
-          <?php } ?>
-          <h4 class="index-news-list-date"><?php echo $rs[1] ?></h4>
-          <h3 class="index-news-list-title" style="width: 75%"><?php echo $rs[2] ?></h3>
-          <?php if ($login_status == 0) { ?>
-          <div class="index-news-list-date-edit">
-            <form action="PcWeb/Login_v16/Login_v16/DeleteData.php" method="get">
-              <input type="hidden" name="DeleteFileName" value="IntroductionToComputerNetworks">
-              <input type="hidden" name="DeleteID" value='<?php echo $rs[0] ?>'>
-              <button type="submit"><i class="fa fa-trash" style="color: black;"></i></button>
-            </form>
-          </div>
-          <?php } ?>
-        </div>
-      </a>
-      <?php
-      } ?>
-      <?php
-      if ($login_status == 0) {
-      ?>
-      <a href="#" onclick="Insert_BB('IntroductionToComputerNetworks')" class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <h3 class="index-news-list-add">新增(+)</h3>
-        </div>
-      </a>
-      <?php } ?>
-    </div>
-    <hr style="background-color: #f9830d;width: 85%;margin: 0 auto">
+  /* Side bar CSS */
+  #select {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+  }
 
-    <div id="index-news">
-      <div class="index-news-title-box">
-        <div class="index-news-icon">
-          <img src="PcWeb/image/course_slides.jpg">
-        </div>
-      </div>
+  select hr {
+    margin: 10px auto;
+    width: 70%;
+    border-color: #f9830d;
+  }
 
-      <?php
-      for ($i = 0; $i < mysqli_num_rows($Course_slides); $i++) {
-        $rs = mysqli_fetch_row($Course_slides);
-      ?>
-      <?php $test = $rs[2] ?>
-      <a onclick="test('<?php echo $test ?>',0,'Computerworks')" class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <h4 class="index-news-list-date">Ch:<?php echo $rs[0] ?></h4>
-          <h3 class="index-news-list-title"><?php echo $rs[1] ?></h3>
-          <div class="index-news-list-read">
-            <span>READ</span>
-          </div>
-        </div>
-      </a>
-      <?php
+  #info {
+    /* text-align: left; */
+    flex: 1;
+    margin: 10%;
+    font-size: 16px;
+  }
+
+  #sub-info {
+    /* text-align: left; */
+    flex: 1;
+    margin: 10%;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  #option-box {
+    flex: 8;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+  }
+
+  .option-item {
+    margin-top: 10px;
+    text-transform: capitalize;
+  }
+
+  .sub-info {
+    font-size: 14px;
+    text-align: center;
+    color: #ffffff;
+  }
+
+  /* Content CSS */
+  content {
+    flex: 8;
+
+  }
+
+  /* item have id */
+  .content-page {
+    margin: 5%;
+  }
+
+  .item-box {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .item-title {
+    flex: 2;
+    font-size: 32 px;
+  }
+
+  .item-content {
+    flex: 8;
+    padding: 0 5%;
+  }
+
+  .bulletin-board-box {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .bulletin-board-setting {
+    flex: 1
+  }
+
+  .bulletin-board-date {
+    flex: 2;
+  }
+
+  .bulletin-board-title {
+    flex: 7;
+    padding-left: 5%;
+  }
+
+  .file-item {
+    display: flex;
+    flex-direction: row;
+  }
+
+  /** Loading */
+  #loading {
+    display: none;
+  }
+</style>
+<main>
+  <section id="select">
+    <div id="info">
+      <p>辦公室: HB13</p>
+      <p>分機: 20013</p>
+      <p>E-mail: xxx@asia.edu.tw</p>
+    </div>
+    <hr>
+    <div id="option-box"></div>
+    <hr>
+    <div id="sub-info">
+      <p> 亞洲大學資工系 陳瑞奇</p>
+      <p>(Rikki Chen, CSIE, Asia Univ.)</p>
+    </div>
+
+  </section>
+  <content>
+    <div id="loading">
+      <p class="card-text placeholder-glow">
+        <span class="placeholder col-7"></span>
+        <span class="placeholder col-4"></span>
+        <span class="placeholder col-4"></span>
+        <span class="placeholder col-6"></span>
+        <span class="placeholder col-8"></span>
+      </p>
+    </div>
+    <div id="content-switch">
+
+    </div>
+  </content>
+  <script>
+    const option_box_elem = document.getElementById("option-box");
+    const teacher_domain = "/teacher_name";
+    const api_url = "http://localhost:9000/v1" + teacher_domain;
+
+    const api_url_init = api_url + "/init"
+    const api_url_content = api_url + "/course";
+
+    const content_switch_elem = document.getElementById("content-switch");
+    const br_tag = "<br />";
+    const option_links = {
+      "info": "/info",
+      "course": "/course",
+      "profile": "/profile"
+    }
+    var options_switch = 0;
+    var options_arr = [];
+    var options_last_updated_arr = [];
+    var contents_arr = [];
+    const COURSE = "course";
+    const INFO = "info";
+    const PROFILE = "profile";
+
+    var init_response_data;
+
+    function init() {
+      get_init_api_and_create_view();
+    }
+
+    function get_init_api_and_create_view() {
+      $.ajax({
+          method: "GET",
+          url: api_url_init,
+          dataType: 'json'
+        })
+        .done(function(response) {
+          create_init_view(response.data)
+        })
+        .fail(function(msg) {
+          console.log(msg);
+        });
+    }
+
+    function create_init_view(data) {
+      // Information button
+      options_arr.push(create_option_button(INFO, options_switch, data.information));
+      contents_arr.push(create_information_content(data.information))
+      options_last_updated_arr.push("0")
+      options_switch += 1;
+      // courses button
+      for (let i = 0; i < data.courses.length; i++) {
+        options_arr.push(create_option_button(COURSE, options_switch, data.courses[i]))
+        options_last_updated_arr.push("0")
+        options_switch += 1;
       }
-      ?>
-    </div>
-    <hr style="background-color: #f9830d;width: 85%;margin: 0 auto">
-    <div id="index-news">
-      <div class="index-news-title-box">
-        <div class="index-news-icon">
-          <img src="PcWeb/image/homeworks.jpg">
-          <!--            <img src="bulletin-board-ch.jpg">-->
-        </div>
-      </div>
+      // todo profile button
+      // options_arr.push(create_option_button(PROFILE, options_switch, option_links["info"], data.information));
 
-      <!--  C的列表區  -->
-      <?php
-      for ($i = 0; $i < mysqli_num_rows($Homeworks); $i++) {
-        $rs = mysqli_fetch_row($Homeworks);
-      ?>
-      <?php $test = $rs[2] ?>
-      <a onclick="test('<?php echo $test ?>',1,'Computerworks')" class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <h4 class="index-news-list-date"><?php echo $rs[0] ?></h4>
-          <h3 class="index-news-list-title"><?php echo $rs[1] ?></h3>
-          <div class="index-news-list-read">
-            <span>READ</span>
-          </div>
-        </div>
-      </a>
-      <?php
-      }
-      ?>
-    </div>
-  </div>
-  <!--  計算機組織 列表區  -->
-  <div id="ComputerOrganization" class="Chose">
-    <div id="index-news">
-      <div class="index-news-title-box">
-        <div class="index-news-icon">
-          <img src="PcWeb/image/bulletin_board.jpg">
-        </div>
-      </div>
-      <?php
-      $Information = mysqli_query($link, "SELECT * FROM `ComputerOrganization`");
-      $Course_slides = mysqli_query($link, "SELECT * FROM `Course_slides_2`");
-      $Homeworks = mysqli_query($link, "SELECT * FROM `Homeworks_1`");
-      for ($i = 0; $i < mysqli_num_rows($Information); $i++) {
-        $rs = mysqli_fetch_row($Information);
-      ?>
-      <a class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <?php if ($login_status == 0) { ?>
-          <h4 class="index-news-list-date-edit"
-            onclick="Edit_BB('ComputerOrganization','<?php echo $rs[0] ?>','<?php echo $rs[1] ?>','<?php echo $rs[2] ?>')">
-            編輯</h4>
-          <?php } ?>
-          <h4 class="index-news-list-date"><?php echo $rs[1] ?></h4>
-          <h3 class="index-news-list-title" style="width: 75%"><?php echo $rs[2] ?></h3>
-          <?php if ($login_status == 0) { ?>
-          <div class="index-news-list-date-edit">
-            <form action="PcWeb/Login_v16/Login_v16/DeleteData.php" method="get">
-              <input type="hidden" name="DeleteFileName" value="ComputerOrganization">
-              <input type="hidden" name="DeleteID" value='<?php echo $rs[0] ?>'>
-              <button type="submit"><i class="fa fa-trash" style="color: black;"></i></button>
-            </form>
-          </div>
-          <?php } ?>
-        </div>
-      </a>
-      <?php
-      } ?>
-      <?php
-      if ($login_status == 0) {
-      ?>
-      <a href="#" onclick="Insert_BB('ComputerOrganization')" class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <h3 class="index-news-list-add">新增(+)</h3>
-        </div>
-      </a>
-      <?php } ?>
-    </div>
-    <hr style="background-color: #f9830d;width: 85%;margin: 0 auto">
+      show_option_buttons();
+      // first page(information content)
+      show_content(0)
+    }
 
-    <div id="index-news">
-      <div class="index-news-title-box">
-        <div class="index-news-icon">
-          <img src="PcWeb/image/course_slides.jpg">
-        </div>
-      </div>
-      <?php
-      for ($i = 0; $i < mysqli_num_rows($Course_slides); $i++) {
-        $rs = mysqli_fetch_row($Course_slides);
-      ?>
-      <?php $test = $rs[2] ?>
-      <a onclick="test('<?php echo $test ?>',0,'ComputerOrganization')" class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <h4 class="index-news-list-date">Ch:<?php echo $rs[0] ?></h4>
-          <h3 class="index-news-list-title"><?php echo $rs[1] ?></h3>
-          <div class="index-news-list-read">
-            <span>READ</span>
+
+    function create_option_button(type, options_switch, data) {
+
+      var btn = document.createElement('button');
+      var span = document.createElement('span');
+      var click_even;
+      btn.className = "option-item button button--anthe";
+      switch (type) {
+        case COURSE:
+          click_even = function() {
+            get_course_api(options_switch, data.id);
+          }
+          span.innerHTML = data.name_zh + br_tag + data.name_us;
+          break;
+        case INFO:
+          click_even = function() {
+            get_info_api(options_switch, data);
+          }
+          span.innerHTML = "公布欄" + br_tag + "Information";
+          break;
+        case PROFILE:
+          // todo
+          console.log('non');
+          break;
+        default:
+          console.log('create option default???');
+          break;
+      }
+      btn.onclick = click_even
+      btn.appendChild(span);
+      return btn
+    }
+    // todo
+    function get_option_api() {
+      $.ajax({
+          method: "GET",
+          url: api_url_content,
+          dataType: 'json',
+          data: {
+            // "last_updated": data.last_updated
+          }
+        })
+        .done(function(response) {
+          // if (response.updated){
+          //   contents_arr[options_switch] = create_content(response)
+          // }
+
+        })
+        .fail(function(msg) {
+          console.log(msg);
+          return null
+        });
+    }
+
+
+    function get_info_api(options_switch, id, last_updated) {
+      console.log('not have get_info_api');
+    }
+
+    function get_course_api(options_switch, id) {
+      $.ajax({
+          method: "GET",
+          url: api_url_content + "/" + id + "/" + options_last_updated_arr[options_switch],
+          dataType: 'json',
+        })
+        .done(function(response) {
+          if (response.need_update) {
+            console.log('should update your course content');
+            options_last_updated_arr[options_switch] = response.data.last_updated
+            create_course_content(options_switch, response.data);
+          }
+          show_content(options_switch);
+          // contents_arr
+          // if (response.updated){
+          //   contents_arr[options_switch] = create_content(response)
+          // }
+
+        })
+        .fail(function(msg) {
+          console.log(msg);
+          return null
+        });
+    }
+
+
+    function create_information_content(data) {
+      var info_content = create_bulletin_board_card(data)
+      return info_content
+    }
+    // todo
+    function create_profile_content(response) {}
+
+    function create_course_content(options_switch, data) {
+      bulletin_board_card_elem = create_bulletin_board_card(data.bulletin_board)
+      slide_card_elem = create_slide_card(data.slide)
+      homework_card_elem = create_homework_card(data.homework)
+      // todo bulletin + slide + homework
+      contents_arr[options_switch] = bulletin_board_card_elem + slide_card_elem + homework_card_elem
+    }
+
+
+    function create_bulletin_board_card(bulletin_boards) {
+      var thead = create_table_field_tags(["Date", "Information"])
+      var tbody = "";
+      for (let i = 0; i < bulletin_boards.length; i++) {
+        tbody += tbody += create_table_field_tags([
+          bulletin_boards[i].created_date,
+          bulletin_boards[i].info,
+        ])
+      }
+      var bulletin_board_card = create_card("Bulletin Board", thead, tbody)
+      return bulletin_board_card
+    }
+
+    function create_slide_card(slides) {
+      var thead = create_table_field_tags(["Chapter", "Type", "Title"])
+      var tbody = "";
+      for (let i = 0; i < slides.length; i++) {
+        tbody += create_table_field_tags(
+          [`Ch  ${slides[i].chapter}`,
+            slides[i].file.type,
+            slides[i].file.title
+          ]
+        )
+      }
+      var slide_card = create_card("Slides", thead, tbody)
+      return slide_card
+    }
+
+    function create_homework_card(homeworks) {
+      var thead = create_table_field_tags(["#", "Type", "Title"])
+      var tbody = "";
+      for (let i = 0; i < homeworks.length; i++) {
+        tbody += create_table_field_tags([
+          `Hw ${homeworks[i].number}`,
+          homeworks[i].file.type,
+          homeworks[i].file.title,
+        ])
+      }
+      var homework_card = create_card("Homework", thead, tbody)
+      return homework_card
+    }
+
+    function create_card(title, thead, tbody) {
+      var card = `
+      <div class="content-page">
+        <div class="item-box">
+          <div class="item-title h2">
+            <div class="card">
+              <div class="card-body">${title}</div>
+            </div>
+          </div>
+          <div class = "item-content">
+          <table class = "table table-dark table-striped">
+        <thead>${thead}</thead> 
+        <tbody>${tbody}</tbody>
+        </table>
           </div>
         </div>
-      </a>
-      <?php
+      </div>`
+      return card
+    }
+    init();
+
+
+    // ? I don't know what it is?
+    // function opt_ctrl_content_display(tag_elem) {
+    //   var content_switch_elem = document.getElementById(tag_elem);
+    //   $(".Chose").css("display", "none");
+    //   $("#" + tag_elem).fadeIn(1300);
+    //   content_switch_elem.style.display = "block";
+    //   // $(".index-news-icon").fadeIn(1400);
+    //   // $(".index-news-list-info-box").fadeIn(1950);
+    // }
+
+    function create_table_field_tags(texts) {
+      var elems = "";
+      for (let i = 0; i < texts.length; i++) {
+        elems += `<td>${texts[i]}</td>`;
       }
-      ?>
-    </div>
-    <hr style="background-color: #f9830d;width: 85%;margin: 0 auto">
-    <div id="index-news">
-      <div class="index-news-title-box">
-        <div class="index-news-icon">
-          <img src="PcWeb/image/homeworks.jpg">
-          <!--            <img src="bulletin-board-ch.jpg">-->
-        </div>
-      </div>
-      <!--  C的列表區  -->
-      <?php
-      for ($i = 0; $i < mysqli_num_rows($Homeworks); $i++) {
-        $rs = mysqli_fetch_row($Homeworks);
-      ?>
-      <?php $test = $rs[2] ?>
-      <a onclick="test('<?php echo $test ?>',1,'ComputerOrganization')" class="index-news-list">
-        <div class="index-news-list-info-box" style="display: none">
-          <h4 class="index-news-list-date"><?php echo $rs[0] ?></h4>
-          <h3 class="index-news-list-title"><?php echo $rs[1] ?></h3>
-          <div class="index-news-list-read">
-            <span>READ</span>
-          </div>
-        </div>
-      </a>
-      <?php
+      return `<tr>${elems}</tr>`
+    }
+
+    function show_option_buttons() {
+      for (let i = 0; i < options_arr.length; i++) {
+        option_box_elem.appendChild(options_arr[i])
       }
-      ?>
-    </div>
-  </div>
-  <div id="A1" class="Chose" style="display: none;">
-    <!-- TODO -->
-  </div>
-  <div id="A2" class="Chose" style="display: none;">
-    <!-- TODO -->
-  </div>
-  </div>
-  </main>
+    }
+
+    function show_content(options_switch) {
+      content_switch_elem.innerHTML = contents_arr[options_switch]
+    }
+  </script>
+</main>

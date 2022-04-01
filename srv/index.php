@@ -1,29 +1,28 @@
 <?php
 session_start();
-
-require_once('auth/db_conn.php');
 require_once('pages/head.php');
 ?>
 
-<body onload="WebSize()">
-  <!------- Login DIV ------->
-  <?php require_once('pages/login.php'); ?>
-  <header id="main-header"></header>
-  <section id="main-section"></section>
-  <article id="main-article"></article>
-  <aside id="main-aside"></aside>
-  <footer id="main-footer"></footer>
-
+<body>
   <?php
-    require_once('pages/header.php'); ?>
-  <main>
-    <?php
-        require_once('pages/side_bar.php');
-        require_once('pages/content.php');
-        ?>
-  </main>
+  require_once('pages/header.php');
+  require_once('pages/content.php');
+  // include_once('pages/pdf.php');
+  ?>
 
-  <!-- 
+  <script>
+    function get_init_data_from_go() {
+      // if have been the data in client?
+      //    check element id exist?
+      // else
+      //    check data expired from go api   
+
+    }
+  </script>
+</body>
+
+</html>
+<!-- 
   <main>
     <div id="Edit_BB" class="modal" style="z-index: 99">
       <div class="modal-content animate">
@@ -128,12 +127,3 @@ require_once('pages/head.php');
       </div>
     </div>
  -->
-</body>
-<?php
-include_once('pages/login.php');
-include_once('pages/pdf.php');
-$db->close();
-
-?>
-
-</html>

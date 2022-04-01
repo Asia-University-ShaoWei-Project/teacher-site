@@ -1,44 +1,28 @@
 <?php
 session_start();
 require_once('../pages/route.php');
-header('refresh: 2; url = http://' . $Route['home']);
-?>
-
-</html>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="static/css/loading.css">
-  <title>Login</title>
-</head>
-
-<body id="loading_body">
-  <div class="loader"></div>
-</body>
-
-</html>
-<?php
 require_once('db_conn.php');
 $id = $_POST['id'];
 $password = $_POST['password'];
-// $id = 'rikki';
-// $password = 'password';
-Login($id, $password);
+if (empty($id) || empty($password)) {
+  echo "400";
+} else {
+  Login($id, $password);
+}
 
 function Login(string $id, $password)
 {
-  if (empty($id) || empty($password)) return;
+  $response = array("status" => 400);
+
   $db = NewDB("./");
   $valid = verifyAuth($db, $id, $password);
   if ($valid) {
     $token = getToken($db, $id);
     $_SESSION['token'] = $token;
+    $response['status'] = 200;
   }
   $db->close();
+  echo json_encode($response);
 }
 function verifyAuth(DB &$db, string $id, $password): bool
 {
@@ -75,4 +59,3 @@ function bcryptPassword(string $password): string
   $hash = password_hash($password, PASSWORD_BCRYPT, ["cost" => $cost]);
   return $hash;
 }
-?>

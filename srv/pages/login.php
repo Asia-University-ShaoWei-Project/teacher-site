@@ -1,34 +1,69 @@
-<?php
-require_once('route.php');
-?>
+<?php require_once('route.php'); ?>
+<!-- ref: https://medium.com/swlh/how-to-create-your-first-login-page-with-html-css-and-javascript-602dd71144f1 -->
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" type="text/css" href="../static/css/index/login.css">
+</head>
 
-<div id="sign-in-frame" class="limiter">
-  <div class="container-login100" style="background: transparent">
-    <div class="wrap-login100 p-t-30 p-b-50" style="width: 500px">
-      <span class="login100-form-title p-b-41">
-        Rikki Web Login
-      </span>
-      <form class="login100-form validate-form p-b-33 p-t-5" action=<?php echo $Route['login'] ?> method="POST">
-        <div class="wrap-input100 validate-input" data-validate="Enter username">
-          <input class="input100" type="text" name="id" placeholder="ID">
-          <span class="focus-input100" data-placeholder="&#xe82a;"></span>
-        </div>
-        <div class="wrap-input100 validate-input" data-validate="Enter password">
-          <input class="input100" type="password" name="password" placeholder="Password">
-          <span class="focus-input100" data-placeholder="&#xe80f;"></span>
-        </div>
-        <div class="container-login100-form-btn m-t-32">
-          <button id="sign-in-submit-button" type="submit" class="login100-form-btn">
-            Login
-          </button>
-        </div>
-      </form>
-      <div class="container-login100-form-btn m-t-32">
-        <button id="sign-in-exit-button" type="submit" class="login100-form-btn-exit">
-          Exit
-        </button>
-      </div>
+<body>
+  <main id="main-holder">
+    <h1 id="login-header">Login</h1>
+
+    <div id="login-error-msg-holder">
+      <p id="login-error-msg">Invalid ID <span id="error-msg-second-line">and/or password</span></p>
     </div>
-  </div>
-</div>
+
+    <form id="login-form">
+      <input type="text" name="id" id="id-field" class="login-form-field" placeholder="ID">
+      <input type="password" name="password" id="password-field" class="login-form-field" placeholder="Password">
+      <input type="submit" value="Login" id="login-form-submit">
+    </form>
+
+  </main>
+</body>
+
+</html>
+<script src="../static/js/jquery/jquery-3.6.0.min.js"></script>
+<script>
+const loginForm = document.getElementById("login-form");
+const loginButton = document.getElementById("login-form-submit");
+const loginErrorMsg = document.getElementById("login-error-msg");
+
+loginButton.addEventListener("click", (e) => {
+  e.preventDefault();
+  const id = loginForm.id.value;
+  const password = loginForm.password.value;
+  if (id && password) {
+    auth_api(id, password);
+  } else {
+    loginErrorMsg.style.opacity = 1;
+  }
+})
+const login_url = "http://<?php echo $Domain . $Route['login'] ?>";
+
+function auth_api(id, password) {
+  $.ajax({
+      method: "POST",
+      url: login_url,
+      data: {
+        id: id,
+        password: password
+      },
+      dataType: 'json'
+    })
+    .done(function(response) {
+      if (response.status == 200) {
+        window.location.replace("http://<?php echo $Domain ?>");
+      }
+    })
+    .fail(function(msg) {
+      loginErrorMsg.style.opacity = 1;
+      console.log(msg);
+    });
+}
+</script>

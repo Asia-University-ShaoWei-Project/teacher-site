@@ -8,7 +8,7 @@ class DB extends SQLite3
 }
 function NewDB(string $path): DB
 {
-  $db_file_path = $path . getenv('DB_FILE_NAME');
+  $db_file_path = $path . getenv('DB_FILE_NAME') . ".db";
   return new DB($db_file_path);
 }
 function Br()
