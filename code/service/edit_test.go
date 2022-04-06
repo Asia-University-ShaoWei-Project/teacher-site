@@ -13,7 +13,7 @@ func TestCreateInfo(t *testing.T) {
 		Info: "testing case",
 	}
 	if err := srv.CreateInfo(ctx, info); err != nil {
-		srv.Debug(err)
+		srv.Info(err)
 	}
 }
 

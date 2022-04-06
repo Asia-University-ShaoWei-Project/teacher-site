@@ -2,40 +2,63 @@ package route
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"teacher-site/cache"
 	"teacher-site/database"
-	"teacher-site/log"
+	"teacher-site/logsrv"
 	"teacher-site/model"
 	"teacher-site/service"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+)
+
+const (
+	methodGet  = "GET"
+	methodPOST = "POST"
+	apiVersion = "v1"
+	domain     = "teacher_domain"
+	password   = "password"
 )
 
 var (
-	apiVersion = "v1"
-	domain     = "teacher_domain"
-	url        = fmt.Sprintf("/%s/%s", apiVersion, domain)
-	db         = database.NewSqlite("../database")
-	c          = cache.NewCache()
-	ctx        = context.Background()
-	// logger     = log.NewLog(ctx)
-	logger = log.NewLogrus(ctx)
-	srv    = service.NewService(db, c, logger)
-	cfg    = &model.Config{
-		JWTSecure: []byte(`secure`),
-		// jwtSecure: []byte(os.Getenv(`secure`)),
-	}
-	r = gin.Default()
+	apiURL = fmt.Sprintf("/api/%s/%s", apiVersion, domain)
+	logger = logsrv.NewLogrus(ctx)
+	db     = database.NewSqlite("../database", logger)
+	c      = cache.NewCache()
+	ctx    = context.Background()
+	conf   = model.NewTMPConfig()
+	srv    = service.NewService(db, c, logger, conf)
+	r      = gin.Default()
 )
 
+var (
+	err           error
+	url           string
+	reqData       string
+	reqDataformat string
+	req           *http.Request
+	w             *httptest.ResponseRecorder
+	body          []byte
+)
+
+func TestInit(t *testing.T) {
+	SetupRoute(ctx, r, srv)
+	w := httptest.NewRecorder()
+	url = apiURL + "/init"
+	req, _ := http.NewRequest(methodGet, url, nil)
+	r.ServeHTTP(w, req)
+	defer w.Result().Body.Close()
+	body, err = ioutil.ReadAll(w.Body)
+	fmt.Println(string(body))
+}
 func TestUpdateInfo(t *testing.T) {
-	SetupRoute(ctx, r, srv, cfg)
+	SetupRoute(ctx, r, srv)
 	// path := "/edit/info"
 	// info := &model.BindInfo{ID: 3, Info: "test route with update info"}
 	// json, _ := json.Marshal(info)
@@ -70,39 +93,45 @@ func TestUpdateInfo(t *testing.T) {
 		})
 	}
 }
-func TestInit(t *testing.T) {
-	w := setupHTTP("GET", url+"/init", nil)
-	data := &gin.H{
-		"data": model.Init{},
-	}
-	err := json.Unmarshal(w.Body.Bytes(), data)
-	if err != nil {
-		t.Fatal(err)
-	}
-	j, _ := json.MarshalIndent(data, "", " ")
-	srv.Debug(string(j))
-}
 
+// todo: login instead of verify token
 func TestVerifyToken(t *testing.T) {
-
-	SetupRoute(ctx, r, srv, cfg)
+	SetupRoute(ctx, r, srv)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", url+"/edit/test_token", nil)
 	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmUiOjE2NDg3MjQ3MTEsImlzVXNlciI6InJpa2tpIn0.Emr4wb5s-JTLiqe8gimFDycEl2J0a3YUK6QTv8Ybvvo"
 	req.Header.Add("Authorization", "Bearer "+token)
 	r.ServeHTTP(w, req)
 }
-func setupHTTP(method, _url string, body io.Reader) *httptest.ResponseRecorder {
-	SetupRoute(ctx, r, srv, cfg)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(method, _url, body)
-	r.ServeHTTP(w, req)
-	return w
-}
 
-// auth.POST("/login", Login(ctx, srv))
-// auth.POST("/logout", Logout(ctx, srv))
-// auth.POST("/getToken", func(c *gin.Context) {
-// 	token := sessions.Default(c).Get("token")
-// 	c.String(200, "token:%s", token)
-// })
+func TestLogin(t *testing.T) {
+	reqDataformat = `{"user_id":"%s", "user_password":"%s"}`
+	testCases := []struct {
+		desc         string
+		userID       string
+		userPassword string
+		result       int
+	}{
+		{
+			desc:         "Empty fields",
+			userID:       "",
+			userPassword: password,
+			result:       http.StatusBadRequest,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			reqData = fmt.Sprintf(reqDataformat, tC.userID, tC.userPassword)
+			url = apiURL + `/auth/login`
+
+			req, err = http.NewRequest(methodPOST, url, strings.NewReader(reqData))
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Add("Content-Type", "application/json")
+			w = httptest.NewRecorder()
+			r.ServeHTTP(w, req)
+			assert.Equal(t, tC.result, w.Result().StatusCode, "not match")
+		})
+	}
+}

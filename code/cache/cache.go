@@ -14,8 +14,8 @@ type Cacheer interface {
 	GetInit(domain string) (string, error)
 	GetCourseWithContent(domain string, courseID uint) (string, error)
 	GetCourseLastUpdated(domain string, courseID uint) (string, error)
-	SetInit(domain string, value *model.Init) error
-	SetToken(token, domain string) error
+	SetInit(domain string, value string) error
+	SetToken(domain, token string) error
 	SetCourse(domain string, courseID uint, value *model.Courses) error
 	SetCourseLastUpdated(domain string, courseID uint, updatedTime int64) error
 }
@@ -44,7 +44,7 @@ const (
 func (c *Cache) GetInit(domain string) (string, error) {
 	return c.db.HGet(initKey, domain).Result()
 }
-func (c *Cache) SetInit(domain string, value *model.Init) error {
+func (c *Cache) SetInit(domain string, value string) error {
 	// todo: expire?
 	return c.db.HSet(initKey, domain, value).Err()
 }
@@ -64,6 +64,6 @@ func (c *Cache) SetCourseLastUpdated(domain string, courseID uint, updatedTime i
 	field := fmt.Sprintf("%s:%d", domain, courseID)
 	return c.db.HSet(courseLastUpdatedKey, field, updatedTime).Err()
 }
-func (c *Cache) SetToken(token, domain string) error {
+func (c *Cache) SetToken(domain, token string) error {
 	return c.db.HSetNX(tokenKey, token, domain).Err()
 }

@@ -23,7 +23,7 @@ func TestGetInit(t *testing.T) {
 			srv.SetDomain(ctx, &tC.domain)
 			//TODO: When deleted key in redis, can you get data from db?
 			init, _ := srv.GetInit(ctx)
-			srv.Debug(init)
+			srv.Info(init)
 		})
 	}
 }

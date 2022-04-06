@@ -4,58 +4,73 @@ import (
 	"context"
 	"net/http"
 	mw "teacher-site/middleware"
-	"teacher-site/model"
+	v1 "teacher-site/route/v1"
 	"teacher-site/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRoute(ctx context.Context, r *gin.Engine, srv service.Servicer, cfg *model.Config) {
-	v1 := r.Group("/v1/:domain", mw.SetupServiceDomain(ctx, srv))
-	{
-		r.GET("/:domain", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "index.html", gin.H{})
-		})
-		v1.GET("/init", GetInit(ctx, srv))
+const templateIndex = "index.html"
 
-		course := v1.Group("/course/:course_id/:last_updated")
+func SetupRoute(ctx context.Context, r *gin.Engine, srv service.Servicer) {
+	r.GET("/:domain", func(c *gin.Context) {
+		c.HTML(http.StatusOK, templateIndex, gin.H{})
+	})
+	api := r.Group("/api")
+	{
+		// setupV1(ctx, api, srv)
+		// }
+
+		// func setupV1(ctx context.Context, api *gin.RouterGroup, srv service.Servicer) {
+		route := api.Group("/v1/:domain", mw.SetupServiceDomain(ctx, srv))
 		{
-			course.GET("/", GetCourse(ctx, srv))
-		}
-		edit := v1.Group("/edit", mw.VerifyJWT(ctx, cfg.JWTSecure))
-		{
-			info := edit.Group("/info")
+			// route.GET("/init", v1.GetInit(ctx, srv))
+
+			// course := route.Group("/course/:course_id/:last_updated")
+			// {
+			// 	course.GET("/", v1.GetCourse(ctx, srv))
+			// }
+
+			auth := route.Group("/auth")
 			{
-				info.POST("/", CreateInfo(ctx, srv))
-				info.PUT("/", UpdateInfo(ctx, srv))
-				info.DELETE("/", DeleteInfo(ctx, srv))
+				auth.GET("/test", func(c *gin.Context) { c.String(200, "teset", "") })
+				auth.POST("/login", v1.Login(ctx, srv))
+				auth.POST("/register", v1.Register(ctx, srv))
+				edit := auth.Group("/edit", mw.VerifyJWT(ctx, srv))
+				{
+					info := edit.Group("/info")
+					{
+						// todo: resource id
+						info.POST("/", v1.CreateInfo(ctx, srv))
+						info.PUT("/", v1.UpdateInfo(ctx, srv))
+						info.DELETE("/", v1.DeleteInfo(ctx, srv))
+					}
+				}
+				// todo
+
+				// 	courseEdit := edit.Group("/course/:course_id")
+				// 	{
+				// 		bulletinBoard := courseEdit.Group("/bulletin_board")
+				// 		{
+				// 			bulletinBoard.POST("/", createCourse)
+				// 			bulletinBoard.PUT("/", updateCourse)
+				// 			bulletinBoard.DELETE("/", deleteCourse)
+				// 		}
+				// 		slide := courseEdit.Group("/bulletin_board")
+				// 		{
+				// 			slide.POST("/", createSlide)
+				// 			slide.PUT("/", updateSlide)
+				// 			slide.DELETE("/", deleteSlide)
+				// 		}
+				// 		homework := courseEdit.Group("/bulletin_board")
+				// 		{
+				// 			homework.POST("/", createHomework)
+				// 			homework.PUT("/", updateHomework)
+				// 			homework.DELETE("/", deleteHomework)
+				// 		}
+				// 	}
 			}
-			// 	courseEdit := edit.Group("/course/:course_id")
-			// 	{
-			// 		bulletinBoard := courseEdit.Group("/bulletin_board")
-			// 		{
-			// 			bulletinBoard.POST("/", createCourse)
-			// 			bulletinBoard.PUT("/", updateCourse)
-			// 			bulletinBoard.DELETE("/", deleteCourse)
-			// 		}
-			// 		slide := courseEdit.Group("/bulletin_board")
-			// 		{
-			// 			slide.POST("/", createSlide)
-			// 			slide.PUT("/", updateSlide)
-			// 			slide.DELETE("/", deleteSlide)
-			// 		}
-			// 		homework := courseEdit.Group("/bulletin_board")
-			// 		{
-			// 			homework.POST("/", createHomework)
-			// 			homework.PUT("/", updateHomework)
-			// 			homework.DELETE("/", deleteHomework)
-			// 		}
-			// 	}
-		}
-		auth := v1.Group("/auth")
-		{
-			auth.POST("/login", Login(ctx, srv, cfg))
-			auth.POST("/register", Register(ctx, srv, cfg))
+
 		}
 	}
 }

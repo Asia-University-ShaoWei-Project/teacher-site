@@ -4,24 +4,30 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
+	"teacher-site/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
 
-const bearerIndexStarted = len(`bearer `)
-
-func VerifyJWT(ctx context.Context, jwtSecure []byte) gin.HandlerFunc {
+func VerifyJWT(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		bearerToken := c.GetHeader("Authorization")[bearerIndexStarted:]
+		bearerToken := c.GetHeader("Authorization")
+		field := strings.Split(bearerToken, " ")
+		if len(field) != 2 {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		bearerToken = field[1]
 		token, err := jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
-			return jwtSecure, nil
+			return srv.GetJWTSecure, nil
 		})
 		if err != nil {
-			fmt.Println(err)
+			srv.Error(err)
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}

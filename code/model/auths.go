@@ -3,6 +3,7 @@ package model
 type Auths struct {
 	UserID       string `gorm:"primaryKey" json:"user_id"`
 	UserPassword string `json:"user_password"`
+	Salt         string
 	Token        string
 	Teacher      Teachers `gorm:"foreignKey:AuthID;references:UserID"`
 	Time

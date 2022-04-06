@@ -1,4 +1,4 @@
-package log
+package logsrv
 
 import (
 	"context"

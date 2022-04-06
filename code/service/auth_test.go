@@ -1,50 +1,74 @@
 package service
 
 import (
-	"teacher-site/message"
 	"teacher-site/model"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
-func TestLogin(t *testing.T) {
-	// func (srv *Service) Login(ctx context.Context, auth *model.Auths) error {
+const password = "password"
 
+func TestLogin(t *testing.T) {
+	var auth *model.BindAuth
 	tC := []struct {
-		desc   string
-		auth   *model.BindAuth
-		result error
+		desc         string
+		userID       string
+		userPassword string
+		result       error
 	}{
 		{
-			desc: "Real user",
-			auth: &model.BindAuth{
-				UserID:       "teacher_id",
-				UserPassword: "password",
-			},
-			result: nil,
+			desc:         "Real user",
+			userID:       "teacher_id",
+			userPassword: password,
+			result:       nil,
 		},
 		{
-			desc: "Empty fields",
-			auth: &model.BindAuth{
-				UserID:       "",
-				UserPassword: "password",
-			},
-			result: message.ErrDataEmpty,
+			desc:         "Not found the account",
+			userID:       "unknown_id",
+			userPassword: password,
+			result:       gorm.ErrRecordNotFound,
 		},
 		{
-			desc: "Not found the account",
-			auth: &model.BindAuth{
-				UserID:       "unknown_id",
-				UserPassword: "password",
-			},
-			result: message.ErrQueryNotFound,
+			desc:         "Fail password",
+			userID:       "teacher_id",
+			userPassword: password + "additional",
+			result:       errAuthNotMatch,
 		},
 	}
 	for _, v := range tC {
 		t.Run(v.desc, func(t *testing.T) {
-			_, err := srv.Login(ctx, v.auth, cfg)
+			auth = &model.BindAuth{
+				UserID:       v.userID,
+				UserPassword: v.userPassword,
+			}
+			_, err := srv.LoginAndGetNewToken(ctx, auth)
 			assert.Equal(t, v.result, err)
 		})
 	}
+}
+
+func TestRegister(t *testing.T) {
+	tC := struct {
+		desc   string
+		data   *model.BindRegister
+		result bool
+	}{
+		desc: "e",
+		data: &model.BindRegister{
+			UserID:       "user-4",
+			UserPassword: "password",
+			Domain:       "teacher-domain",
+			Email:        "xx@gmail.com",
+			NameZH:       "My-name",
+		},
+		result: true,
+	}
+	t.Run(tC.desc, func(t *testing.T) {
+		ok := srv.Register(ctx, tC.data)
+		if ok != tC.result {
+			t.Fatal("fail to register")
+		}
+	})
 }

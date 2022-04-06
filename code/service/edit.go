@@ -14,7 +14,7 @@ func (srv *Service) CreateInfo(ctx context.Context, reqInfo *model.BindInfo) err
 		CreatedDate: date,
 		Info:        reqInfo.Info,
 	}
-	err := srv.db.CreateInformation(info)
+	err := srv.db.CreateInformation(ctx, info)
 	return err
 }
 
@@ -27,10 +27,10 @@ func (srv *Service) UpdateInfo(ctx context.Context, reqInfo *model.BindInfo) err
 		CreatedDate: reqInfo.CreateDate,
 		Info:        reqInfo.Info,
 	}
-	return srv.db.UpdateInformation(info)
+	return srv.db.UpdateInformation(ctx, info)
 }
 func (srv *Service) DeleteInfo(ctx context.Context, reqInfo *model.BindInfo) error {
-	return srv.db.DeleteInformation(reqInfo.ID)
+	return srv.db.DeleteInformation(ctx, reqInfo.ID)
 }
 
 // func (srv *Service) CreateBulletin(ctx context.Context, bulletin model.BulletinBoard) {

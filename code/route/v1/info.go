@@ -1,4 +1,4 @@
-package route
+package v1
 
 import (
 	"context"
@@ -32,13 +32,13 @@ func CreateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 func UpdateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err = c.ShouldBindJSON(infoBind); err != nil {
-			srv.Debug(err)
+			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 		err := srv.UpdateInfo(ctx, infoBind)
 		if err != nil {
-			srv.Debug(err)
+			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
@@ -49,12 +49,12 @@ func UpdateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 func DeleteInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err = c.ShouldBindJSON(infoBind); err != nil {
-			srv.Debug(err)
+			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 		if err = srv.DeleteInfo(ctx, infoBind); err != nil {
-			srv.Debug(err)
+			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}

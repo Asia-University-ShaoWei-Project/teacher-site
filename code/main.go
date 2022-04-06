@@ -1,8 +1,3 @@
-// TODO: request get from redis
-
-// TODO: store data to redis
-
-// TODO: request get from db
 package main
 
 import (
@@ -13,7 +8,7 @@ import (
 	"syscall"
 	"teacher-site/cache"
 	"teacher-site/database"
-	"teacher-site/log"
+	"teacher-site/logsrv"
 	"teacher-site/model"
 	"teacher-site/route"
 	"teacher-site/service"
@@ -34,23 +29,19 @@ const (
 func main() {
 	ctx := context.Background()
 	cache := cache.NewCache()
-	db := database.NewSqlite(_dbFilePath)
-	// logger := log.NewLogzap(ctx)
-	// defer logger.Sync()
-	logger := log.NewLogrus(ctx)
-	srv := service.NewService(db, cache, logger)
+	logger := logsrv.NewLogrus(ctx)
+	db := database.NewSqlite(_dbFilePath, logger)
+
+	conf := model.NewTMPConfig()
+	srv := service.NewService(db, cache, logger, conf)
 	// todo: use os.Getenv()
-	cfg := &model.Config{
-		JWTSecure:      []byte(`secure`),
-		PasswordSecure: `secure`,
-		HashCost:       10,
-		// jwtSecure: []byte(os.Getenv(`secure`)),
-	}
+
 	r := gin.Default()
 	r.Use(cors.Default())
 	r.Static(_staticRelativePath, _staticRoot)
 	r.LoadHTMLGlob(_templatePath)
-	route.SetupRoute(ctx, r, srv, cfg)
+	route.SetupRoute(ctx, r, srv)
+	r.Run(_serverPort)
 	//? graceful shutdown: https://blog.wu-boy.com/2020/02/what-is-graceful-shutdown-in-golang/
 	server := &http.Server{
 		Addr:    _serverPort,

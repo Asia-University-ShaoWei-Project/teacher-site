@@ -1,4 +1,4 @@
-package route
+package v1
 
 import (
 	"context"
@@ -33,7 +33,7 @@ func GetCourse(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 		}
 		course, err := srv.GetCourse(ctx, courseBind)
 		if err != nil {
-			srv.Debug(err)
+			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}

@@ -16,7 +16,7 @@ func (srv *Service) GetCourse(ctx context.Context, courseBind *model.BindCourse)
 		data, err := srv.cache.GetCourseWithContent(srv.domain, courseBind.ID)
 		if err != nil {
 			srv.log.Error(err)
-			course := srv.db.GetCourseWithContent(course.ID)
+			course := srv.db.GetCourseWithContent(ctx, course.ID)
 			err = srv.cache.SetCourse(srv.domain, course.ID, course)
 			if err != nil {
 				srv.log.Error(err)

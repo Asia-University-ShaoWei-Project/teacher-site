@@ -4,26 +4,21 @@ import (
 	"context"
 	"teacher-site/cache"
 	"teacher-site/database"
-	"teacher-site/log"
-	"teacher-site/message"
+	"teacher-site/logsrv"
 	"teacher-site/model"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 var (
-	db  = database.NewSqlite("../database")
-	c   = cache.NewCache()
-	ctx = context.Background()
-	// logger     = log.NewLog(ctx)
-	logger = log.NewLogrus(ctx)
-	srv    = NewService(db, c, logger)
-	cfg    = &model.Config{
-		JWTSecure:      []byte(`secure`),
-		PasswordSecure: `secure`,
-		HashCost:       10,
-	}
+	ctx    = context.Background()
+	c      = cache.NewCache()
+	logger = logsrv.NewLogrus(ctx)
+	db     = database.NewSqlite("../database", logger)
+	conf   = model.NewTMPConfig()
+	srv    = NewService(db, c, logger, conf)
 )
 
 func TestIsExistDomain(t *testing.T) {
@@ -41,7 +36,7 @@ func TestIsExistDomain(t *testing.T) {
 		{
 			desc:   "domain = unknown domain",
 			domain: "other_domain",
-			result: message.ErrQueryNotFound,
+			result: gorm.ErrRecordNotFound,
 		},
 	}
 	for _, tC := range testCases {
@@ -51,9 +46,3 @@ func TestIsExistDomain(t *testing.T) {
 		})
 	}
 }
-
-// token: "b6e72454-eaf5-4477-8148-5dd601182af4",
-
-// jwt update
-// no jwt update
-// info content error

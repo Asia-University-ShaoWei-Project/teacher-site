@@ -2,77 +2,101 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"errors"
 	"teacher-site/model"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// todo: get environment variable by viper
-var jwtSecure = []byte(`secure`)
+var (
+	errAuthNotMatch = errors.New("fail to authorization")
+)
 
-func (srv *Service) Login(ctx context.Context, bindAuth *model.BindAuth, cfg *model.Config) (string, error) {
+//ref: https://github.com/golang-jwt/jwt/blob/main/example_test.go
+func (srv *Service) LoginAndGetNewToken(ctx context.Context, bindAuth *model.BindAuth) (string, error) {
 	var err error
-	auth := &model.Auths{
-		UserID:       bindAuth.UserID,
-		UserPassword: bindAuth.UserPassword,
+	auth := &model.Auths{UserID: bindAuth.UserID}
+	if err = srv.db.GetAuth(ctx, auth); err != nil {
+		srv.log.Error(err)
+		return "", err
 	}
-	// todo: encrypt the password
-	// password := encrypt(auth.password)
-
-	// teacher, err := srv.db.VerifyAuthAndGetTeacher(auth)
-	// if err != nil {
-	// 	return "", err
-	// }
-	token, err := srv.newToken(ctx, auth.UserID)
+	saltPassword := []byte(bindAuth.UserPassword + auth.Salt)
+	if bcrypt.CompareHashAndPassword([]byte(auth.UserPassword), saltPassword) != nil {
+		srv.log.Error("The password not match the user password")
+		return "", errAuthNotMatch
+	}
+	token, err := newToken(ctx, auth.Token, srv.conf.TokenExpireTime, srv.conf.JWTSecure)
 	if err != nil {
 		srv.log.Error(err)
 		return "", err
 	}
-	if err = srv.db.UpdateUserToken(auth, token); err != nil {
-		// setTokenInDB(ctx, token, auth.UserID)
+	if err = srv.db.UpdateUserToken(ctx, auth, token); err != nil {
 		srv.log.Error(err)
 		return "", err
 	}
-	if err = srv.cache.SetToken(token, srv.domain); err != nil {
+	if err = srv.cache.SetToken(srv.domain, token); err != nil {
 		srv.log.Error(err)
-		return "", err
-	}
-	return "", err
-}
-func (srv *Service) newToken(ctx context.Context, userID string) (string, error) {
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": userID,
-		"expire":  time.Now().Add(1 * time.Minute).Unix(),
-		// "expire": time.Now().Add(20 * time.Minute).Unix(),
-	})
-	token, err := claims.SignedString(jwtSecure)
-	if err != nil {
-		return "", err
+		// todo: handle this
 	}
 	return token, nil
 }
-func (srv *Service) Register(ctx context.Context, bindRegister *model.BindRegister, cfg *model.Config) bool {
+
+func newToken(ctx context.Context, userToken string, duration time.Duration, secure []byte) (string, error) {
+	exp := time.Now().Add(duration * time.Minute).Unix()
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_token": userToken,
+		"exp":        exp,
+	})
+	token, err := claims.SignedString(secure)
+	return token, err
+}
+
+// bcrypt: https://github.com/golang/crypto/blob/master/bcrypt/bcrypt_test.go
+func (srv *Service) Register(ctx context.Context, bindRegister *model.BindRegister) bool {
 	//todo: check user_id and domain exist
-	saltPassword := []byte(bindRegister.UserPassword + cfg.PasswordSecure)
-	hashPassword, err := bcrypt.GenerateFromPassword(saltPassword, cfg.HashCost)
+	var err error
+	salt, err := generateSalt(srv.conf.SaltSize)
+	if err != nil {
+		srv.Error(err)
+		return false
+	}
+	saltPassword := append([]byte(bindRegister.UserPassword), salt...)
+	hashPassword, err := bcrypt.GenerateFromPassword(saltPassword, srv.conf.HashCost)
 	if err != nil {
 		srv.log.Error(err)
 		return false
 	}
-	data := &model.Auths{
+	token, err := uuid.NewUUID()
+	if err != nil {
+		srv.Error(err)
+		return false
+	}
+	auth := &model.Auths{
 		UserID:       bindRegister.UserID,
 		UserPassword: string(hashPassword),
+		Token:        token.String(),
+		Salt:         string(salt),
 		Teacher: model.Teachers{
 			Domain: bindRegister.Domain,
 			NameZH: bindRegister.NameZH,
 			Email:  bindRegister.Email,
 		},
 	}
-	srv.db.CreateUser(data)
+	srv.db.CreateUser(ctx, auth)
 	return true
+}
+func generateSalt(saltSize int) ([]byte, error) {
+	var salt = make([]byte, saltSize)
+
+	_, err := rand.Read(salt[:])
+	return salt, err
+}
+func (srv *Service) GetJWTSecure(ctx context.Context) []byte {
+	return srv.conf.JWTSecure
 }
 
 // todo: logout
-// func (srv *Service) Logout(ctx context.Context) error {}

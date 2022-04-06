@@ -1,14 +1,23 @@
 package database
 
 import (
+	"context"
+	"teacher-site/logsrv"
 	"teacher-site/model"
 	"testing"
 )
 
-var db = NewSqlite(".")
+var (
+	ctx    = context.Background()
+	logger = logsrv.NewLogrus(ctx)
+	conf   = model.NewTMPConfig()
+
+	db = NewSqlite(".", logger)
+)
 
 func TestMigrate(t *testing.T) {
 	db.Migrate(
+		ctx,
 		&model.Auths{},
 		&model.Teachers{},
 		&model.Informations{},
@@ -54,5 +63,5 @@ func TestInsertAll(t *testing.T) {
 			},
 		},
 	}
-	db.Create(&data)
+	db.Create(ctx, &data)
 }

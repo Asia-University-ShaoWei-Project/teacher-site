@@ -1,13 +1,14 @@
 package database
 
 import (
+	"context"
 	"teacher-site/message"
 	"teacher-site/model"
 
 	"gorm.io/gorm"
 )
 
-func (db *DB) UpdateInformation(info *model.Informations) error {
+func (db *DB) UpdateInformation(ctx context.Context, info *model.Informations) error {
 	var originInfo *model.Informations
 	err := db.orm.Transaction(func(tx *gorm.DB) error {
 		result := db.orm.Where("id = ?", info.ID).Find(originInfo)
@@ -25,7 +26,7 @@ func (db *DB) UpdateInformation(info *model.Informations) error {
 	return err
 }
 
-func (db *DB) UpdateUserToken(auth *model.Auths, token string) error {
+func (db *DB) UpdateUserToken(ctx context.Context, auth *model.Auths, token string) error {
 	err := db.orm.Transaction(func(tx *gorm.DB) error {
 		if err := db.orm.Model(auth).Update("token", token).Error; err != nil {
 			return err

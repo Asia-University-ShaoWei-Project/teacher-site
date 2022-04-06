@@ -2,11 +2,17 @@
 version: '3'
 
 services:
-  api_service:
-    build: .
+  # api_service:
+  #   build: .
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   environment:
+  #     SECURE_KEY: ${SECURE_KEY}
+  #     DB_FILE_NAME: ${DB_FILE_NAME}
+  redis:
+    restart: always
+    container_name: redis
+    image: redis:alpine
     ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      SECURE_KEY: ${SECURE_KEY}
-      DB_FILE_NAME: ${DB_FILE_NAME}
+      - 6379:6379
