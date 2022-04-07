@@ -14,7 +14,7 @@ type Service struct {
 	db     database.Databaseer
 	cache  cache.Cacheer
 	log    *log.Logger // log *zap.Logger
-	conf   *model.Config
+	conf   *model.ServiceConfig
 }
 type Servicer interface {
 	GetJWTSecure(ctx context.Context) []byte
@@ -39,7 +39,7 @@ type Servicer interface {
 }
 
 // TODO: receive logger parameter
-func NewService(db database.Databaseer, cache cache.Cacheer, logger *log.Logger, conf *model.Config) Servicer {
+func NewService(db database.Databaseer, cache cache.Cacheer, logger *log.Logger, conf *model.ServiceConfig) Servicer {
 	srv := &Service{
 		db:    db,
 		cache: cache,

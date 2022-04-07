@@ -38,7 +38,7 @@ func (srv *Service) LoginAndGetNewToken(ctx context.Context, bindAuth *model.Bin
 		srv.log.Error(err)
 		return "", err
 	}
-	if err = srv.cache.SetToken(srv.domain, token); err != nil {
+	if err = srv.cache.SetTokenWithDomain(ctx, srv.domain, token); err != nil {
 		srv.log.Error(err)
 		// todo: handle this
 	}

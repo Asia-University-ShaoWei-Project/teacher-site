@@ -33,6 +33,7 @@ func VerifyJWT(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			// expire example: https://github.com/golang-jwt/jwt/blob/main/map_claims_test.go
 			// todo: expire handle! claims["exp"]
 			fmt.Println(claims["expire"])
 			return

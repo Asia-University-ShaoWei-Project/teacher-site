@@ -13,12 +13,13 @@ import (
 )
 
 var (
-	ctx    = context.Background()
-	c      = cache.NewCache()
-	logger = logsrv.NewLogrus(ctx)
-	db     = database.NewSqlite("../database", logger)
-	conf   = model.NewTMPConfig()
-	srv    = NewService(db, c, logger, conf)
+	ctx       = context.Background()
+	cacheConf = model.NewTMPCacheConfig()
+	c         = cache.NewCache(cacheConf)
+	logger    = logsrv.NewLogrus(ctx)
+	db        = database.NewSqlite("../database", logger)
+	conf      = model.NewTMPServiceConfig()
+	srv       = NewService(db, c, logger, conf)
 )
 
 func TestIsExistDomain(t *testing.T) {

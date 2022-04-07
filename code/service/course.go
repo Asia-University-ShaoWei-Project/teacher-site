@@ -13,17 +13,17 @@ func (srv *Service) GetCourse(ctx context.Context, courseBind *model.BindCourse)
 	var course *model.Courses
 	needUpdate := srv.courseNeedUpdate(ctx, courseBind)
 	if needUpdate {
-		data, err := srv.cache.GetCourseWithContent(srv.domain, courseBind.ID)
+		data, err := srv.cache.GetCourseContent(ctx, srv.domain, courseBind.ID)
 		if err != nil {
 			srv.log.Error(err)
 			course := srv.db.GetCourseWithContent(ctx, course.ID)
-			err = srv.cache.SetCourse(srv.domain, course.ID, course)
+			err = srv.cache.SetCourseContent(ctx, srv.domain, course.ID, course)
 			if err != nil {
 				srv.log.Error(err)
 				return model.Courses{}, err
 			}
 			updatedTime := time.Now().Unix()
-			err = srv.cache.SetCourseLastUpdated(srv.domain, course.ID, updatedTime)
+			err = srv.cache.SetCourseLastUpdated(ctx, srv.domain, course.ID, updatedTime)
 			if err != nil {
 				srv.log.Error(err)
 				return model.Courses{}, err
@@ -39,7 +39,7 @@ func (srv *Service) GetCourse(ctx context.Context, courseBind *model.BindCourse)
 }
 
 func (srv *Service) courseNeedUpdate(ctx context.Context, courseBind *model.BindCourse) NeedUpdate {
-	lastUpdated, err := srv.cache.GetCourseLastUpdated(srv.domain, courseBind.ID)
+	lastUpdated, err := srv.cache.GetCourseLastUpdated(ctx, srv.domain, courseBind.ID)
 	if err != nil {
 		srv.log.Error(err)
 		return false

@@ -28,11 +28,13 @@ const (
 
 func main() {
 	ctx := context.Background()
-	cache := cache.NewCache()
+	// todo: tmp
+	cacheConf := model.NewTMPCacheConfig()
+	cache := cache.NewCache(cacheConf)
 	logger := logsrv.NewLogrus(ctx)
 	db := database.NewSqlite(_dbFilePath, logger)
 
-	conf := model.NewTMPConfig()
+	conf := model.NewTMPServiceConfig()
 	srv := service.NewService(db, cache, logger, conf)
 	// todo: use os.Getenv()
 

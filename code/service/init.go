@@ -14,7 +14,7 @@ func (srv *Service) GetInit(ctx context.Context) (*model.Init, error) {
 		init *model.Init
 		err  error
 	)
-	data, err := srv.cache.GetInit(srv.domain)
+	data, err := srv.cache.GetInit(ctx, srv.domain)
 	if errors.Is(err, redis.Nil) {
 		init, err = srv.db.GetInit(ctx, srv.domain)
 		if err != nil {
@@ -26,7 +26,7 @@ func (srv *Service) GetInit(ctx context.Context) (*model.Init, error) {
 			srv.log.Error(err)
 			return init, err
 		}
-		if err = srv.cache.SetInit(srv.domain, string(b)); err != nil {
+		if err = srv.cache.SetInit(ctx, srv.domain, string(b)); err != nil {
 			srv.log.Error(err)
 			return init, err
 		}

@@ -10,7 +10,7 @@ import (
 var (
 	ctx    = context.Background()
 	logger = logsrv.NewLogrus(ctx)
-	conf   = model.NewTMPConfig()
+	conf   = model.NewTMPServiceConfig()
 
 	db = NewSqlite(".", logger)
 )

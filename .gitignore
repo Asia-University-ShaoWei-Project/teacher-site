@@ -5,4 +5,4 @@ test/
 migrate_dev_test.go
 tmp/
 *.db
-todo.go
+todo.md

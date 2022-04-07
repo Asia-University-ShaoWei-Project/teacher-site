@@ -27,14 +27,15 @@ const (
 )
 
 var (
-	apiURL = fmt.Sprintf("/api/%s/%s", apiVersion, domain)
-	logger = logsrv.NewLogrus(ctx)
-	db     = database.NewSqlite("../database", logger)
-	c      = cache.NewCache()
-	ctx    = context.Background()
-	conf   = model.NewTMPConfig()
-	srv    = service.NewService(db, c, logger, conf)
-	r      = gin.Default()
+	apiURL    = fmt.Sprintf("/api/%s/%s", apiVersion, domain)
+	logger    = logsrv.NewLogrus(ctx)
+	db        = database.NewSqlite("../database", logger)
+	cacheConf = model.NewTMPCacheConfig()
+	c         = cache.NewCache(cacheConf)
+	ctx       = context.Background()
+	conf      = model.NewTMPServiceConfig()
+	srv       = service.NewService(db, c, logger, conf)
+	r         = gin.Default()
 )
 
 var (
