@@ -2,17 +2,20 @@ package database
 
 import (
 	"context"
+	"crypto/rand"
 	"teacher-site/logsrv"
+	"teacher-site/mock"
 	"teacher-site/model"
 	"testing"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
 	ctx    = context.Background()
 	logger = logsrv.NewLogrus(ctx)
-	conf   = model.NewTMPServiceConfig()
-
-	db = NewSqlite(".", logger)
+	db     = NewSqlite("./", logger)
+	conf   = model.NewMockServiceConfig()
 )
 
 func TestMigrate(t *testing.T) {
@@ -29,14 +32,16 @@ func TestMigrate(t *testing.T) {
 }
 
 func TestInsertAll(t *testing.T) {
+	hashPassword, salt := generalHashPassword()
 
 	data := model.Auths{
-		UserID:       "",
-		UserPassword: "",
+		UserID:       mock.UserID,
+		UserPassword: hashPassword,
+		Salt:         salt,
 		Teacher: model.Teachers{
-			Domain:    "",
-			Email:     "",
-			NameZH:    "",
+			Domain:    mock.Domain,
+			Email:     mock.Email,
+			NameZH:    mock.UserName,
 			NameUS:    "",
 			Office:    "",
 			Call:      "",
@@ -64,4 +69,11 @@ func TestInsertAll(t *testing.T) {
 		},
 	}
 	db.Create(ctx, &data)
+}
+func generalHashPassword() (string, string) {
+	var salt = make([]byte, conf.SaltSize)
+	rand.Read(salt[:])
+	saltPassword := append([]byte(password), salt...)
+	hashPassword, _ := bcrypt.GenerateFromPassword(saltPassword, conf.HashCost)
+	return string(hashPassword), string(salt)
 }

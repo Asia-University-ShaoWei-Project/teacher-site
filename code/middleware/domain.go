@@ -11,17 +11,18 @@ import (
 
 func SetupServiceDomain(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var domain *model.BindDomain
-		if err := c.ShouldBindUri(&domain); err != nil {
+		var bindDomain model.BindDomain
+		if err := c.ShouldBindUri(&bindDomain); err != nil {
 			srv.Error(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if err := srv.IsExistDomain(ctx, domain.Domain); err != nil {
+		err := srv.DomainIsExist(ctx, bindDomain.Domain)
+		if err != nil {
 			srv.Error(err)
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
-		srv.SetDomain(ctx, domain.Domain)
+		srv.SetDomain(ctx, bindDomain.Domain)
 	}
 }

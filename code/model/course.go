@@ -1,13 +1,5 @@
 package model
 
-const LastUpdatedFormat = "2006-01-02T15:04:05.000Z"
-
-type CourseID uint
-
-type BindCourse struct {
-	ID          uint   `uri:"course_id" binding:"required"`
-	LastUpdated string `uri:"last_updated" binding:"required"`
-}
 type Courses struct {
 	AutoModel
 	TeacherID     string          `json:"teacher_id"`
@@ -17,6 +9,10 @@ type Courses struct {
 	Slide         []Slides        `gorm:"foreignKey:CourseID;references:ID" json:"slide"`
 	Homework      []Homeworks     `gorm:"foreignKey:CourseID;references:ID" json:"homework"`
 	LastUpdated   string          `json:"last_updated"`
+}
+type BindCourse struct {
+	ID          uint   `uri:"course_id" binding:"required"`
+	LastUpdated string `uri:"last_updated" binding:"required"`
 }
 type BulletinBoard struct {
 	AutoModel

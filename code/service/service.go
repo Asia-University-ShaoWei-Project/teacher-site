@@ -18,21 +18,23 @@ type Service struct {
 }
 type Servicer interface {
 	GetJWTSecure(ctx context.Context) []byte
-	GetInit(ctx context.Context) (*model.Init, error)
+	GetInit(ctx context.Context, init *model.Init) error
 
-	GetCourse(ctx context.Context, courseBind *model.BindCourse) (model.Courses, error)
+	GetCourse(ctx context.Context, courseBind *model.BindCourse, course *model.Courses) error
 
 	CreateInfo(ctx context.Context, reqInfo *model.BindInfo) error
 	UpdateInfo(ctx context.Context, reqInfo *model.BindInfo) error
 	DeleteInfo(ctx context.Context, reqInfo *model.BindInfo) error
 
 	//? auth
-	LoginAndGetNewToken(ctx context.Context, auth *model.BindAuth) (string, error)
-	Register(ctx context.Context, bindRegister *model.BindRegister) bool
+	Login(ctx context.Context, bindAuth *model.BindAuth) error
+	UpdateJwtToken(ctx context.Context, bindAuth *model.BindAuth) error
+	Register(ctx context.Context, bindRegister *model.BindRegister) error
+
 	// todo
 	// Logout(ctx context.Context) error
-	IsExistDomain(ctx context.Context, domain *string) error
-	SetDomain(ctx context.Context, domain *string)
+	DomainIsExist(ctx context.Context, domain string) error
+	SetDomain(ctx context.Context, domain string)
 	// ? temporary
 	Info(value ...interface{})
 	Error(value ...interface{})
@@ -48,11 +50,11 @@ func NewService(db database.Databaseer, cache cache.Cacheer, logger *log.Logger,
 	}
 	return srv
 }
-func (srv *Service) SetDomain(ctx context.Context, domain *string) {
-	srv.domain = *domain
+func (srv *Service) SetDomain(ctx context.Context, domain string) {
+	srv.domain = domain
 }
-func (srv *Service) IsExistDomain(ctx context.Context, domain *string) error {
-	return srv.db.FindDomain(ctx, domain)
+func (srv *Service) DomainIsExist(ctx context.Context, domain string) error {
+	return srv.db.DomainIsExist(ctx, domain)
 }
 func (srv *Service) Info(value ...interface{}) {
 	srv.log.Info(value...)

@@ -10,17 +10,26 @@ import (
 )
 
 func Login(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
-	var bind *model.BindAuth
+	var bind model.BindAuth
 	return func(c *gin.Context) {
-		if err := c.ShouldBindJSON(&bind); err != nil {
+		var (
+			token string
+			err   error
+		)
+		if err = c.ShouldBindJSON(&bind); err != nil {
 			srv.Error(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		token, err := srv.LoginAndGetNewToken(ctx, bind)
-		if err != nil {
+
+		if err = srv.Login(ctx, &bind); err != nil {
 			srv.Error(err)
 			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if err = srv.UpdateJwtToken(ctx, &bind); err != nil {
+			srv.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 		addBearerHeader(c, token)
@@ -31,19 +40,19 @@ func addBearerHeader(c *gin.Context, token string) {
 	c.Request.Header.Add("Authorization", `Bearer `+token)
 }
 func Register(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
-	var bind *model.BindRegister
+	var bind model.BindRegister
 	return func(c *gin.Context) {
-		if err := c.ShouldBindJSON(bind); err != nil {
+		if err := c.ShouldBindJSON(&bind); err != nil {
 			srv.Error(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if ok := srv.Register(ctx, bind); ok {
-			srv.Error("register fail")
-			c.AbortWithStatus(http.StatusOK)
+		if err := srv.Register(ctx, &bind); err != nil {
+			srv.Error(err)
+			c.AbortWithStatus(http.StatusNotImplemented)
 			return
 		}
-		c.AbortWithStatus(http.StatusNotImplemented)
+		c.AbortWithStatus(http.StatusOK)
 	}
 }
 

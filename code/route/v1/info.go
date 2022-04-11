@@ -9,19 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	infoBind *model.BindInfo
-	err      error
-)
-
 func CreateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var (
+			infoBind model.BindInfo
+			err      error
+		)
 
 		if err = c.ShouldBindJSON(infoBind); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		err = srv.CreateInfo(ctx, infoBind)
+		err = srv.CreateInfo(ctx, &infoBind)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
@@ -31,12 +30,16 @@ func CreateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 }
 func UpdateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err = c.ShouldBindJSON(infoBind); err != nil {
+		var (
+			infoBind model.BindInfo
+			err      error
+		)
+		if err = c.ShouldBindJSON(&infoBind); err != nil {
 			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		err := srv.UpdateInfo(ctx, infoBind)
+		err = srv.UpdateInfo(ctx, &infoBind)
 		if err != nil {
 			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
@@ -48,12 +51,16 @@ func UpdateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 
 func DeleteInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err = c.ShouldBindJSON(infoBind); err != nil {
+		var (
+			infoBind model.BindInfo
+			err      error
+		)
+		if err = c.ShouldBindJSON(&infoBind); err != nil {
 			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if err = srv.DeleteInfo(ctx, infoBind); err != nil {
+		if err = srv.DeleteInfo(ctx, &infoBind); err != nil {
 			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return

@@ -1,7 +1,7 @@
 package model
 
 type BindDomain struct {
-	Domain *string `uri:"domain" binding:"required"`
+	Domain string `uri:"domain" binding:"required"`
 }
 
 type Teachers struct {

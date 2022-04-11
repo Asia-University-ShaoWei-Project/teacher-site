@@ -17,10 +17,9 @@
     />
 
     <!-- Js -->
-    <script
-      type="text/javascript"
-      src="./static/js/jquery/jquery-3.6.0.min.js"
-    ></script>
+    <script type="text/javascript" src="./static/js/jquery/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="./static/js/axios.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
     <!-- Google font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -180,6 +179,10 @@
       </content>
 
       <script>
+        // todo: use axios instead of ajax
+        // https://github.com/axios/axios
+        // const axios = require('axios').default;
+
         const option_box_elem = document.getElementById("option-box");
         const teacher_domain = "/teacher_name";
         const api_url = "http://localhost/v1" + teacher_domain;

@@ -26,7 +26,7 @@ type Cacheer interface {
 	SetInit(ctx context.Context, domain string, value string) error
 	SetCourseContent(ctx context.Context, domain string, courseID uint, value *model.Courses) error
 	SetCourseLastUpdated(ctx context.Context, domain string, courseID uint, updatedTime int64) error
-	SetTokenWithDomain(ctx context.Context, domain, token string) error
+	SetTokenWithDomain(ctx context.Context, token, domain string) error
 }
 
 func NewCache(config *model.CacheConfig) Cacheer {
@@ -88,7 +88,7 @@ func (c *Cache) SetCourseLastUpdated(ctx context.Context, domain string, courseI
 	return c.txHashSet(ctx, k, fCourseLastUpdated, updatedTime)
 }
 
-func (c *Cache) SetTokenWithDomain(ctx context.Context, domain, token string) error {
+func (c *Cache) SetTokenWithDomain(ctx context.Context, token, domain string) error {
 	return c.txHashSet(ctx, kTeacherToken, token, domain)
 }
 

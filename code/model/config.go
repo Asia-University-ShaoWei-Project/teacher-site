@@ -13,7 +13,7 @@ type CacheConfig struct {
 }
 
 // todo: use os.Getenv()
-func NewTMPServiceConfig() *ServiceConfig {
+func NewMockServiceConfig() *ServiceConfig {
 	return &ServiceConfig{
 		JWTSecure:       []byte(`secure`),
 		SaltSize:        16,
@@ -21,7 +21,7 @@ func NewTMPServiceConfig() *ServiceConfig {
 		HashCost:        10,
 	}
 }
-func NewTMPCacheConfig() *CacheConfig {
+func NewMockCacheConfig() *CacheConfig {
 	return &CacheConfig{
 		MaxReTry: 2,
 	}

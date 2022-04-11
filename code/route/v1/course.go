@@ -26,14 +26,16 @@ func DeleteCourse(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 }
 func GetCourse(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var courseBind *model.BindCourse
-		if err := c.ShouldBindUri(courseBind); err != nil {
+		var (
+			bindCourse model.BindCourse
+			course     model.Courses
+		)
+		if err := c.ShouldBindUri(&bindCourse); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		course, err := srv.GetCourse(ctx, courseBind)
+		err := srv.GetCourse(ctx, &bindCourse, &course)
 		if err != nil {
-			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}

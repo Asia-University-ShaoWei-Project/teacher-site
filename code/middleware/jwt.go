@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,15 +12,15 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+var errInvalidBearerToken = errors.New("invalid bearer token")
+
 func VerifyJWT(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		bearerToken := c.GetHeader("Authorization")
-		field := strings.Split(bearerToken, " ")
-		if len(field) != 2 {
+		bearerToken, err := getBearerToken(ctx, c)
+		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		bearerToken = field[1]
 		token, err := jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -27,7 +28,6 @@ func VerifyJWT(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 			return srv.GetJWTSecure, nil
 		})
 		if err != nil {
-			srv.Error(err)
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -40,4 +40,12 @@ func VerifyJWT(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 		}
 		c.AbortWithStatus(http.StatusUnauthorized)
 	}
+}
+func getBearerToken(ctx context.Context, c *gin.Context) (string, error) {
+	auth := c.GetHeader("Authorization")
+	field := strings.Split(auth, " ")
+	if len(field) != 2 {
+		return "", errInvalidBearerToken
+	}
+	return field[1], nil
 }

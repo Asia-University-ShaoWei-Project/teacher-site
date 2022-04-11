@@ -9,39 +9,36 @@ import (
 
 type NeedUpdate bool
 
-func (srv *Service) GetCourse(ctx context.Context, courseBind *model.BindCourse) (model.Courses, error) {
-	var course *model.Courses
-	needUpdate := srv.courseNeedUpdate(ctx, courseBind)
-	if needUpdate {
+func (srv *Service) GetCourse(ctx context.Context, courseBind *model.BindCourse, course *model.Courses) error {
+	if needUpdate := srv.courseNeedUpdate(ctx, courseBind); needUpdate {
 		data, err := srv.cache.GetCourseContent(ctx, srv.domain, courseBind.ID)
-		if err != nil {
-			srv.log.Error(err)
-			course := srv.db.GetCourseWithContent(ctx, course.ID)
-			err = srv.cache.SetCourseContent(ctx, srv.domain, course.ID, course)
-			if err != nil {
-				srv.log.Error(err)
-				return model.Courses{}, err
+		if err == nil {
+			if err = json.Unmarshal([]byte(data), &course); err != nil {
+				return err
+			} else {
+				return nil
 			}
-			updatedTime := time.Now().Unix()
-			err = srv.cache.SetCourseLastUpdated(ctx, srv.domain, course.ID, updatedTime)
-			if err != nil {
-				srv.log.Error(err)
-				return model.Courses{}, err
-			}
-			return model.Courses{}, err
 		}
-		err = json.Unmarshal([]byte(data), course)
+		_course, err := srv.db.GetCourseWithContent(ctx, course.ID)
+		*course = _course
 		if err != nil {
-			return model.Courses{}, err
+			return err
+		}
+		if err = srv.cache.SetCourseContent(ctx, srv.domain, course.ID, course); err != nil {
+			return err
+		}
+		updatedTime := time.Now().Unix()
+		if err = srv.cache.SetCourseLastUpdated(ctx, srv.domain, course.ID, updatedTime); err != nil {
+			return err
 		}
 	}
-	return *course, nil
+	return nil
 }
 
 func (srv *Service) courseNeedUpdate(ctx context.Context, courseBind *model.BindCourse) NeedUpdate {
 	lastUpdated, err := srv.cache.GetCourseLastUpdated(ctx, srv.domain, courseBind.ID)
 	if err != nil {
-		srv.log.Error(err)
+		// todo error handle
 		return false
 	}
 	if courseBind.LastUpdated == lastUpdated {

@@ -19,16 +19,21 @@ type DB struct {
 type Databaseer interface {
 	Create(ctx context.Context, value interface{}) error
 	Migrate(ctx context.Context, dst ...interface{}) error
-	FindDomain(ctx context.Context, domain *string) error
 	// VerifyAuthAndGetTeacher(auth *model.BindAuth) (*model.Teachers, error)
 	CreateInformation(ctx context.Context, obj *model.Informations) error
 	CreateUser(ctx context.Context, obj *model.Auths) error
+
 	GetAuth(ctx context.Context, auth *model.Auths) error
-	GetInit(ctx context.Context, domain string) (*model.Init, error)
-	GetCourseWithContent(ctx context.Context, id uint) *model.Courses
+	GetInit(ctx context.Context, init *model.Init, domain string) error
+	GetCourseWithContent(ctx context.Context, id uint) (model.Courses, error)
+
 	UpdateInformation(ctx context.Context, info *model.Informations) error
 	UpdateUserToken(ctx context.Context, auth *model.Auths, token string) error
+
 	DeleteInformation(ctx context.Context, id uint) error
+
+	DomainIsExist(ctx context.Context, domain string) error
+	UserIsExist(ctx context.Context, userID string) error
 }
 
 func NewSqlite(path string, logger *log.Logger) Databaseer {

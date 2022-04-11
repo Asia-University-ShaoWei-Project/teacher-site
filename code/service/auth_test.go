@@ -1,6 +1,7 @@
 package service
 
 import (
+	"teacher-site/mock"
 	"teacher-site/model"
 	"testing"
 
@@ -8,10 +9,17 @@ import (
 	"gorm.io/gorm"
 )
 
-const password = "password"
+var mockUser = &model.BindRegister{
+	UserID:       mock.UserID,
+	UserPassword: mock.UserPassword,
+	Domain:       mock.Domain,
+	Email:        mock.Email,
+	NameZH:       mock.UserName,
+}
 
 func TestLogin(t *testing.T) {
 	var auth *model.BindAuth
+
 	tC := []struct {
 		desc         string
 		userID       string
@@ -20,21 +28,21 @@ func TestLogin(t *testing.T) {
 	}{
 		{
 			desc:         "Real user",
-			userID:       "teacher_id",
-			userPassword: password,
+			userID:       mock.UserID,
+			userPassword: mock.UserPassword,
 			result:       nil,
 		},
 		{
 			desc:         "Not found the account",
-			userID:       "unknown_id",
-			userPassword: password,
+			userID:       mock.Unknown,
+			userPassword: mock.UserPassword,
 			result:       gorm.ErrRecordNotFound,
 		},
 		{
 			desc:         "Fail password",
-			userID:       "teacher_id",
-			userPassword: password + "additional",
-			result:       errAuthNotMatch,
+			userID:       mock.UserID,
+			userPassword: mock.Unknown,
+			result:       nil,
 		},
 	}
 	for _, v := range tC {
@@ -43,32 +51,50 @@ func TestLogin(t *testing.T) {
 				UserID:       v.userID,
 				UserPassword: v.userPassword,
 			}
-			_, err := srv.LoginAndGetNewToken(ctx, auth)
+			err := srv.Login(ctx, auth)
 			assert.Equal(t, v.result, err)
+
 		})
 	}
 }
 
-func TestRegister(t *testing.T) {
+func TestUpdateJwtToken(t *testing.T) {
 	tC := struct {
+		userID string
+		result error
+	}{
+		userID: mockUser.UserID,
+		result: nil,
+	}
+
+	bindAuth := &model.BindAuth{
+		UserID: tC.userID,
+	}
+	err := srv.UpdateJwtToken(ctx, bindAuth)
+	assert.Equal(t, tC.result, err)
+}
+func TestRegister(t *testing.T) {
+	tC := []struct {
 		desc   string
 		data   *model.BindRegister
 		result bool
 	}{
-		desc: "e",
-		data: &model.BindRegister{
-			UserID:       "user-4",
-			UserPassword: "password",
-			Domain:       "teacher-domain",
-			Email:        "xx@gmail.com",
-			NameZH:       "My-name",
+		{
+			desc:   "First user",
+			data:   mockUser,
+			result: true,
 		},
-		result: true,
+		{
+			desc:   "Repeat id or email",
+			data:   mockUser,
+			result: false,
+		},
 	}
-	t.Run(tC.desc, func(t *testing.T) {
-		ok := srv.Register(ctx, tC.data)
-		if ok != tC.result {
-			t.Fatal("fail to register")
-		}
-	})
+	for _, v := range tC {
+		t.Run(v.desc, func(t *testing.T) {
+			ok := srv.Register(ctx, v.data)
+			assert.Equal(t, v.result, ok, "fail to register")
+		})
+	}
+
 }

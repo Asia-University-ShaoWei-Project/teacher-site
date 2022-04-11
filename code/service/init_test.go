@@ -1,29 +1,37 @@
 package service
 
 import (
+	"teacher-site/mock"
+	"teacher-site/model"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetInit(t *testing.T) {
-	testCases := []struct {
+	tC := []struct {
 		desc   string
 		domain string
+		result error
 	}{
 		{
-			desc:   `Use "teacher-1" domain to get option`,
-			domain: "teacher_domain",
+			desc:   `Real domain`,
+			domain: mock.Domain,
+			result: nil,
 		},
 		{
-			desc:   `Use "unknown" domain to get option`,
-			domain: "unknown",
+			desc:   `Unknown domain`,
+			domain: mock.Unknown,
+			// todo
+			result: nil,
 		},
 	}
-	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			srv.SetDomain(ctx, &tC.domain)
+	for _, v := range tC {
+		t.Run(v.desc, func(t *testing.T) {
+			srv.SetDomain(ctx, v.domain)
 			//TODO: When deleted key in redis, can you get data from db?
-			init, _ := srv.GetInit(ctx)
-			srv.Info(init)
+			err := srv.GetInit(ctx, &model.Init{})
+			assert.Equal(t, v.result, err, err)
 		})
 	}
 }
