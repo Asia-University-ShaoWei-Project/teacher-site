@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"teacher-site/model"
 	"teacher-site/service"
 
@@ -15,7 +16,6 @@ func CreateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 			infoBind model.BindInfo
 			err      error
 		)
-
 		if err = c.ShouldBindJSON(infoBind); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
@@ -31,17 +31,23 @@ func CreateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 func UpdateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var (
-			infoBind model.BindInfo
-			err      error
+			bind model.BindInfo
+			err  error
 		)
-		if err = c.ShouldBindJSON(&infoBind); err != nil {
-			srv.Info(err)
+		if err = c.ShouldBindJSON(&bind); err != nil {
+			srv.Error(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		err = srv.UpdateInfo(ctx, &infoBind)
+		bind.ID, err = CovertID(c.Param("id"))
 		if err != nil {
-			srv.Info(err)
+			srv.Error(err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		err = srv.UpdateInfo(ctx, &bind)
+		if err != nil {
+			srv.Error(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
@@ -52,19 +58,25 @@ func UpdateInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 func DeleteInfo(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var (
-			infoBind model.BindInfo
-			err      error
+			bind model.BindInfo
+			err  error
 		)
-		if err = c.ShouldBindJSON(&infoBind); err != nil {
-			srv.Info(err)
+		id, err := CovertID(c.Param("id"))
+		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if err = srv.DeleteInfo(ctx, &infoBind); err != nil {
+		bind = model.BindInfo{ID: id}
+		if err = srv.DeleteInfo(ctx, &bind); err != nil {
 			srv.Info(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 		c.Status(http.StatusNoContent)
 	}
+}
+
+func CovertID(id string) (uint, error) {
+	_id, err := strconv.ParseUint(id, 10, 32)
+	return uint(_id), err
 }

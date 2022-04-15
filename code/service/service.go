@@ -17,7 +17,7 @@ type Service struct {
 	conf   *model.ServiceConfig
 }
 type Servicer interface {
-	GetJWTSecure(ctx context.Context) []byte
+	GetJwtSecure(ctx context.Context) []byte
 	GetInit(ctx context.Context, init *model.Init) error
 
 	GetCourse(ctx context.Context, courseBind *model.BindCourse, course *model.Courses) error
@@ -28,7 +28,8 @@ type Servicer interface {
 
 	//? auth
 	Login(ctx context.Context, bindAuth *model.BindAuth) error
-	UpdateJwtToken(ctx context.Context, bindAuth *model.BindAuth) error
+	NewJwtToken(ctx context.Context, bindAuth *model.BindAuth) (string, error)
+	UpdateJwtToken(ctx context.Context, token string, bindAuth *model.BindAuth) error
 	Register(ctx context.Context, bindRegister *model.BindRegister) error
 
 	// todo

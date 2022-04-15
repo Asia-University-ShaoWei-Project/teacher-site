@@ -13,7 +13,7 @@ func NewLogrus(ctx context.Context) *log.Logger {
 	logger.SetOutput(os.Stdout)
 	// logger.SetLevel(log.WarnLevel)
 	logger.SetFormatter(&log.TextFormatter{
-		FullTimestamp: false,
+		// FullTimestamp: false,
 		DisableColors: false,
 	})
 

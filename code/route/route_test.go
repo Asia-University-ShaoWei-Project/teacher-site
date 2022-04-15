@@ -10,6 +10,7 @@ import (
 	"teacher-site/cache"
 	"teacher-site/database"
 	"teacher-site/logsrv"
+	"teacher-site/mock"
 	"teacher-site/model"
 	"teacher-site/service"
 	"testing"
@@ -21,20 +22,16 @@ import (
 const (
 	methodGet  = "GET"
 	methodPOST = "POST"
-	apiVersion = "v1"
-	domain     = "teacher_domain"
-	password   = "password"
 )
 
 var (
-	apiURL    = fmt.Sprintf("/api/%s/%s", apiVersion, domain)
-	logger    = logsrv.NewLogrus(ctx)
-	db        = database.NewSqlite("../database", logger)
 	cacheConf = model.NewMockCacheConfig()
-	c         = cache.NewCache(cacheConf)
+	_cache    = cache.NewCache(cacheConf)
+	db        = database.NewSqlite("../database", logger)
+	logger    = logsrv.NewLogrus(ctx)
 	ctx       = context.Background()
 	conf      = model.NewMockServiceConfig()
-	srv       = service.NewService(db, c, logger, conf)
+	srv       = service.NewService(db, _cache, logger, conf)
 	r         = gin.Default()
 )
 
@@ -51,13 +48,14 @@ var (
 func TestInit(t *testing.T) {
 	SetupRoute(ctx, r, srv)
 	w := httptest.NewRecorder()
-	url = apiURL + "/init"
+	url = mock.ApiURL + "/init"
 	req, _ := http.NewRequest(methodGet, url, nil)
 	r.ServeHTTP(w, req)
 	defer w.Result().Body.Close()
 	body, err = ioutil.ReadAll(w.Body)
 	fmt.Println(string(body))
 }
+
 func TestUpdateInfo(t *testing.T) {
 	SetupRoute(ctx, r, srv)
 	// path := "/edit/info"
@@ -116,14 +114,14 @@ func TestLogin(t *testing.T) {
 		{
 			desc:         "Empty fields",
 			userID:       "",
-			userPassword: password,
+			userPassword: mock.UserPassword,
 			result:       http.StatusBadRequest,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			reqData = fmt.Sprintf(reqDataformat, tC.userID, tC.userPassword)
-			url = apiURL + `/auth/login`
+			url = mock.ApiURL + `/auth/login`
 
 			req, err = http.NewRequest(methodPOST, url, strings.NewReader(reqData))
 			if err != nil {

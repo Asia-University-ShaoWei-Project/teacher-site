@@ -3,30 +3,34 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"teacher-site/model"
-
-	"github.com/go-redis/redis"
 )
 
 func (srv *Service) GetInit(ctx context.Context, init *model.Init) error {
-	var err error
-
+	// get from cache
 	data, err := srv.cache.GetInit(ctx, srv.domain)
-	if errors.Is(err, redis.Nil) {
+	if err == nil {
+		if err = json.Unmarshal([]byte(data), &init); err == nil {
+			// todo: handle error
+			return nil
+		}
+	}
+	// get from database
+	if err != nil {
+		// todo: error handle
 		if err = srv.db.GetInit(ctx, init, srv.domain); err != nil {
+			// todo: error handle
 			return err
 		}
 		b, err := json.Marshal(init)
 		if err != nil {
+			// todo: error handle
 			return err
 		}
 		if err = srv.cache.SetInit(ctx, srv.domain, string(b)); err != nil {
-			return err
+			// todo: error handle(e.g. connection refused)
+			srv.Error(err)
 		}
-	}
-	if err = json.Unmarshal([]byte(data), &init); err != nil {
-		return err
 	}
 	return nil
 }

@@ -22,9 +22,8 @@ type Cacheer interface {
 	GetInit(ctx context.Context, domain string) (string, error)
 	GetCourseContent(ctx context.Context, domain string, courseID uint) (string, error)
 	GetCourseLastUpdated(ctx context.Context, domain string, courseID uint) (string, error)
-
 	SetInit(ctx context.Context, domain string, value string) error
-	SetCourseContent(ctx context.Context, domain string, courseID uint, value *model.Courses) error
+	SetCourseContent(ctx context.Context, domain string, course *model.Courses) error
 	SetCourseLastUpdated(ctx context.Context, domain string, courseID uint, updatedTime int64) error
 	SetTokenWithDomain(ctx context.Context, token, domain string) error
 }
@@ -71,10 +70,10 @@ func (c *Cache) GetCourseContent(ctx context.Context, domain string, courseID ui
 
 	return c.db.HGet(k, fCourseContent).Result()
 }
-func (c *Cache) SetCourseContent(ctx context.Context, domain string, courseID uint, value *model.Courses) error {
-	k := bindKey(kCourse, domain, courseID)
+func (c *Cache) SetCourseContent(ctx context.Context, domain string, course *model.Courses) error {
+	k := bindKey(kCourse, domain, course.ID)
 
-	return c.txHashSet(ctx, k, fCourseContent, value)
+	return c.txHashSet(ctx, k, fCourseContent, course)
 }
 
 func (c *Cache) GetCourseLastUpdated(ctx context.Context, domain string, courseID uint) (string, error) {

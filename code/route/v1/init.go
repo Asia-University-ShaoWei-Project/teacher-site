@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"net/http"
+	mw "teacher-site/middleware"
 	"teacher-site/model"
 	"teacher-site/service"
 
@@ -18,6 +19,7 @@ func GetInit(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"data": init})
+		auth := mw.IsTeacher(ctx, c, srv)
+		c.JSON(http.StatusOK, gin.H{"auth": auth, "data": init})
 	}
 }

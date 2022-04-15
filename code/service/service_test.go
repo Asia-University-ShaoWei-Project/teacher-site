@@ -5,6 +5,7 @@ import (
 	"teacher-site/cache"
 	"teacher-site/database"
 	"teacher-site/logsrv"
+	"teacher-site/mock"
 	"teacher-site/model"
 )
 
@@ -15,5 +16,11 @@ var (
 	logger    = logsrv.NewLogrus(ctx)
 	db        = database.NewSqlite("../database", logger)
 	conf      = model.NewMockServiceConfig()
-	srv       = NewService(db, c, logger, conf)
+	srv       = Service{
+		domain: mock.Domain,
+		db:     db,
+		cache:  c,
+		log:    logger,
+		conf:   conf,
+	}
 )

@@ -27,11 +27,18 @@ func Login(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if err = srv.UpdateJwtToken(ctx, &bind); err != nil {
+		token, err = srv.NewJwtToken(ctx, &bind)
+		if err != nil {
 			srv.Error(err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
+		if err = srv.UpdateJwtToken(ctx, token, &bind); err != nil {
+			srv.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
 		addBearerHeader(c, token)
 		c.Status(http.StatusOK)
 	}

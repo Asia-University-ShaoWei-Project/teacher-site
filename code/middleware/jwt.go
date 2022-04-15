@@ -14,36 +14,59 @@ import (
 
 var errInvalidBearerToken = errors.New("invalid bearer token")
 
-func VerifyJWT(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		bearerToken, err := getBearerToken(ctx, c)
-		if err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		token, err := jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-			}
-			return srv.GetJWTSecure, nil
-		})
-		if err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
+func IsTeacher(ctx context.Context, c *gin.Context, srv service.Servicer) bool {
+	authHeader := getAuthorization(ctx, c)
+	srv.Info("my auth:", authHeader)
+	if err := verifyJwtValid(ctx, srv, authHeader); err != nil {
+		srv.Info("my not a teacher")
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			// expire example: https://github.com/golang-jwt/jwt/blob/main/map_claims_test.go
-			// todo: expire handle! claims["exp"]
-			fmt.Println(claims["expire"])
-			return
+		return false
+	}
+	srv.Info("my are a teacher")
+
+	return true
+}
+
+func VerifyAuth(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := getAuthorization(ctx, c)
+		if err := verifyJwtValid(ctx, srv, authHeader); err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
 		}
-		c.AbortWithStatus(http.StatusUnauthorized)
 	}
 }
-func getBearerToken(ctx context.Context, c *gin.Context) (string, error) {
-	auth := c.GetHeader("Authorization")
-	field := strings.Split(auth, " ")
+
+func verifyJwtValid(ctx context.Context, srv service.Servicer, authHeader string) error {
+
+	jwtSecure := srv.GetJwtSecure(ctx)
+	bearerToken, err := getBearerToken(ctx, authHeader)
+	if err != nil {
+		return err
+	}
+	token, err := jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return jwtSecure, nil
+	})
+	if err != nil {
+		return err
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		// expire example: https://github.com/golang-jwt/jwt/blob/main/map_claims_test.go
+		// todo: expire handle! claims["exp"]
+		fmt.Println(claims["exp"])
+		return nil
+	}
+	return jwt.ErrInvalidKey
+}
+
+func getAuthorization(ctx context.Context, c *gin.Context) string {
+	return c.GetHeader("Authorization")
+}
+
+func getBearerToken(ctx context.Context, authHeader string) (string, error) {
+	field := strings.Split(authHeader, " ")
 	if len(field) != 2 {
 		return "", errInvalidBearerToken
 	}

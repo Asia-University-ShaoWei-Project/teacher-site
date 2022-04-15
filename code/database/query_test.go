@@ -17,12 +17,11 @@ func TestGetCourseWithContent(t *testing.T) {
 		courseID: 1,
 		result:   nil,
 	}
-	_, err := db.GetCourseWithContent(ctx, tC.courseID)
+	_, err := db.GetCourseContent(ctx, tC.courseID)
 	assert.Equal(t, tC.result, err)
 }
 
 func TestGetInit(t *testing.T) {
-	init := &model.Init{}
 	tC := struct {
 		domain string
 		result error
@@ -30,7 +29,9 @@ func TestGetInit(t *testing.T) {
 		domain: mock.Domain,
 		result: nil,
 	}
-	err := db.GetInit(ctx, init, tC.domain)
+
+	init := model.Init{}
+	err := db.GetInit(ctx, &init, tC.domain)
 	assert.Equal(t, tC.result, err)
 }
 

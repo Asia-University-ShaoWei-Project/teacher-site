@@ -7,7 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func (db *DB) GetCourseWithContent(ctx context.Context, courseID uint) (model.Courses, error) {
+func (db *DB) GetCourseLastUpdated(ctx context.Context, courseID uint) (string, error) {
+	var course model.Courses
+	result := db.orm.Where("id=?", courseID).Find(&course)
+	err := checkErrAndRecord(result)
+	return course.LastUpdated, err
+}
+func (db *DB) GetCourseContent(ctx context.Context, courseID uint) (model.Courses, error) {
 	var course model.Courses
 	if err := db.orm.Where("id=?", courseID).Find(&course).Error; err != nil {
 		return course, err
@@ -51,33 +57,28 @@ func (db *DB) GetInit(ctx context.Context, init *model.Init, domain string) erro
 
 func (db *DB) GetAuth(ctx context.Context, auth *model.Auths) error {
 	result := db.orm.Where("user_id=?", auth.UserID).Find(auth)
-	if result.Error != nil {
-		return result.Error
-	}
-	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
+	err := checkErrAndRecord(result)
+	return err
 }
-
+func (db *DB) GetAuthToken(ctx context.Context, auth *model.Auths) (string, error) {
+	result := db.orm.Where("user_id=?", auth.UserID).Find(auth)
+	err := checkErrAndRecord(result)
+	return auth.Token, err
+}
 func (db *DB) DomainIsExist(ctx context.Context, domain string) error {
 	result := db.orm.Where("domain=?", domain).Find(&model.Teachers{})
-	if result.Error != nil {
-		return result.Error
-	}
-	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+	err := checkErrAndRecord(result)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 func (db *DB) UserIsExist(ctx context.Context, userID string) error {
 
 	result := db.orm.Where("user_id=?", userID).Find(&model.Auths{})
-	if result.Error != nil {
-		return result.Error
-	}
-	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+	err := checkErrAndRecord(result)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -93,4 +94,13 @@ func (db *DB) VerifyAuthAndGetTeacher(ctx context.Context, auth *model.BindAuth)
 	var teacher *model.Teachers
 	err := db.orm.Where(auth).Association("Teacher").Find(teacher)
 	return teacher, err
+}
+func checkErrAndRecord(result *gorm.DB) error {
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }

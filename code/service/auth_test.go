@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"teacher-site/mock"
 	"teacher-site/model"
 	"testing"
@@ -8,14 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
-
-var mockUser = &model.BindRegister{
-	UserID:       mock.UserID,
-	UserPassword: mock.UserPassword,
-	Domain:       mock.Domain,
-	Email:        mock.Email,
-	NameZH:       mock.UserName,
-}
 
 func TestLogin(t *testing.T) {
 	var auth *model.BindAuth
@@ -57,44 +50,79 @@ func TestLogin(t *testing.T) {
 		})
 	}
 }
+func TestNewJwtToken(t *testing.T) {
+	tC := struct {
+		userID string
+		result error
+	}{
+		userID: mock.UserID,
+		result: nil,
+	}
+	bindAuth := &model.BindAuth{
+		UserID: tC.userID,
+	}
+	token, err := srv.NewJwtToken(ctx, bindAuth)
+	assert.Equal(t, tC.result, err)
+	fmt.Println(token)
 
+}
 func TestUpdateJwtToken(t *testing.T) {
 	tC := struct {
 		userID string
 		result error
 	}{
-		userID: mockUser.UserID,
+		userID: mock.UserID,
 		result: nil,
 	}
 
 	bindAuth := &model.BindAuth{
 		UserID: tC.userID,
 	}
-	err := srv.UpdateJwtToken(ctx, bindAuth)
+	token, err := srv.NewJwtToken(ctx, bindAuth)
+	assert.NotNil(t, err, err)
+	err = srv.UpdateJwtToken(ctx, token, bindAuth)
+	// err = srv.
 	assert.Equal(t, tC.result, err)
 }
+
+// done 04/13
 func TestRegister(t *testing.T) {
+	mockBasicData := &model.BindRegister{
+		UserPassword: mock.UserPassword,
+		NameZH:       mock.UserName,
+	}
+
 	tC := []struct {
 		desc   string
-		data   *model.BindRegister
-		result bool
+		userID string
+		domain string
+		result error
 	}{
 		{
-			desc:   "First user",
-			data:   mockUser,
-			result: true,
+			desc:   "User is existed",
+			userID: mock.UserID,
+			domain: mock.Unknown,
+			result: errIsExisted,
 		},
 		{
-			desc:   "Repeat id or email",
-			data:   mockUser,
-			result: false,
+			desc:   "Domain is existed",
+			userID: mock.Unknown,
+			domain: mock.Domain,
+			result: errIsExisted,
+		},
+		{
+			desc:   "Success register",
+			userID: mock.Unknown,
+			domain: mock.Unknown,
+			result: nil,
 		},
 	}
 	for _, v := range tC {
 		t.Run(v.desc, func(t *testing.T) {
-			ok := srv.Register(ctx, v.data)
-			assert.Equal(t, v.result, ok, "fail to register")
+			mockBasicData.UserID = v.userID
+			mockBasicData.Domain = v.domain
+			err := srv.Register(ctx, mockBasicData)
+			assert.Equal(t, v.result, err, err)
 		})
 	}
-
 }
