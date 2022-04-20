@@ -1,6 +1,6 @@
 module teacher-site
 
-// +heroku goVersion go1.18.1
+// +heroku goVersion go1.17
 go 1.17
 
 require (

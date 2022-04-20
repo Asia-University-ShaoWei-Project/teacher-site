@@ -32,17 +32,20 @@ var options = [];
 //     this.fieldsTitle = fieldsTitle;
 //   }
 // }
-var bfieldsTitle = ["Date", "Information"];
-var sfieldsTitle = ["Chapter", "Type", "Title"];
-var hfieldsTitle = ["#", "Type", "Title"];
+var tableFieldTitle = {
+  bulletin: ["Date", "Information"],
+  slide: ["Chapter", "Type", "Title"],
+  homework: ["#", "Type", "Title"],
+};
 
 function init() {
   console.log("init");
 
   let info_get_url = `/info/bulletin`;
+  let course_get_url = `/course`;
 
   getInfoApi(info_get_url);
-  // getCourseApi(api.getResourceUrl());
+  getCourseApi(course_get_url);
 
   // getInitApiAndCreateView(api.getResourceUrl(INIT));
 }
@@ -65,7 +68,6 @@ function getInfoApi(url) {
       // todo: create option for information button
       // todo: show the information view
       let infoItem = newItem(null, {
-        id: "0",
         name_zh: "公布欄",
         name_us: "Information",
       });
@@ -84,21 +86,51 @@ function getInfoApi(url) {
     });
 }
 // todo
-// function getCourseApi(url) {
-//   // [ bulletins<list>(id, date, content), id(info), last_modified(info) ]
-//   console.log("getCourseApi");
-//   axios
-//     .get(url)
-//     .then((res) => {
-//       console.log("getCourseApi api success");
-//       console.log(res.data);
-//       // isTeacher(res.data.auth);
-//       create_init_view(res.data.data);
-//     })
-//     .catch((err) => {
-//       console.error("getInitApiAndCreateView:", err);
-//     });
-// }
+function getCourseApi(url) {
+  // [ bulletins<list>(id, date, content), id(info), last_modified(info) ]
+  console.log("getCourseApi");
+  axios
+    .get(url)
+    .then((res) => {
+      console.log("getCourseApi api success");
+      console.log(res.data);
+      let data = res.data.data;
+      // isTeacher(res.data.auth);
+      //* Course(#The b, s and h is undefined)
+      for (let i = 0; i < data.courses.length; i++) {
+        let item = newItem(api.getResourceUrl(COURSE), data.courses[i]);
+        items.push();
+        // items.push(createOptionButton(COURSE, optionSwitchIndex, data.courses[i]));
+        // lastUpdatedOfCourse.push(ZERO_TIME);
+        // optionSwitchIndex += 1;
+      }
+      showOptionButtons();
+    })
+    .catch((err) => {
+      console.error("getInitApiAndCreateView:", err);
+    });
+}
+function create_init_view(data) {
+  console.log("create_init_view");
+  //* Information()
+  let bulletin = newBulletin(data.information);
+  items.push(
+    newItem(
+      api.getResourceUrl(INFO),
+      data.information,
+      bulletin,
+      null,
+      null,
+      data.info_last_updated
+    )
+  );
+  // todo: create button
+  // contents.push(create_information_content(data.information));
+  // lastUpdatedOfCourse.push(ZERO_TIME);
+  // optionSwitchIndex += 1;
+
+  showContent(items[0].getContent(true));
+}
 // todo:delete
 // function getInitApiAndCreateView(url) {
 //   axios
@@ -147,9 +179,8 @@ function newItem(apiUrl, data, bulletin, slide, hw, lastUpdated) {
 }
 
 function newBulletin(data) {
-  // todo: change bfieldsTitle
   let title = "Bulletin Board";
-  let bulletinBoard = new Table(title, bfieldsTitle);
+  let bulletinBoard = new Table(title, tableFieldTitle.bulletin);
   let rows = [];
   for (let i = 0; i < data.length; i++) {
     rows.push(new BulletinBoardRow(data[i].id, data[i].date, data[i].content));
@@ -157,35 +188,18 @@ function newBulletin(data) {
   bulletinBoard.setRows(rows);
   return bulletinBoard;
 }
-
-function create_init_view(data) {
-  console.log("create_init_view");
-  //* Information()
-  let bulletin = newBulletin(data.information);
-  items.push(
-    newItem(
-      api.getResourceUrl(INFO),
-      data.information,
-      bulletin,
-      null,
-      null,
-      data.info_last_updated
-    )
-  );
-  // todo: create button
-  // contents.push(create_information_content(data.information));
-  // lastUpdatedOfCourse.push(ZERO_TIME);
-  // optionSwitchIndex += 1;
-  //* Course(#The b, s and h is undefined)
-  for (let i = 0; i < data.courses.length; i++) {
-    items.push(newItem(api.getResourceUrl(COURSE), data.courses[i]));
-    // items.push(createOptionButton(COURSE, optionSwitchIndex, data.courses[i]));
-    // lastUpdatedOfCourse.push(ZERO_TIME);
-    // optionSwitchIndex += 1;
+// todo
+function newSlide(data) {
+  let title = "Slide";
+  let slide = new Table(title, tableFieldTitle.slide);
+  let rows = [];
+  for (let i = 0; i < data.length; i++) {
+    // rows.push(new BulletinBoardRow(data[i].id, data[i].date, data[i].content));
   }
-  showOptionButtons();
-  showContent(items[0].getContent(true));
+  slide.setRows(rows);
+  return slide;
 }
+
 // *option
 
 function showOptionButtons() {
@@ -207,7 +221,9 @@ function createOptionButton(item) {
 
   return btn;
 }
+
 //* content
+
 function showContent(content) {
   document.getElementById("content-switch").innerHTML = content;
 }
@@ -226,6 +242,8 @@ function createContent(bulletin, slide, homework) {
   }
   return content;
 }
+
+// * create element
 function create_item(table) {
   console.log("create_item");
 
