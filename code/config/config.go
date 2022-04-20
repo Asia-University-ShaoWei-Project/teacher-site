@@ -3,6 +3,19 @@ package config
 import "time"
 
 // todo: use viper
+type Config struct {
+	Server *Server
+	Secure *Secure
+	Jwt    *Jwt
+	Redis  *Redis
+	DB     *DB
+}
+type Server struct {
+	Addr               string
+	StaticRelativePath string
+	StaticRootPath     string
+	TemplatePath       string
+}
 
 type Secure struct {
 	SaltSize int
@@ -20,19 +33,22 @@ type Redis struct {
 }
 type DB struct {
 }
-type Config struct {
-	Secure *Secure
-	Jwt    *Jwt
-	Redis  *Redis
-	DB     *DB
-}
 
 func New() *Config {
 	return &Config{
+		Server: newServer(),
 		Secure: newSecure(),
 		Jwt:    newJwt(),
 		Redis:  newRedis(),
 		DB:     newDB(),
+	}
+}
+func newServer() *Server {
+	return &Server{
+		Addr:               ":80",
+		StaticRelativePath: "/static",
+		StaticRootPath:     "./static",
+		TemplatePath:       "templates/*",
 	}
 }
 func newSecure() *Secure {
@@ -44,7 +60,7 @@ func newSecure() *Secure {
 func newJwt() *Jwt {
 	return &Jwt{
 		Secure:          []byte(`secure`),
-		TokenExpireTime: 1,
+		TokenExpireTime: 2,
 	}
 }
 func newRedis() *Redis {
@@ -55,6 +71,7 @@ func newRedis() *Redis {
 		Database: 0,
 	}
 }
+
 func newDB() *DB {
 	return &DB{}
 }

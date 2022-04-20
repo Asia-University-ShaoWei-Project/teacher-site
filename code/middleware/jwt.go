@@ -26,6 +26,7 @@ func getAuthorization(ctx context.Context, c *gin.Context) string {
 
 func VerifyAuth(ctx context.Context, secure []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		authHeader := getAuthorization(ctx, c)
 		if err := verifyJwtValid(ctx, secure, authHeader); err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)

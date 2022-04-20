@@ -17,11 +17,11 @@ import (
 
 func SetupRoute(ctx context.Context, r *gin.RouterGroup, db *gorm.DB, c *redis.Client, logger *log.Logger, conf *config.Config) {
 
-	teacher := r.Group("/:teacher_domain", mw.CheckTeacherDomain())
+	teacher := r.Group("/v1/:teacher_domain", mw.CheckTeacherDomain())
 	rInfo := teacher.Group("/info")
 	repoDbInfo := inforepo.NewInfoRepository(db, conf.DB)
 	repoCacheInfo := inforepo.NewCacheRepository(c, conf.Redis)
 	infoUsecase := infousecase.NewInfoUsecase(repoDbInfo, repoCacheInfo, logger)
-	infodelivery.NewInfoHandler(ctx, rInfo, infoUsecase, conf.Jwt)
+	infodelivery.NewInfoHandler(ctx, rInfo, infoUsecase, conf)
 	// rCourse := teacher.Group("/course")
 }

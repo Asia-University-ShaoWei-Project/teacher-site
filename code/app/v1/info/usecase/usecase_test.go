@@ -4,7 +4,7 @@ import (
 	"context"
 	"teacher-site/domain"
 	"teacher-site/mock"
-	mockRepo "teacher-site/mock/repository"
+	mockRepo "teacher-site/mock/info/repository"
 	"teacher-site/pkg/log"
 	"testing"
 

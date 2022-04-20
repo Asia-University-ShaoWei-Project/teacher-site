@@ -3,10 +3,9 @@ package mock
 import "fmt"
 
 const (
-	ApiVersion  = "v1"
-	ApiAuthPath = "/auth/edit"
+	ApiVersion = "v1"
 )
 
 var (
-	ApiURL = fmt.Sprintf("/api/%s/%s", ApiVersion, TeacherDomain)
+	ApiUrl = fmt.Sprintf("/%s/api/%s", TeacherDomain, ApiVersion)
 )

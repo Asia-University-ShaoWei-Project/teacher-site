@@ -10,5 +10,5 @@ type File struct {
 	Url   string `json:"url"`
 }
 type TeacherDomainRequest struct {
-	TeacherDomain string `json:"teacher_domain"  binding:"required"`
+	TeacherDomain string `uri:"teacher_domain"  binding:"required"`
 }

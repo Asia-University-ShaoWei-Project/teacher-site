@@ -14,41 +14,27 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-)
 
-const (
-	_staticRelativePath = "/static"
-	_staticRoot         = "./static"
-	_templatePath       = "templates/*"
-	_dbFilePath         = "./database"
-	_serverPort         = ":80"
+	// heroku
+	_ "github.com/heroku/x/hmetrics/onload"
 )
 
 func main() {
 	ctx := context.Background()
-	// todo: tmp
+	// todo: use os.Getenv() for config
 	conf := config.New()
-	// cacheConf := model.NewMockCacheConfig()
-	// cache := cache.NewCache(cacheConf)
 	redis := database.NewRedis(conf.Redis)
 	logger := _log.NewLogrus(ctx)
-	// db := database.NewSqlite(_dbFilePath, logger)
-	db := database.NewDB(".", conf.DB)
-
-	// conf := model.NewMockServiceConfig()
-	// srv := service.NewService(db, cache, logger, conf)
-	// todo: use os.Getenv()
-
+	// todo: use postgres
+	db := database.NewDB("./pkg/database", conf.DB)
 	r := gin.Default()
 	r.Use(cors.Default())
-	r.Static(_staticRelativePath, _staticRoot)
-	r.LoadHTMLGlob(_templatePath)
-	// route.SetupRoute(ctx, r, srv)
+	r.Static(conf.Server.StaticRelativePath, conf.Server.StaticRootPath)
+	r.LoadHTMLGlob(conf.Server.TemplatePath)
 	app.SetupRoute(ctx, r, db, redis, logger, conf)
-	r.Run(_serverPort)
-	//? graceful shutdown: https://blog.wu-boy.com/2020/02/what-is-graceful-shutdown-in-golang/
+	//? Graceful shutdown: https://blog.wu-boy.com/2020/02/what-is-graceful-shutdown-in-golang/
 	server := &http.Server{
-		Addr:    _serverPort,
+		Addr:    conf.Server.Addr,
 		Handler: r,
 	}
 	go func() {

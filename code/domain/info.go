@@ -29,8 +29,8 @@ type InfoUsecase interface {
 type InfoDbRepository interface {
 	Create(ctx context.Context, req *CreateInfoBulletinRequest) (InfoBulletinBoards, error)
 	GetByTeacherDomain(ctx context.Context, teacherDomain string) (Infos, error)
-	GetBulletinByInfoId(ctx context.Context, id uint) ([]InfoBulletinResponse, error)
-	GetLastModified(ctx context.Context, teacherDomain string) (string, error)
+	GetBulletinsByInfoId(ctx context.Context, id uint) ([]InfoBulletinResponse, error)
+	GetLastModified(ctx context.Context, id uint) (string, error)
 	Update(ctx context.Context, req *UpdateInfoBulletinRequest) (Infos, error)
 	Delete(ctx context.Context, req *DeleteInfoBulletinRequest) (Infos, error)
 }
@@ -43,9 +43,11 @@ type InfoCacheRepository interface {
 
 //* request & response
 
+// todo: binding:"required"
 type CreateInfoBulletinRequest struct {
 	TeacherDomainRequest
-	Content string `json:"content" binding:"required"`
+	InfoID  uint   `uri:"info_id"`
+	Content string `json:"content"`
 }
 type CreateInfoBulletinResponse struct {
 	ID           uint   `json:"id"`
@@ -55,14 +57,17 @@ type CreateInfoBulletinResponse struct {
 
 type GetInfoBulletinRequest struct {
 	TeacherDomainRequest
-	LastModified string `form:"last_modified" binding:"required"`
+	LastModified string `form:"last_modified"`
 }
 type GetInfoBulletinResponse struct {
-	ID           string                 `json:"id"`
+	ID           uint                   `json:"id"`
 	LastModified string                 `json:"last_modified"`
 	Bulletins    []InfoBulletinResponse `json:"bulletins"`
 }
 
+func (i *GetInfoBulletinResponse) SetID(id uint) {
+	i.ID = id
+}
 func (i *GetInfoBulletinResponse) SetLastModified(lastModified string) {
 	i.LastModified = lastModified
 }
@@ -72,15 +77,17 @@ func (i *GetInfoBulletinResponse) SetBulletins(bulletins []InfoBulletinResponse)
 
 type UpdateInfoBulletinRequest struct {
 	TeacherDomainRequest
-	BulletinID uint   `uri:"id" binding:"required, gte=1"`
-	Content    string `json:"content" binding:"required"`
+	InfoID     uint   `uri:"info_id"`
+	BulletinID uint   `uri:"bulletin_id"`
+	Content    string `json:"content"`
 }
 type UpdateInfoBulletinResponse struct {
 	LastModified string `json:"last_modified"`
 }
 type DeleteInfoBulletinRequest struct {
 	TeacherDomainRequest
-	BulletinID uint `uri:"id" binding:"required, gte=1"`
+	InfoID     uint `uri:"info_id" binding:"required"`
+	BulletinID uint `uri:"bulletin_id" binding:"required"`
 }
 type DeleteInfoBulletinResponse struct {
 	LastModified string `json:"last_modified"`
