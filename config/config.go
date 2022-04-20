@@ -1,6 +1,8 @@
 package config
 
-import "time"
+import (
+	"time"
+)
 
 // todo: use viper
 type Config struct {
@@ -45,7 +47,8 @@ func New() *Config {
 }
 func newServer() *Server {
 	return &Server{
-		Addr:               ":80",
+		Addr: ":80",
+		// Addr:               ":" + os.Getenv("PORT"),
 		StaticRelativePath: "/static",
 		StaticRootPath:     "./static",
 		TemplatePath:       "templates/*",

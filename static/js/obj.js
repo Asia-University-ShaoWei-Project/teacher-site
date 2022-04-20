@@ -20,7 +20,7 @@ class Item {
     bulletin,
     slide,
     homework,
-    lastUpdated = "0"
+    lastModified = "0"
   ) {
     this.apiUrl = apiUrl;
     this.id = id;
@@ -29,12 +29,24 @@ class Item {
     this.bulletin = bulletin;
     this.slide = slide;
     this.homework = homework;
-    this.lastUpdated = lastUpdated;
+    this.lastModified = lastModified;
     this.content = "";
   }
   // todo: info or course
   createOptionButton() {
     return;
+  }
+  setID(id) {
+    this.id = id;
+  }
+  setLastModified(lastModified) {
+    this.lastModified = lastModified;
+  }
+  setBulletin(bulletin) {
+    this.bulletin = bulletin;
+  }
+  setContent(content) {
+    this.content = content;
   }
   getContent(rebuild) {
     let _content;
@@ -84,6 +96,29 @@ class Item {
       });
   }
 }
+class Table {
+  constructor(title, fieldsTitle, rows) {
+    this.title = title;
+    this.fieldsTitle = fieldsTitle;
+    this.rows = rows;
+  }
+  getTitle() {
+    this.title;
+  }
+  getFieldsTitle() {
+    return this.fieldsTitle;
+  }
+  getRowsLen() {
+    return this.rows.length;
+  }
+  getRow(index) {
+    return this.rows[index];
+  }
+  setRows(rows) {
+    this.rows = rows;
+  }
+}
+
 class BulletinBoardRow {
   constructor(id, date, info) {
     this.id = id;
@@ -114,27 +149,5 @@ class HomeworkRow {
   }
   getDataList() {
     return ["#" + this.number, this.fileTitle, this.fileType];
-  }
-}
-class Table {
-  constructor(title, fieldsTitle, rows) {
-    this.title = title;
-    this.fieldsTitle = fieldsTitle;
-    this.rows = rows;
-  }
-  getTitle() {
-    this.title;
-  }
-  getFieldsTitle() {
-    return this.fieldsTitle;
-  }
-  getRowsLen() {
-    return this.rows.length;
-  }
-  getRow(index) {
-    return this.rows[index];
-  }
-  setRows(rows) {
-    this.rows = rows;
   }
 }
