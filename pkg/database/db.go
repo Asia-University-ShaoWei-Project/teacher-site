@@ -8,7 +8,8 @@ import (
 )
 
 func NewDB(path string, conf *config.DB) *gorm.DB {
-	file := path + "/" + "sqlite_dev.db"
+	// file := path + "/" + "sqlite_dev.db"
+	file := path + "/" + "sqlite_dev_2.db"
 	db, err := gorm.Open(sqlite.Open(file))
 	if err != nil {
 		panic(err)
