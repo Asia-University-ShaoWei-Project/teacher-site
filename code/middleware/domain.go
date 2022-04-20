@@ -1,28 +1,17 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
-	"teacher-site/model"
-	"teacher-site/service"
+	"teacher-site/domain"
 
 	"github.com/gin-gonic/gin"
 )
 
-func SetupServiceDomain(ctx context.Context, srv service.Servicer) gin.HandlerFunc {
+func CheckTeacherDomain() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var bindDomain model.BindDomain
-		if err := c.ShouldBindUri(&bindDomain); err != nil {
-			srv.Error(err)
+		if err := c.ShouldBindUri(&domain.TeacherDomainRequest{}); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		err := srv.DomainIsExist(ctx, bindDomain.Domain)
-		if err != nil {
-			srv.Error(err)
-			c.AbortWithStatus(http.StatusNotFound)
-			return
-		}
-		srv.SetDomain(ctx, bindDomain.Domain)
 	}
 }

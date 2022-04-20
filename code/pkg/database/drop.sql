@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS auths;
+DROP TABLE IF EXISTS courses;
+DROP TABLE IF EXISTS teachers;
+DROP TABLE IF EXISTS infos;
+DROP TABLE IF EXISTS info_bulletin_boards;
+DROP TABLE IF EXISTS bulletin_boards;
+DROP TABLE IF EXISTS slides;
+DROP TABLE IF EXISTS homeworks;

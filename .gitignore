@@ -6,3 +6,4 @@ migrate_dev_test.go
 tmp/
 *.db
 todo.md
+swagger.yml

@@ -6,12 +6,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"teacher-site/cache"
-	"teacher-site/database"
-	"teacher-site/logsrv"
-	"teacher-site/model"
-	"teacher-site/route"
-	"teacher-site/service"
+	"teacher-site/app"
+	"teacher-site/config"
+	"teacher-site/pkg/database"
+	_log "teacher-site/pkg/log"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -29,20 +27,24 @@ const (
 func main() {
 	ctx := context.Background()
 	// todo: tmp
-	cacheConf := model.NewMockCacheConfig()
-	cache := cache.NewCache(cacheConf)
-	logger := logsrv.NewLogrus(ctx)
-	db := database.NewSqlite(_dbFilePath, logger)
+	conf := config.New()
+	// cacheConf := model.NewMockCacheConfig()
+	// cache := cache.NewCache(cacheConf)
+	redis := database.NewRedis(conf.Redis)
+	logger := _log.NewLogrus(ctx)
+	// db := database.NewSqlite(_dbFilePath, logger)
+	db := database.NewDB(".", conf.DB)
 
-	conf := model.NewMockServiceConfig()
-	srv := service.NewService(db, cache, logger, conf)
+	// conf := model.NewMockServiceConfig()
+	// srv := service.NewService(db, cache, logger, conf)
 	// todo: use os.Getenv()
 
 	r := gin.Default()
 	r.Use(cors.Default())
 	r.Static(_staticRelativePath, _staticRoot)
 	r.LoadHTMLGlob(_templatePath)
-	route.SetupRoute(ctx, r, srv)
+	// route.SetupRoute(ctx, r, srv)
+	app.SetupRoute(ctx, r, db, redis, logger, conf)
 	r.Run(_serverPort)
 	//? graceful shutdown: https://blog.wu-boy.com/2020/02/what-is-graceful-shutdown-in-golang/
 	server := &http.Server{

@@ -2,32 +2,21 @@ package middleware
 
 import (
 	"context"
-	"teacher-site/cache"
-	"teacher-site/database"
-	"teacher-site/logsrv"
+	"teacher-site/config"
 	"teacher-site/mock"
-	"teacher-site/model"
-	"teacher-site/service"
+	"teacher-site/pkg/log"
+	"teacher-site/pkg/util"
 	"testing"
 )
 
 var (
-	cacheConf = model.NewMockCacheConfig()
-	_cache    = cache.NewCache(cacheConf)
-	db        = database.NewSqlite("../database", logger)
-	logger    = logsrv.NewLogrus(ctx)
-	ctx       = context.Background()
-	conf      = model.NewMockServiceConfig()
-	srv       = service.NewService(db, _cache, logger, conf)
+	logger = log.NewLogrus(ctx)
+	ctx    = context.Background()
+	conf   = config.New()
 )
 
 func TestVerifyJwtValid(t *testing.T) {
-	var (
-		err   error
-		token string
-	)
-	bind := model.BindAuth{UserID: mock.UserID}
-	token, _ = srv.NewJwtToken(ctx, &bind)
+	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
 	tC := []struct {
 		desc  string
 		token string
@@ -44,9 +33,8 @@ func TestVerifyJwtValid(t *testing.T) {
 	for _, v := range tC {
 		t.Run(v.desc, func(t *testing.T) {
 			bearerToken := "Bearer " + v.token
-			err = verifyJwtValid(ctx, srv, bearerToken)
-			// todo: error handle
-			srv.Error(err)
+			err := verifyJwtValid(ctx, conf.Jwt.Secure, bearerToken)
+			logger.Error(err)
 		})
 	}
 }

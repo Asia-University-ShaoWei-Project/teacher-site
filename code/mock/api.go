@@ -8,5 +8,5 @@ const (
 )
 
 var (
-	ApiURL = fmt.Sprintf("/api/%s/%s", ApiVersion, Domain)
+	ApiURL = fmt.Sprintf("/api/%s/%s", ApiVersion, TeacherDomain)
 )
