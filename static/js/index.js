@@ -1,6 +1,6 @@
 const br_tag = "<br>";
-// var option_box_elem = document.getElementById("option-box");
-// const content_switch_elem = ;
+const elemOptionBox = document.getElementById("option-box");
+const elemContentSwitcher = document.getElementById("content-switch");
 const COURSE = "course";
 const INFO = "info";
 const INIT = "init";
@@ -39,8 +39,6 @@ var tableFieldTitle = {
 };
 
 function init() {
-  console.log("init");
-
   let info_get_url = `/info/bulletin`;
   let course_get_url = `/course`;
 
@@ -206,9 +204,11 @@ function showOptionButtons() {
   let elem;
   for (let i = 0; i < items.length; i++) {
     elem = createOptionButton(items[i]);
-    document.getElementById("option-box").appendChild(elem);
+
+    elemOptionBox.appendChild(elem);
   }
 }
+
 function createOptionButton(item) {
   console.log("createOptionButton");
   let btn = document.createElement("button");
@@ -225,7 +225,7 @@ function createOptionButton(item) {
 //* content
 
 function showContent(content) {
-  document.getElementById("content-switch").innerHTML = content;
+  elemContentSwitcher.innerHTML = content;
 }
 function createContent(bulletin, slide, homework) {
   console.log("createContent");

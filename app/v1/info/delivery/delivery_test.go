@@ -32,15 +32,12 @@ var (
 	ApiUrl      = mock.ApiUrl + "/info"
 )
 var (
+	url  string
 	err  error
 	body []byte
+	req  *http.Request
+	w    *httptest.ResponseRecorder
 )
-
-// func TestCreateInfo(t *testing.T) {
-// 	var req domain.CreateInfoBulletinRequest
-// 	_, err := usecase.Create(ctx, &req)
-// 	assert.Nil(t, err, err)
-// }
 
 type HttpStatusCode int
 
@@ -89,9 +86,9 @@ func TestCreate(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			url := ApiUrl + fmt.Sprintf(urlFormat, tC.infoID)
-			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("POST", url, strings.NewReader(tC.data))
+			url = ApiUrl + fmt.Sprintf(urlFormat, tC.infoID)
+			w = httptest.NewRecorder()
+			req, _ = http.NewRequest("POST", url, strings.NewReader(tC.data))
 			setupHeader(req, JsonContentType, tC.token)
 			r.ServeHTTP(w, req)
 			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))
@@ -122,9 +119,9 @@ func TestGet(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			url := ApiUrl + `/bulletin` + tC.uri
-			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("GET", url, nil)
+			url = ApiUrl + `/bulletin` + tC.uri
+			w = httptest.NewRecorder()
+			req, _ = http.NewRequest("GET", url, nil)
 			r.ServeHTTP(w, req)
 			defer w.Result().Body.Close()
 			body, err = ioutil.ReadAll(w.Body)
@@ -191,9 +188,9 @@ func TestUpdate(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			url := ApiUrl + fmt.Sprintf(urlFormat, tC.infoID, tC.bulletinID)
-			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("PUT", url, strings.NewReader(tC.data))
+			url = ApiUrl + fmt.Sprintf(urlFormat, tC.infoID, tC.bulletinID)
+			w = httptest.NewRecorder()
+			req, _ = http.NewRequest("PUT", url, strings.NewReader(tC.data))
 			setupHeader(req, JsonContentType, tC.token)
 			r.ServeHTTP(w, req)
 			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))
@@ -250,9 +247,9 @@ func TestDelete(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			url := ApiUrl + fmt.Sprintf(urlFormat, tC.infoID, tC.bulletinID)
-			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("DELETE", url, nil)
+			url = ApiUrl + fmt.Sprintf(urlFormat, tC.infoID, tC.bulletinID)
+			w = httptest.NewRecorder()
+			req, _ = http.NewRequest("DELETE", url, nil)
 			setupHeader(req, JsonContentType, tC.token)
 			r.ServeHTTP(w, req)
 			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))

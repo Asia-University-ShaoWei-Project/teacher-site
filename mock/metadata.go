@@ -1,6 +1,11 @@
 package mock
 
-import "time"
+import (
+	"context"
+	"time"
+)
+
+var ctx = context.Background()
 
 const (
 	Date      = "2020-01-01"

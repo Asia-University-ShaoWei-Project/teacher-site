@@ -11,15 +11,18 @@ type Auths struct {
 	Time
 }
 
-// usecase & repository
+//* usecase & repository
 type AuthUsecase interface {
+	Login(ctx context.Context, req *LoginRequest) (string, error)
 	// Create(ctx context.Context, req *ReqCreateAuth) (InfoBulletinBoards, error)
 	// Get(ctx context.Context, req *ReqGetAuth) (ResGetInfo, error)
 	// Update(ctx context.Context, req *ReqUpdateInfoBulletin) (ResUpdateInfo, error)
 	// Delete(ctx context.Context, req *ReqDeleteInfo) error
 }
 type AuthDbRepository interface {
-	Login(ctx context.Context, req *ReqLoginAuth) (InfoBulletinBoards, error)
+	// Login(ctx context.Context, id, password string) error
+	GetAccountByUserId(ctx context.Context, id string) (Auths, error)
+	UpdateTokenByUserId(ctx context.Context, id, token string) error
 	// Create(ctx context.Context, req *ReqCreateAuth) (InfoBulletinBoards, error)
 	// Get(ctx context.Context, req *ReqGetAuth) ([]GetInfoBulletin, error)
 	// Update(ctx context.Context, req *ReqUpdateInfoBulletin) (InfoBulletinBoards, error)
@@ -32,15 +35,16 @@ type AuthCacheRepository interface {
 	// UpdateInfoLastModified(ctx context.Context, req *ResGetInfo) error
 }
 
-// request & response
-type ReqLoginAuth struct {
+//* request & response
+type LoginRequest struct {
 	UserID       string `json:"id" binding:"required"`
 	UserPassword string `json:"password" binding:"required"`
 }
-type ReqCreateAuth struct {
-	UserID       string `json:"id" binding:"required"`
-	UserPassword string `json:"password" binding:"required"`
-	Domain       string `json:"domain" binding:"required"`
-	Email        string `json:"email" binding:"required"`
-	NameZH       string `json:"name_zh" binding:"required"`
-}
+
+// type RegisterRequest struct {
+// 	UserID       string `json:"id" binding:"required"`
+// 	UserPassword string `json:"password" binding:"required"`
+// 	Domain       string `json:"domain" binding:"required"`
+// 	Email        string `json:"email" binding:"required"`
+// 	NameZH       string `json:"name_zh" binding:"required"`
+// }

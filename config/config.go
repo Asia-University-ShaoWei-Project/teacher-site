@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"time"
 )
 
@@ -21,7 +20,8 @@ type Server struct {
 }
 
 type Secure struct {
-	SaltSize int
+	Salt     []byte
+	SaltSize int ``
 	HashCost int
 }
 type Jwt struct {
@@ -48,8 +48,8 @@ func New() *Config {
 }
 func newServer() *Server {
 	return &Server{
-		// Addr: ":80",
-		Addr:               ":" + os.Getenv("PORT"),
+		Addr: ":80",
+		// Addr:               ":" + os.Getenv("PORT"),
 		StaticRelativePath: "/static",
 		StaticRootPath:     "./static",
 		TemplatePath:       "templates/*",

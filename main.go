@@ -8,7 +8,6 @@ import (
 	"syscall"
 	"teacher-site/app"
 	"teacher-site/config"
-	"teacher-site/migrate"
 	"teacher-site/pkg/database"
 	_log "teacher-site/pkg/log"
 	"time"
@@ -28,8 +27,9 @@ func main() {
 	logger := _log.NewLogrus(ctx)
 	// todo: use postgres
 	db := database.NewDB("./pkg/database", conf.DB)
-	migrate.Setup(db)
-	gin.SetMode(gin.ReleaseMode)
+	// todo: release(mode, migrate, config(port))
+	// migrate.Setup(db)
+	// gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
 	r.Use(cors.Default())

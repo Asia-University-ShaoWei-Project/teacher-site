@@ -19,10 +19,9 @@
     <!-- Js -->
 
     <!-- <script type="text/javascript" src="../static/js/jquery/jquery-3.6.0.min.js"></script> -->
-    <script type="text/javascript" src="../static/js/axios.min.js"></script>
-    <script type="text/javascript" src="../static/js/http.js"></script>
-    <script type="text/javascript" src="../static/js/obj.js"></script>
-    <script type="text/javascript" src="../static/js/index.js"></script>
+    <!-- <script type="text/javascript" src="../static/js/axios.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <!-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
 
     <!-- third-part -->
@@ -161,6 +160,7 @@
           <p>辦公室: HB13</p>
           <p>分機: 20013</p>
           <p>E-mail: xxx@asia.edu.tw</p>
+          <a href="/login">Login</a>
         </div>
         <hr />
         <div id="option-box"></div>
@@ -254,6 +254,9 @@
 
     </main>
   </body>
+  <script type="text/javascript" src="../static/js/http.js"></script>
+  <script type="text/javascript" src="../static/js/obj.js"></script>
+  <script type="text/javascript" src="../static/js/index.js"></script>
 </html>
 
 
@@ -262,73 +265,11 @@
   function login(){}
   function register(){}
   function logout(){}
+  
 </script>
 
 
 <script>
+  // alert("功能尚未完成，持續更新中...")
   init();
-</script>
-
-
-<!-- ajax -->
-
-
-<!-- $.ajax({
-  method: "GET",
-  url: url,
-    
-  dataType: "json",
-})
-  .done(function (response) {
-   
-  })
-  .fail(function (msg) {
-    console.log(msg);
-    return null;
-  }); -->
-
-
-  <script>
-    alert("功能尚未完成，持續更新中...")
-// todo: abandon
-// function create_bulletin_board_card(bulletin_boards) {
-//           thead = create_table_elem(bulletinTitleFields);
-//           tbody = '';
-//           for (let i = 0; i < bulletin_boards.length; i++) {
-//             tbody += create_table_elem([
-//               bulletin_boards[i].created_date,
-//               bulletin_boards[i].info,
-//             ]);
-//           }
-//           var bulletin_board_card = create_card(card_titles.bulletin, thead, tbody);
-//           return bulletin_board_card;
-//         }
-
-//         function create_slide_card(slides) {
-//           thead = create_table_elem(slideTitleFields);
-//           tbody = ''
-//           for (let i = 0; i < slides.length; i++) {
-//             tbody += create_table_elem([
-//               `Ch  ${slides[i].chapter}`,
-//               slides[i].file.type,
-//               slides[i].file.title,
-//             ]);
-//           }
-//           var slide_card = create_card(card_titles.slide, thead, tbody);
-//           return slide_card;
-//         }
-
-//         function create_homework_card(homeworks) {
-//           thead = create_table_elem(homework_fields);
-//           tbody = ''
-//           for (let i = 0; i < homeworks.length; i++) {
-//             tbody += create_table_elem([
-//               `Hw ${homeworks[i].number}`,
-//               homeworks[i].file.type,
-//               homeworks[i].file.title,
-//             ]);
-//           }
-//           var homework_card = create_card(card_titles.hw, thead, tbody);
-//           return homework_card;
-//         }
   </script>

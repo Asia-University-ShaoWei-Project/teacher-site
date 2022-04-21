@@ -12,11 +12,15 @@ import (
 	"gorm.io/gorm"
 )
 
-const templateIndex = "index.html"
+const IndexHtml = "index.html"
+const LoginHtml = "login.html"
 
 func SetupRoute(ctx context.Context, r *gin.Engine, db *gorm.DB, c *redis.Client, logger *log.Logger, conf *config.Config) {
 	r.GET("/:teacher_domain", func(c *gin.Context) {
-		c.HTML(http.StatusOK, templateIndex, gin.H{})
+		c.HTML(http.StatusOK, IndexHtml, gin.H{})
+	})
+	r.GET("/login", func(c *gin.Context) {
+		c.HTML(http.StatusOK, LoginHtml, gin.H{})
 	})
 	api := r.Group("/api")
 	v1.SetupRoute(ctx, api, db, c, logger, conf)
