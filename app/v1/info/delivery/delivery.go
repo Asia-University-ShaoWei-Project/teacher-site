@@ -22,9 +22,9 @@ func NewInfoHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.Info
 		conf:    conf,
 	}
 	r.GET("/bulletin", handler.Get(ctx))
-	r.POST("/:info_id/bulletin", mw.VerifyAuth(ctx, conf.Jwt.Secure), handler.Create(ctx))
-	r.PUT("/:info_id/bulletin/:bulletin_id", mw.VerifyAuth(ctx, conf.Jwt.Secure), handler.Update(ctx))
-	r.DELETE("/:info_id/bulletin/:bulletin_id", mw.VerifyAuth(ctx, conf.Jwt.Secure), handler.Delete(ctx))
+	r.POST("/:info_id/bulletin", mw.VerifyAuth(ctx, conf.Jwt.Secret), handler.Create(ctx))
+	r.PUT("/:info_id/bulletin/:bulletin_id", mw.VerifyAuth(ctx, conf.Jwt.Secret), handler.Update(ctx))
+	r.DELETE("/:info_id/bulletin/:bulletin_id", mw.VerifyAuth(ctx, conf.Jwt.Secret), handler.Delete(ctx))
 	// bulletin := r.Group("/:info_id/bulletin", mw.VerifyAuth(ctx, conf.Jwt.Secure))
 	// {
 	// 	bulletin.POST("/", handler.Create(ctx))

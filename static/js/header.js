@@ -1,0 +1,3 @@
+const headerKeys = {
+  auth: "Authorization",
+};

@@ -30,7 +30,7 @@ var (
 	ApiUrl      = mock.ApiUrl + "/auth"
 )
 var (
-	url, data, dataFormat string
+	data, dataFormat string
 	// err                   error
 	// body                  []byte
 	req *http.Request
@@ -40,9 +40,9 @@ var (
 type HttpStatusCode int
 
 func TestLogin(t *testing.T) {
-	NewAuthHandler(ctx, route, usecaseMock, conf.Jwt)
+	NewHandler(ctx, route, usecaseMock, conf)
 	dataFormat = `{"id":"%s", "password":"%s"}`
-	url = ApiUrl + `/login`
+	url := ApiUrl + `/login`
 	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
 
 	testCases := []struct {
@@ -88,166 +88,37 @@ func TestLogin(t *testing.T) {
 	}
 }
 
-// // todo: teacher_domain
-// // todo: none last_modified error handle
-// func TestGet(t *testing.T) {
-// 	NewInfoHandler(ctx, route, usecaseMock, conf)
+func TestLogout(t *testing.T) {
+	NewHandler(ctx, route, usecaseMock, conf)
+	url := ApiUrl + "/logout"
+	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
 
-// 	testCases := []struct {
-// 		desc   string
-// 		uri    string
-// 		result HttpStatusCode
-// 	}{
-// 		{
-// 			desc:   "empty last_modified",
-// 			uri:    mock.EmptyStr,
-// 			result: http.StatusOK,
-// 		},
-// 		{
-// 			desc:   "have last_modified",
-// 			uri:    `?last_modified=` + repository.CurrLastModidied,
-// 			result: http.StatusOK,
-// 		},
-// 	}
-// 	for _, tC := range testCases {
-// 		t.Run(tC.desc, func(t *testing.T) {
-// 			url := ApiUrl + `/bulletin` + tC.uri
-// 			w := httptest.NewRecorder()
-// 			req, _ := http.NewRequest("GET", url, nil)
-// 			r.ServeHTTP(w, req)
-// 			defer w.Result().Body.Close()
-// 			body, err = ioutil.ReadAll(w.Body)
-// 			// w.Result().StatusCode
-// 			fmt.Println("📝 Body:", string(body))
-// 		})
-// 	}
-// }
-// func TestUpdate(t *testing.T) {
-// 	NewInfoHandler(ctx, route, usecaseMock, conf)
-// 	data := `{"content":""}`
-// 	urlFormat := `/%v/bulletin/%v`
-// 	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
-
-// 	testCases := []struct {
-// 		desc       string
-// 		token      string
-// 		infoID     interface{}
-// 		bulletinID interface{}
-// 		data       string
-// 		result     HttpStatusCode
-// 	}{
-// 		{
-// 			desc:       "unauthorized",
-// 			token:      mock.EmptyStr,
-// 			infoID:     mock.NumPK,
-// 			bulletinID: mock.NumPK,
-// 			data:       data,
-// 			result:     http.StatusUnauthorized,
-// 		},
-// 		{
-// 			desc:       "fail info id",
-// 			token:      token,
-// 			infoID:     mock.StrWord,
-// 			bulletinID: mock.NumPK,
-// 			data:       data,
-// 			result:     http.StatusBadRequest,
-// 		},
-// 		{
-// 			desc:       "fail bulletin id",
-// 			token:      token,
-// 			infoID:     mock.NumPK,
-// 			bulletinID: mock.StrWord,
-// 			data:       data,
-// 			result:     http.StatusBadRequest,
-// 		},
-// 		{
-// 			desc:       "empty bulletin content",
-// 			token:      token,
-// 			infoID:     mock.NumPK,
-// 			bulletinID: mock.NumPK,
-// 			data:       mock.EmptyJson,
-// 			// todo: concert the binding
-// 			result: http.StatusBadRequest,
-// 		},
-// 		{
-// 			desc:       "normal",
-// 			token:      token,
-// 			infoID:     mock.NumPK,
-// 			bulletinID: mock.NumPK,
-// 			data:       data,
-// 			result:     http.StatusOK,
-// 		},
-// 	}
-// 	for _, tC := range testCases {
-// 		t.Run(tC.desc, func(t *testing.T) {
-// 			url := ApiUrl + fmt.Sprintf(urlFormat, tC.infoID, tC.bulletinID)
-// 			w := httptest.NewRecorder()
-// 			req, _ := http.NewRequest("PUT", url, strings.NewReader(tC.data))
-// 			setupHeader(req, JsonContentType, tC.token)
-// 			r.ServeHTTP(w, req)
-// 			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))
-// 		})
-// 	}
-// }
-// func TestDelete(t *testing.T) {
-// 	NewInfoHandler(ctx, route, usecaseMock, conf)
-// 	urlFormat := `/%v/bulletin/%v`
-// 	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
-// 	testCases := []struct {
-// 		desc       string
-// 		token      string
-// 		infoID     interface{}
-// 		bulletinID interface{}
-// 		result     HttpStatusCode
-// 	}{
-// 		{
-// 			desc:       "unauthorized",
-// 			token:      mock.EmptyStr,
-// 			infoID:     mock.NumPK,
-// 			bulletinID: mock.NumPK,
-// 			result:     http.StatusUnauthorized,
-// 		},
-// 		{
-// 			desc:       "fail info id",
-// 			token:      token,
-// 			infoID:     mock.StrWord,
-// 			bulletinID: mock.NumPK,
-// 			result:     http.StatusBadRequest,
-// 		},
-// 		{
-// 			desc:       "fail bulletin id",
-// 			token:      token,
-// 			infoID:     mock.NumPK,
-// 			bulletinID: mock.StrWord,
-// 			result:     http.StatusBadRequest,
-// 		},
-// 		{
-// 			desc:       "empty bulletin content",
-// 			token:      token,
-// 			infoID:     mock.NumPK,
-// 			bulletinID: mock.NumPK,
-// 			// todo: concert the binding
-// 			result: http.StatusBadRequest,
-// 		},
-// 		{
-// 			desc:       "normal",
-// 			token:      token,
-// 			infoID:     mock.NumPK,
-// 			bulletinID: mock.NumPK,
-// 			result:     http.StatusOK,
-// 		},
-// 	}
-// 	for _, tC := range testCases {
-// 		t.Run(tC.desc, func(t *testing.T) {
-// 			url := ApiUrl + fmt.Sprintf(urlFormat, tC.infoID, tC.bulletinID)
-// 			w := httptest.NewRecorder()
-// 			req, _ := http.NewRequest("DELETE", url, nil)
-// 			setupHeader(req, JsonContentType, tC.token)
-// 			r.ServeHTTP(w, req)
-// 			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))
-// 		})
-// 	}
-// }
+	testCases := []struct {
+		desc       string
+		authHeader string
+		result     HttpStatusCode
+	}{
+		{
+			desc:       "fail token",
+			authHeader: mock.Unknown,
+			result:     http.StatusBadRequest,
+		},
+		{
+			desc:       "real token",
+			authHeader: token,
+			result:     http.StatusNoContent,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			req, _ = http.NewRequest(methodPost, url, nil)
+			setupHeader(req, JsonContentType, tC.authHeader)
+			r.ServeHTTP(w, req)
+			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))
+		})
+	}
+}
 
 func setupHeader(req *http.Request, contentType, authToken string) {
 	req.Header.Add("Content-Type", contentType)

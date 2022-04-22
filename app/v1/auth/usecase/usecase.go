@@ -17,7 +17,7 @@ type AuthUsecase struct {
 	log             *logrus.Logger
 }
 
-func NewAuthUsecase(dbRepo domain.AuthDbRepository, cacheRepo domain.AuthCacheRepository, conf *config.Config, logger *logrus.Logger) domain.AuthUsecase {
+func NewUsecase(dbRepo domain.AuthDbRepository, cacheRepo domain.AuthCacheRepository, conf *config.Config, logger *logrus.Logger) domain.AuthUsecase {
 	return &AuthUsecase{
 		dbRepository:    dbRepo,
 		cacheRepository: cacheRepo,
@@ -53,6 +53,10 @@ func (auth *AuthUsecase) Login(ctx context.Context, req *domain.LoginRequest) (s
 		auth.log.Error(err)
 	}
 	return token, nil
+}
+
+func (auth *AuthUsecase) Logout(ctx context.Context, id string) error {
+	return auth.dbRepository.DeleteToken(ctx, id)
 }
 
 // func (auth *AuthUsecase) Create(ctx context.Context, req *domain.ReqCreateInfo) (domain.InfoBulletinBoards, error) {

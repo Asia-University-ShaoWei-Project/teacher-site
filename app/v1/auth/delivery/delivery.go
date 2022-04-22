@@ -6,25 +6,38 @@ import (
 	"teacher-site/config"
 	"teacher-site/domain"
 	mw "teacher-site/middleware"
+	"teacher-site/pkg/util"
 
 	"log"
+
+	"github.com/gin-contrib/sessions"
 
 	"github.com/gin-gonic/gin"
 )
 
 type AuthHandler struct {
 	Usecase domain.AuthUsecase
-	conf    *config.Jwt
+	conf    *config.Config
 }
 
-func NewAuthHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.AuthUsecase, conf *config.Jwt) {
+func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.AuthUsecase, conf *config.Config) {
 	handler := &AuthHandler{
 		Usecase: usecase,
 		conf:    conf,
 	}
 
+	r.POST("/token", handler.GetToken(ctx))
 	r.POST("/login", handler.Login(ctx))
+	r.POST("/logout", handler.Logout(ctx))
 	// auth.POST("/register", handler.Register)
+}
+func (auth *AuthHandler) GetToken(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		s := sessions.Default(c)
+		token := util.GetSessionToken(s)
+		util.AddBearerHeader(c, token.(string))
+		c.Status(http.StatusOK)
+	}
 }
 
 // todo
@@ -34,86 +47,55 @@ func (auth *AuthHandler) Login(ctx context.Context) gin.HandlerFunc {
 			req domain.LoginRequest
 			err error
 		)
-		if mw.IsTeacher(ctx, c, auth.conf.Secure) {
-			log.Print("is teacher -> redirect index")
+		if mw.IsTeacher(ctx, c, auth.conf.Jwt.Secret) {
 			// todo: how to get the domain
-			c.Redirect(http.StatusFound, "/")
-			c.Abort()
+			c.AbortWithStatus(http.StatusFound)
+			// c.Redirect(http.StatusFound, "/")
+			// c.Abort()
 			return
 		}
 
 		if err = c.ShouldBindJSON(&req); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
-			log.Print(err)
 			return
 		}
+
 		token, err := auth.Usecase.Login(ctx, &req)
 		if err != nil {
-			log.Print(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		addBearerHeader(c, token)
-		// todo: redirect 302 index
-		c.Status(http.StatusOK)
+
+		s := sessions.Default(c)
+		util.SetSessionToken(s, token)
+		s.Save()
+		util.AddBearerHeader(c, token)
+		c.Status(http.StatusNoContent)
 	}
 }
-func addBearerHeader(c *gin.Context, token string) {
-	c.Request.Header.Add("Authorization", `Bearer `+token)
+func (auth *AuthHandler) Logout(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		bearerToken, err := util.GetBearerToken(ctx, c)
+		// ? token not existed
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		claims, err := util.ParseJwt(ctx, bearerToken, auth.conf.Jwt.Secret)
+
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		id := util.GetJwtUser(claims)
+		err = auth.Usecase.Logout(ctx, id)
+		if err != nil {
+			log.Println(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		util.RemoveBearerHeader(c)
+		c.Status(http.StatusNoContent)
+	}
 }
-
-// func (auth *AuthHandler) Get(ctx context.Context) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		var bind domain.ReqGetAuth
-// 		if err := c.ShouldBindUri(&bind); err != nil {
-// 			c.AbortWithStatus(http.StatusBadRequest)
-// 			return
-// 		}
-// 		res, err := i.Usecase.Get(ctx, &bind)
-// 		if err != nil {
-// 			c.AbortWithStatus(http.StatusNoContent)
-// 			return
-// 		}
-// 		c.JSON(http.StatusOK, &gin.H{
-// 			"data": res,
-// 		})
-// 	}
-// }
-
-// func (auth *AuthHandler) Update(ctx context.Context) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		var bind domain.ReqUpdateInfoBulletin
-// 		if err := c.ShouldBindUri(&bind); err != nil {
-// 			c.AbortWithStatus(http.StatusBadRequest)
-// 			return
-// 		}
-// 		if err := c.ShouldBindJSON(&bind); err != nil {
-// 			c.AbortWithStatus(http.StatusBadRequest)
-// 			return
-// 		}
-// 		res, err := i.Usecase.Update(ctx, &bind)
-// 		if err != nil {
-// 			c.AbortWithStatus(http.StatusBadRequest)
-// 			return
-// 		}
-// 		c.JSON(http.StatusOK, gin.H{
-// 			"data": res,
-// 		})
-// 		c.Status(http.StatusOK)
-// 	}
-// }
-
-// func (auth *AuthHandler) Delete(ctx context.Context) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		var bind domain.ReqDeleteInfo
-// 		if err := c.ShouldBindUri(&bind); err != nil {
-// 			c.AbortWithStatus(http.StatusBadRequest)
-// 			return
-// 		}
-// 		if err := i.Usecase.Delete(ctx, &bind); err != nil {
-// 			c.AbortWithStatus(http.StatusBadRequest)
-// 			return
-// 		}
-// 		c.Status(http.StatusNoContent)
-// 	}
-// }

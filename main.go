@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 
 	// heroku
@@ -27,11 +29,13 @@ func main() {
 	logger := _log.NewLogrus(ctx)
 	// todo: use postgres
 	db := database.NewDB("./pkg/database", conf.DB)
+	cookieStore := cookie.NewStore(conf.Secure.SessionSecret)
+
 	// todo: release(mode, migrate, config(port))
 	// migrate.Setup(db)
 	// gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
-
+	r.Use(sessions.Sessions("session", cookieStore))
 	r.Use(cors.Default())
 	r.Static(conf.Server.StaticRelativePath, conf.Server.StaticRootPath)
 	r.LoadHTMLGlob(conf.Server.TemplatePath)

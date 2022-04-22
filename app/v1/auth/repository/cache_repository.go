@@ -9,11 +9,12 @@ import (
 
 // hash keys & fields
 const (
-	keyInfo       = `info:%s`
-	fContent      = `content`
-	fLastModified = `last_modified`
+// keyInfo       = `info:%s`
+// fContent      = `content`
+// fLastModified = `last_modified`
 )
 
+// todo
 type cacheRepository struct {
 	db   *redis.Client
 	conf *config.Redis

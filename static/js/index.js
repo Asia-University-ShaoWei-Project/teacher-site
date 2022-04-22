@@ -1,10 +1,14 @@
 const br_tag = "<br>";
 const elemOptionBox = document.getElementById("option-box");
-const elemContentSwitcher = document.getElementById("content-switch");
+const contentPageElem = document.getElementById("content-switch");
 const COURSE = "course";
 const INFO = "info";
 const INIT = "init";
-
+const tableType = {
+  bulletin: "b",
+  slide: "s",
+  homework: "h",
+};
 var api = new API(
   // origin(e.g. http://domain)
   window.location.origin,
@@ -20,36 +24,52 @@ var api = new API(
   }
 );
 var options = [];
-// options[index].showContent() in button click event
 
-// class Slide {
-//   constructor(titleFields) {
-//     this.fieldsTitle = fieldsTitle;
-//   }
-// }
-// class Homework {
-//   constructor(titleFields) {
-//     this.fieldsTitle = fieldsTitle;
-//   }
-// }
 var tableFieldTitle = {
   bulletin: ["Date", "Information"],
   slide: ["Chapter", "Type", "Title"],
   homework: ["#", "Type", "Title"],
 };
+var headers = {};
 
+var isTeacher = false;
 function init() {
-  let info_get_url = `/info/bulletin`;
-  let course_get_url = `/course`;
-
-  getInfoApi(info_get_url);
-  getCourseApi(course_get_url);
-
-  // getInitApiAndCreateView(api.getResourceUrl(INIT));
+  console.log("API -> /api/v1/auth/token");
+  axios
+    .post("/api/v1/auth/token", {
+      params: {
+        last_modified: "0",
+      },
+    })
+    .then((res) => {
+      console.log("init api success, is teacher");
+      headers[headerKeys.auth] = res.headers.authorization;
+      teacherMode();
+      createInitElem();
+    })
+    .catch((err) => {
+      console.error("init api error, not a teacher:", err);
+      createInitElem();
+    });
 }
+function teacherMode() {
+  let editTxt = "Edit";
+  isTeacher = true;
+  tableFieldTitle.bulletin.push(editTxt);
+  tableFieldTitle.slide.push(editTxt);
+  tableFieldTitle.homework.push(editTxt);
+}
+function createInitElem() {
+  let info_get_url = `/info/bulletin`;
+  // let course_get_url = `/course`;
+  getInfoApi(info_get_url);
+  // getCourseApi(course_get_url);
+}
+// *
+const rebuild = true;
 function getInfoApi(url) {
   // [ bulletins<list>(id, date, content), id(info), last_modified(info) ]
-  console.log("getInfoApi");
+  console.log("API -> getInfoApi -> ", api.url + url);
   axios
     .get(api.url + url, {
       params: {
@@ -57,11 +77,8 @@ function getInfoApi(url) {
       },
     })
     .then((res) => {
-      console.log("getInfoApi api success");
+      console.log("getInfo api success");
       let data = res.data.data;
-      console.log(data);
-      console.log(data.id);
-      console.log(data.last_modified);
       // isTeacher(res.data.auth);
       // todo: create option for information button
       // todo: show the information view
@@ -70,12 +87,12 @@ function getInfoApi(url) {
         name_us: "Information",
       });
       let bulletin = newBulletin(data.bulletins);
-      infoItem.setID(data.id);
-      infoItem.setLastModified(data.last_modified);
-      infoItem.setBulletin(bulletin);
-      infoItem.setContent(createContent(bulletin));
+      infoItem.id = data.id;
+      infoItem.lastModified = data.last_modified;
+      infoItem.bulletin = bulletin;
+      infoItem.content = createContent(tableType.bulletin, bulletin);
       items.push(infoItem);
-      showContent(items[0].content);
+      showContent(items[0].buildContent(rebuild));
       // todo: temp
       showOptionButtons();
     })
@@ -85,8 +102,8 @@ function getInfoApi(url) {
 }
 // todo
 function getCourseApi(url) {
+  console.log("API -> getCourse -> ", url);
   // [ bulletins<list>(id, date, content), id(info), last_modified(info) ]
-  console.log("getCourseApi");
   axios
     .get(url)
     .then((res) => {
@@ -99,7 +116,7 @@ function getCourseApi(url) {
         let item = newItem(api.getResourceUrl(COURSE), data.courses[i]);
         items.push();
         // items.push(createOptionButton(COURSE, optionSwitchIndex, data.courses[i]));
-        // lastUpdatedOfCourse.push(ZERO_TIME);
+        // lastUpdatedOfCourse.push(zeroTime);
         // optionSwitchIndex += 1;
       }
       showOptionButtons();
@@ -108,58 +125,12 @@ function getCourseApi(url) {
       console.error("getInitApiAndCreateView:", err);
     });
 }
-function create_init_view(data) {
-  console.log("create_init_view");
-  //* Information()
-  let bulletin = newBulletin(data.information);
-  items.push(
-    newItem(
-      api.getResourceUrl(INFO),
-      data.information,
-      bulletin,
-      null,
-      null,
-      data.info_last_updated
-    )
-  );
-  // todo: create button
-  // contents.push(create_information_content(data.information));
-  // lastUpdatedOfCourse.push(ZERO_TIME);
-  // optionSwitchIndex += 1;
 
-  showContent(items[0].getContent(true));
-}
-// todo:delete
-// function getInitApiAndCreateView(url) {
-//   axios
-//     .get(url)
-//     .then((res) => {
-//       console.log("getInitApiAndCreateView success");
-//       console.log(res.data);
-//       // isTeacher(res.data.auth);
-//       create_init_view(res.data.data);
-//     })
-//     .catch((err) => {
-//       console.error("getInitApiAndCreateView:", err);
-//     });
-// }
-
-function isTeacher(valid) {
-  if (valid) {
-    // addEditField();
-  }
-}
-// function addEditField() {
-//   console.log("addEditField");
-
-//   bulletinTitleFields.push("Edit");
-//   slideTitleFields.push("Edit");
-//   homework_fields.push("Edit");
-// }
-const ZERO_TIME = "0";
+const zeroTime = "0";
 var contents = [];
 var items = [];
 var lastUpdatedOfCourse = [];
+// 0: information index
 var optionSwitchIndex = 0;
 
 function newItem(apiUrl, data, bulletin, slide, hw, lastUpdated) {
@@ -180,93 +151,102 @@ function newBulletin(data) {
   let title = "Bulletin Board";
   let bulletinBoard = new Table(title, tableFieldTitle.bulletin);
   let rows = [];
-  for (let i = 0; i < data.length; i++) {
-    rows.push(new BulletinBoardRow(data[i].id, data[i].date, data[i].content));
-  }
-  bulletinBoard.setRows(rows);
+  data.forEach((v) => {
+    rows.push(new BulletinBoardRow(v.id, v.date, v.content));
+  });
+  bulletinBoard.rows = rows;
   return bulletinBoard;
 }
-// todo
-function newSlide(data) {
-  let title = "Slide";
-  let slide = new Table(title, tableFieldTitle.slide);
-  let rows = [];
-  for (let i = 0; i < data.length; i++) {
-    // rows.push(new BulletinBoardRow(data[i].id, data[i].date, data[i].content));
-  }
-  slide.setRows(rows);
-  return slide;
-}
-
+// todo: slide, homework table
+// function newSlide(data) {
+//   let title = "Slide";
+//   let slide = new Table(title, tableFieldTitle.slide);
+//   let rows = [];
+//   data.forEach((v) => {
+//     rows.push(new SlideRow(v.id, v.chapter, v.content));
+//   });
+//   slide.setRows(rows);
+//   return slide;
+// }
+// function newHomework(data) {
+//   let title = "Slide";
+//   let slide = new Table(title, tableFieldTitle.slide);
+//   let rows = [];
+//   data.forEach((v) => {
+//     rows.push(new SlideRow(v.id, v.chapter, v.content));
+//   });
+//   slide.setRows(rows);
+//   return slide;
+// }
 // *option
 
 function showOptionButtons() {
   let elem;
-  for (let i = 0; i < items.length; i++) {
-    elem = createOptionButton(items[i]);
-
+  items.forEach((v) => {
+    elem = createOptionButton(v);
     elemOptionBox.appendChild(elem);
-  }
+  });
 }
 
+const optionClassAttr = `option-item button button--anthe`;
 function createOptionButton(item) {
   console.log("createOptionButton");
   let btn = document.createElement("button");
   let span = document.createElement("span");
   let text = item.nameZh + br_tag + item.nameUs;
-  btn.className = "option-item button button--anthe";
+  btn.className = optionClassAttr;
   span.innerHTML = text;
-  btn.onclick = () => item.getData();
+  btn.onclick = () => item.updateData();
   btn.appendChild(span);
-
   return btn;
 }
 
 //* content
 
 function showContent(content) {
-  elemContentSwitcher.innerHTML = content;
+  contentPageElem.innerHTML = content;
 }
-function createContent(bulletin, slide, homework) {
+function createContent(type, data) {
   console.log("createContent");
   let content = "";
-
-  if (bulletin != null && bulletin != undefined) {
-    content += create_item(bulletin);
-  }
-  if (slide != null && slide != undefined) {
-    content += create_item(slide);
-  }
-  if (homework != null && homework != undefined) {
-    content += create_item(homework);
+  if (data != null && data != undefined) {
+    content += createTable(type, data);
   }
   return content;
 }
 
 // * create element
-function create_item(table) {
-  console.log("create_item");
+function createTable(type, table) {
+  console.log("createTable");
 
-  let body_contents;
-  let thead = create_table_elem(table.getFieldsTitle());
+  let thead = createTableHeadElem(table.fieldsTitle);
   let tbody = "";
-  for (let i = 0; i < table.getRowsLen(); i++) {
-    body_contents = table.getRow(i).getDataList();
-    tbody += create_table_elem(body_contents);
+  for (let rowIndex = 0; rowIndex < table.rowsLen; rowIndex++) {
+    dataList = table.rows[rowIndex].dataList;
+    tbody += createTableBodyElem(type, rowIndex, dataList);
   }
-  return create_card(table.getTitle(), thead, tbody);
+  return CreateCard(table.title, thead, tbody);
 }
 
-function create_table_elem(body_contents) {
-  console.log("create_table_elem");
+function createTableHeadElem(fields) {
   let elems = "";
-  for (let i = 0; i < body_contents.length; i++) {
-    elems += "<td>" + body_contents[i] + "</td>";
+  for (let i = 0; i < fields.length; i++) {
+    elems += `<td>${fields[i]}</td>`;
   }
-  return "<tr>" + elems + "</tr>";
+  return `<tr>${elems}</tr>`;
 }
-
-function create_card(title, thead, tbody) {
+function createTableBodyElem(type, rowIndex, dataList) {
+  let elems = "";
+  for (let i = 0; i < dataList.length; i++) {
+    elems += `<td>${dataList[i]}</td>`;
+  }
+  if (isTeacher) {
+    let editBtn = createEditButton(type, rowIndex);
+    elems += `<td>${editBtn}</td>`;
+  }
+  return `<tr>${elems}</tr>`;
+}
+function CreateCard(title, thead, tbody) {
   let card = `
     <div class="content-page">
       <div class="item-box">

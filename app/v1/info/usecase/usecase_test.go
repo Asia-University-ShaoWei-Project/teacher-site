@@ -5,7 +5,6 @@ import (
 	"teacher-site/domain"
 	"teacher-site/mock"
 	mockRepo "teacher-site/mock/info/repository"
-	"teacher-site/pkg/log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,10 +12,9 @@ import (
 
 var (
 	ctx       = context.Background()
-	logger    = log.NewLogrus(ctx)
 	dbRepo    = mockRepo.NewInfoDbRepository()
 	cacheRepo = mockRepo.NewInfoCacheRepository()
-	usecase   = NewInfoUsecase(dbRepo, cacheRepo, logger)
+	usecase   = NewInfoUsecase(dbRepo, cacheRepo, mock.Conf, mock.Log)
 )
 
 // func TestCreateInfo(t *testing.T) {

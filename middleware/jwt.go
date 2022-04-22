@@ -2,66 +2,47 @@ package middleware
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
-	"strings"
+	"teacher-site/pkg/util"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 )
 
-var errInvalidBearerToken = errors.New("invalid bearer token")
-
-func IsTeacher(ctx context.Context, c *gin.Context, secure []byte) bool {
-	authHeader := getAuthorization(ctx, c)
-	if err := verifyJwtValid(ctx, secure, authHeader); err != nil {
+func IsTeacher(ctx context.Context, c *gin.Context, secret []byte) bool {
+	bearerToken, err := util.GetBearerToken(ctx, c)
+	if err != nil {
+		fmt.Println("not have auth header")
 		return false
 	}
+	if err := verifyJwtValid(ctx, bearerToken, secret); err != nil {
+		fmt.Println("not a teacher")
+
+		return false
+	}
+	fmt.Println("is a teacher")
+
 	return true
 }
-func getAuthorization(ctx context.Context, c *gin.Context) string {
-	return c.GetHeader("Authorization")
-}
 
-func VerifyAuth(ctx context.Context, secure []byte) gin.HandlerFunc {
+func VerifyAuth(ctx context.Context, secret []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		authHeader := getAuthorization(ctx, c)
-		if err := verifyJwtValid(ctx, secure, authHeader); err != nil {
+		bearerToken, err := util.GetBearerToken(ctx, c)
+		if err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		if err := verifyJwtValid(ctx, bearerToken, secret); err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 	}
 }
 
-func verifyJwtValid(ctx context.Context, secure []byte, authHeader string) error {
-
-	bearerToken, err := getBearerToken(ctx, authHeader)
+func verifyJwtValid(ctx context.Context, bearerToken string, secret []byte) error {
+	_, err := util.ParseJwt(ctx, bearerToken, secret)
 	if err != nil {
 		return err
 	}
-	token, err := jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return secure, nil
-	})
-	if err != nil {
-		return err
-	}
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// expire example: https://github.com/golang-jwt/jwt/blob/main/map_claims_test.go
-		// todo: expire handle! claims["exp"]
-		fmt.Println(claims["exp"])
-		return nil
-	}
-	return jwt.ErrInvalidKey
-}
-
-func getBearerToken(ctx context.Context, authHeader string) (string, error) {
-	field := strings.Split(authHeader, " ")
-	if len(field) != 2 {
-		return "", errInvalidBearerToken
-	}
-	return field[1], nil
+	return nil
 }

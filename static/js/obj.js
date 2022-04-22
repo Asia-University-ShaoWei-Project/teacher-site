@@ -13,10 +13,10 @@ class API {
 
 class Item {
   constructor(
-    apiUrl,
+    apiUrl = "",
     id,
-    nameZh,
-    nameUs,
+    nameZh = "",
+    nameUs = "",
     bulletin,
     slide,
     homework,
@@ -32,32 +32,33 @@ class Item {
     this.lastModified = lastModified;
     this.content = "";
   }
-  // todo: info or course
-  createOptionButton() {
-    return;
+
+  set id(id) {
+    this._id = id;
   }
-  setID(id) {
-    this.id = id;
+  set lastModified(lastModified) {
+    this._lastModified = lastModified;
   }
-  setLastModified(lastModified) {
-    this.lastModified = lastModified;
+  get bulletin() {
+    return this._bulletin;
   }
-  setBulletin(bulletin) {
-    this.bulletin = bulletin;
+  set bulletin(bulletin) {
+    this._bulletin = bulletin;
   }
-  setContent(content) {
-    this.content = content;
-  }
-  getContent(rebuild) {
-    let _content;
+  buildContent(rebuild) {
     if (rebuild) {
-      _content = createContent(this.bulletin, this.slide, this.homework);
-    } else {
-      _content = this.content;
+      let content = "";
+      content += createContent(tableType.bulletin, this.bulletin);
+      content += createContent(tableType.slide, this.slide);
+      content += createContent(tableType.homework, this.homework);
+      return content;
     }
-    return _content;
+    return this.content;
   }
-  getData() {
+  set content(content) {
+    this._content = content;
+  }
+  updateData() {
     // apiUrl = [ api.resources.info | api.resources.course]
     let url = this.apiUrl + "/" + this.id + "/" + this.lastUpdateTime;
     axios
@@ -97,36 +98,51 @@ class Item {
   }
 }
 class Table {
-  constructor(title, fieldsTitle, rows) {
+  constructor(title = "", fieldsTitle = [], rows = []) {
     this.title = title;
     this.fieldsTitle = fieldsTitle;
     this.rows = rows;
   }
-  getTitle() {
-    this.title;
+  get title() {
+    return this._title;
   }
-  getFieldsTitle() {
-    return this.fieldsTitle;
+  set title(title) {
+    this._title = title;
   }
-  getRowsLen() {
-    return this.rows.length;
+  get fieldTitles() {
+    return this._fieldsTitle;
   }
-  getRow(index) {
-    return this.rows[index];
+  get rowsLen() {
+    return this._rows.length;
   }
-  setRows(rows) {
-    this.rows = rows;
+  get rows() {
+    return this._rows;
+  }
+  set rows(rows) {
+    this._rows = rows;
   }
 }
 
 class BulletinBoardRow {
-  constructor(id, date, info) {
+  constructor(id, date, content) {
     this.id = id;
     this.date = date;
-    this.info = info;
+    this.content = content;
   }
-  getDataList() {
-    return [this.date, this.info];
+  get date() {
+    return this._date;
+  }
+  set date(date) {
+    this._date = date;
+  }
+  get content() {
+    return this._content;
+  }
+  set content(content) {
+    this._content = content;
+  }
+  get dataList() {
+    return [this._date, this._content];
   }
 }
 class SlideRow {
@@ -136,18 +152,30 @@ class SlideRow {
     this.fileTitle = fileTitle;
     this.fileType = fileType;
   }
-  getDataList() {
-    return ["CH" + this.chapter, this.fileTitle, this.fileType];
+  get chapter() {
+    return this._chapter;
+  }
+  set chapter(chapter) {
+    this._chapter = chapter;
+  }
+  get fileTitle() {
+    return this._fileTitle;
+  }
+  set fileTitle(title) {
+    this._fileTitle = title;
+  }
+  get dataList() {
+    return ["CH" + this._chapter, this._fileTitle, this._fileType];
   }
 }
-class HomeworkRow {
-  constructor(id, number, fileTitle, fileType) {
-    this.id = id;
-    this.number = number;
-    this.fileTitle = fileTitle;
-    this.fileType = fileType;
-  }
-  getDataList() {
-    return ["#" + this.number, this.fileTitle, this.fileType];
-  }
-}
+// class HomeworkRow {
+//   constructor(id, number, fileTitle, fileType) {
+//     this.id = id;
+//     this.number = number;
+//     this.fileTitle = fileTitle;
+//     this.fileType = fileType;
+//   }
+//   get dataList() {
+//     return ["#" + this._number, this._fileTitle, this._fileType];
+//   }
+// }

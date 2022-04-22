@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"net/http"
 	v1 "teacher-site/app/v1"
 	"teacher-site/config"
 
@@ -12,17 +11,13 @@ import (
 	"gorm.io/gorm"
 )
 
-const IndexHtml = "index.html"
-const LoginHtml = "login.html"
-
 func SetupRoute(ctx context.Context, r *gin.Engine, db *gorm.DB, c *redis.Client, logger *log.Logger, conf *config.Config) {
-	r.GET("/:teacher_domain", func(c *gin.Context) {
-		c.HTML(http.StatusOK, IndexHtml, gin.H{})
-	})
-	r.GET("/login", func(c *gin.Context) {
-		c.HTML(http.StatusOK, LoginHtml, gin.H{})
-	})
+	template := NewTemplate()
+	r.Any("/", template.Home(ctx))
+	r.GET("/:teacher_domain", template.TeacherSite(ctx))
+	r.GET("/login", template.Login(ctx, conf.Jwt))
+
 	api := r.Group("/api")
-	v1.SetupRoute(ctx, api, db, c, logger, conf)
+	v1.SetupRoute(ctx, api, db, c, conf, logger)
 	// v2.SetupRoute(ctx, api)
 }

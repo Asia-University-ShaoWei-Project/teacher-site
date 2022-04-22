@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	db = database.NewDB("../../../pkg/database", mock.Conf.DB)
+	db = database.NewDB("../../../../pkg/database", mock.Conf.DB)
 )
 
 // rdbms
@@ -24,8 +24,7 @@ func (i *DbRepository) GetAccountByUserId(ctx context.Context, id string) (domai
 	if id == mock.Unknown {
 		return domain.Auths{}, gorm.ErrRecordNotFound
 	}
-	auth := testGetAccount(id)
-	return auth, nil
+	return testGetAccount(id)
 }
 
 func (i *DbRepository) UpdateTokenByUserId(ctx context.Context, id, token string) error {
@@ -35,10 +34,15 @@ func (i *DbRepository) UpdateTokenByUserId(ctx context.Context, id, token string
 	return nil
 }
 
-func testGetAccount(id string) domain.Auths {
+// todo
+func (i *DbRepository) DeleteToken(ctx context.Context, id string) error {
+	return nil
+}
+
+func testGetAccount(id string) (domain.Auths, error) {
 	auth := domain.Auths{UserID: id}
-	db.Find(&auth)
-	return auth
+	result := db.Find(&auth)
+	return auth, result.Error
 }
 
 // func (i *DbRepository) GetByTeacherDomain(ctx context.Context, teacherDomain string) (domain.Infos, error) {

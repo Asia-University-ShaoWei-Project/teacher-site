@@ -10,8 +10,16 @@ type Usecase struct{}
 func NewUsecase() domain.AuthUsecase {
 	return &Usecase{}
 }
+
+// todo
 func (u *Usecase) Login(ctx context.Context, req *domain.LoginRequest) (string, error) {
 	return "", nil
+}
+
+// todo
+
+func (u *Usecase) Logout(ctx context.Context, id string) error {
+	return nil
 }
 
 // func (u *Usecase) Get(ctx context.Context, req *domain.GetInfoBulletinRequest) (domain.GetInfoBulletinResponse, error) {

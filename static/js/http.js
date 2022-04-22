@@ -5,6 +5,7 @@ const HTTP_STATUS_CODE = {
   // StatusNonAuthoritativeInfo = 203,
   noContent: 204,
   // StatusResetContent         = 205,
+  found: 302,
   badRequest: 400,
   unauthorized: 401,
   notFound: 404,

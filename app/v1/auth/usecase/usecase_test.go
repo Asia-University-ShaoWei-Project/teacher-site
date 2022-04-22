@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -15,7 +16,7 @@ var (
 	ctx       = context.Background()
 	dbRepo    = repository.NewDbRepository()
 	cacheRepo = repository.NewCacheRepository()
-	usecase   = NewAuthUsecase(dbRepo, cacheRepo, mock.Conf, mock.Log)
+	usecase   = NewUsecase(dbRepo, cacheRepo, mock.Conf, mock.Log)
 )
 var (
 	err error
@@ -32,7 +33,7 @@ func TestLogin(t *testing.T) {
 		result   error
 	}{
 		{
-			desc:     "invalid account of id",
+			desc:     "invalid account of id(Not found the user)",
 			id:       mock.Unknown,
 			password: mock.UserPassword,
 			result:   gorm.ErrRecordNotFound,
@@ -41,7 +42,7 @@ func TestLogin(t *testing.T) {
 			desc:     "invalid account of password",
 			id:       mock.UserID,
 			password: mock.Unknown,
-			result:   gorm.ErrRecordNotFound,
+			result:   bcrypt.ErrMismatchedHashAndPassword,
 		},
 		{
 			desc:     "normal",

@@ -14,6 +14,7 @@ type Auths struct {
 //* usecase & repository
 type AuthUsecase interface {
 	Login(ctx context.Context, req *LoginRequest) (string, error)
+	Logout(ctx context.Context, id string) error
 	// Create(ctx context.Context, req *ReqCreateAuth) (InfoBulletinBoards, error)
 	// Get(ctx context.Context, req *ReqGetAuth) (ResGetInfo, error)
 	// Update(ctx context.Context, req *ReqUpdateInfoBulletin) (ResUpdateInfo, error)
@@ -23,6 +24,8 @@ type AuthDbRepository interface {
 	// Login(ctx context.Context, id, password string) error
 	GetAccountByUserId(ctx context.Context, id string) (Auths, error)
 	UpdateTokenByUserId(ctx context.Context, id, token string) error
+	DeleteToken(ctx context.Context, id string) error
+	// DeleteToken(ctx context.Context) error
 	// Create(ctx context.Context, req *ReqCreateAuth) (InfoBulletinBoards, error)
 	// Get(ctx context.Context, req *ReqGetAuth) ([]GetInfoBulletin, error)
 	// Update(ctx context.Context, req *ReqUpdateInfoBulletin) (InfoBulletinBoards, error)

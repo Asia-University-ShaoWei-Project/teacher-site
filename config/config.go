@@ -20,14 +20,16 @@ type Server struct {
 }
 
 type Secure struct {
-	Salt     []byte
-	SaltSize int ``
-	HashCost int
+	Salt          []byte
+	SaltSize      int ``
+	HashCost      int
+	SessionSecret []byte
 }
 type Jwt struct {
-	Secure          []byte
+	Secret          []byte
 	TokenExpireTime time.Duration
 }
+
 type Redis struct {
 	MaxReTry int
 	Addr     string
@@ -57,13 +59,14 @@ func newServer() *Server {
 }
 func newSecure() *Secure {
 	return &Secure{
-		SaltSize: 16,
-		HashCost: 10,
+		SaltSize:      16,
+		HashCost:      10,
+		SessionSecret: []byte("secret"),
 	}
 }
 func newJwt() *Jwt {
 	return &Jwt{
-		Secure:          []byte(`secure`),
+		Secret:          []byte(`secure`),
 		TokenExpireTime: 2,
 	}
 }

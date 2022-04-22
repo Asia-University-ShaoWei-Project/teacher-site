@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"teacher-site/config"
 	"teacher-site/domain"
 
 	log "github.com/sirupsen/logrus"
@@ -14,13 +15,15 @@ var errUnnecessaryUpdate = errors.New("the data is up to date")
 type InfoUsecase struct {
 	dbRepository    domain.InfoDbRepository
 	cacheRepository domain.InfoCacheRepository
+	conf            *config.Config
 	log             *log.Logger
 }
 
-func NewInfoUsecase(dbRepo domain.InfoDbRepository, cacheRepo domain.InfoCacheRepository, logger *log.Logger) domain.InfoUsecase {
+func NewInfoUsecase(dbRepo domain.InfoDbRepository, cacheRepo domain.InfoCacheRepository, conf *config.Config, logger *log.Logger) domain.InfoUsecase {
 	return &InfoUsecase{
 		dbRepository:    dbRepo,
 		cacheRepository: cacheRepo,
+		conf:            conf,
 		log:             logger,
 	}
 }

@@ -1,7 +1,7 @@
 const loginForm = document.getElementById("login-form");
 const loginButton = document.getElementById("login-form-submit");
 const loginErrorMsg = document.getElementById("login-error-msg");
-const loginUrl = `/auth/login`;
+var loginUrl = `/api/v1/auth/login`;
 
 loginButton.addEventListener("click", (e) => {
   e.preventDefault();

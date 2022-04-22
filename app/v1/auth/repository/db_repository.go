@@ -13,7 +13,7 @@ type dbRepository struct {
 	conf *config.DB
 }
 
-func NewAuthRepository(db *gorm.DB, conf *config.DB) domain.AuthDbRepository {
+func NewDbRepository(db *gorm.DB, conf *config.DB) domain.AuthDbRepository {
 	return &dbRepository{
 		db:   db,
 		conf: conf,
@@ -37,6 +37,18 @@ func (r *dbRepository) UpdateTokenByUserId(ctx context.Context, id, token string
 		return nil
 	})
 
+	return err
+}
+
+func (r *dbRepository) DeleteToken(ctx context.Context, id string) error {
+	auth := domain.Auths{UserID: id}
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		result := tx.Model(&auth).Update("token", "")
+		if err := checkErrAndExist(result); err != nil {
+			return err
+		}
+		return nil
+	})
 	return err
 }
 

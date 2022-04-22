@@ -1,10 +1,13 @@
-.DS_Store
-.vscode/
 package-lock.json
-test/
 migrate_dev_test.go
+test/
 tmp/
+# DB
 *.db
+*.sql
+# doc
 todo.md
 swagger.yml
-fontawesome-6.1.1-web/
+# other
+.DS_Store
+.vscode/
