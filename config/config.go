@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"time"
 )
 
@@ -55,8 +56,8 @@ func New() *Config {
 }
 func newServer() *Server {
 	return &Server{
-		Addr: ":80",
-		// Addr:               ":" + os.Getenv("PORT"),
+		// Addr: ":80",
+		Addr:               ":" + os.Getenv("PORT"),
 		StaticRelativePath: "/static",
 		StaticRootPath:     "./static",
 		TemplatePath:       "templates/*",
