@@ -22,6 +22,12 @@ class Item {
     this.lastModified = lastModified;
     this.content = content;
   }
+  get pageType() {
+    return this._pageType;
+  }
+  set pageType(pageType) {
+    this._pageType = pageType;
+  }
   get apiUrl() {
     return this._apiUrl;
   }

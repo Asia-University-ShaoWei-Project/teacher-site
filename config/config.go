@@ -56,13 +56,18 @@ func New() *Config {
 }
 func newServer() *Server {
 	return &Server{
-		// Addr: ":80",
 		Addr:               ":" + os.Getenv("PORT"),
 		StaticRelativePath: "/static",
 		StaticRootPath:     "./static",
 		TemplatePath:       "templates/*",
 	}
 }
+func newDB() *DB {
+	return &DB{
+		Filename: "sqlite.db",
+	}
+}
+
 func newLimit() *Limit {
 	return &Limit{
 		TeacherListPageCount: 10,
@@ -87,11 +92,5 @@ func newRedis() *Redis {
 		Addr:     ":6379",
 		Password: "",
 		Database: 0,
-	}
-}
-
-func newDB() *DB {
-	return &DB{
-		Filename: "sqlite.db",
 	}
 }

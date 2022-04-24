@@ -49,15 +49,13 @@ func createAll(db *gorm.DB) {
 				{
 					LastModified: lastModified,
 					BulletinBoards: []domain.InfoBulletinBoards{
-						{
-							Content: "(第五週)10月11日起恢復實體授課，請配帶口罩，並按教室座位表入座，謝謝。",
-						},
-						{
-							Content: "請益時間(Office Hours): 資訊大樓地下室HB13研究室 TUE(二) 14:10 – 17:00    THU(四) 10:10 – 17:00    Fri.(五) 10:10 – 12:00",
-						},
-						{
-							Content: "9/13(一)開學日、開始上課，9/13~9/23全校加退選。",
-						},
+						{Content: "(第五週)10月11日起恢復實體授課，請配帶口罩，並按教室座位表入座，謝謝。"},
+						{Content: "請益時間(Office Hours): 資訊大樓地下室HB13研究室 TUE(二) 14:10 – 17:00    THU(四) 10:10 – 17:00    Fri.(五) 10:10 – 12:00"},
+						{Content: "9/13(一)開學日、開始上課，9/13~9/23全校加退選。"},
+						{Content: "即日起進入本校各辦公處所、教室、實驗室、工坊等室內空間時，請一律佩戴口罩。(防疫小組規定)"},
+						{Content: "2/22(一)開學日、開始上課，2/23~3/4全校加退選"},
+						{Content: "11月4~10日期中考(We have midterm exams on 4-10, Nov.)"},
+						{Content: "4月4,5日(星期四、五)清明節放假。"},
 					},
 				},
 			},

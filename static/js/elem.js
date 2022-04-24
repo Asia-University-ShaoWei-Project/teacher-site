@@ -93,9 +93,6 @@ let inputSlideTitleElem;
 let inputSlideFileElem;
 
 var modalEditSubmitElem;
-// let inputHomeworkNumberElem = modalEditElem.querySelector("#homework-chapter");
-// let inputHomeworkTitleElem = modalEditElem.querySelector("#homework-title");
-// let inputHomeworkFileElem = modalEditElem.querySelector("#homework-file");
 
 // add, edit
 modalEditElem.addEventListener("show.bs.modal", function (event) {
@@ -103,10 +100,11 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
   let tableType = btn.getAttribute("data-bs-tableType");
   let method = btn.getAttribute("data-bs-method");
   let rowIndex = btn.getAttribute("data-bs-index");
-  let pageType = btn.getAttribute("data-bs-pageType");
-  let url, formElem;
+  let pageType;
   let item = items[optionSwitchIndex];
   let itemID = item.id;
+  let url, formElem;
+
   switch (tableType) {
     case attr.bulletin.tableType:
       formElem = createBulletinInputElem();
@@ -120,24 +118,23 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
   modalTitle.textContent = attr[tableType].tableTitle;
   modalFormElem.innerHTML = formElem;
 
-  inputBulletinContentElem = modalEditElem.querySelector("#bulletin-content");
+  refreshInputElem(modalEditElem);
+  console.log("my pageType:", pageType);
 
-  inputSlideChapterElem = modalEditElem.querySelector("#slide-chapter");
-  inputSlideTitleElem = modalEditElem.querySelector("#slide-title");
-  inputSlideFileElem = modalEditElem.querySelector("#slide-file");
-
-  modalEditSubmitElem = modalEditElem.querySelector("#modal-edit-submit");
   switch (method) {
     case HTTP_METHOD.post:
       modalEditSubmitElem.textContent = "ADD";
+      pageType = btn.getAttribute("data-bs-pageType");
 
       url = newApiUrl(pageType, method, tableType, itemID);
       break;
     case HTTP_METHOD.put:
       let row = item[tableType].rows[rowIndex];
       let rowID = row.id;
-      url = newApiUrl(pageType, method, tableType, itemID, rowID);
       modalEditSubmitElem.textContent = "UPDATE";
+      pageType = btn.getAttribute("data-bs-pageType");
+
+      url = newApiUrl(pageType, method, tableType, itemID, rowID);
 
       switch (tableType) {
         case attr.bulletin.tableType:
@@ -156,6 +153,19 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
   }
   addEventToEditSubmit(tableType, method, url);
 });
+function refreshInputElem(modalElem) {
+  inputBulletinContentElem = modalElem.querySelector("#bulletin-content");
+
+  inputSlideChapterElem = modalElem.querySelector("#slide-chapter");
+  inputSlideTitleElem = modalElem.querySelector("#slide-title");
+  inputSlideFileElem = modalElem.querySelector("#slide-file");
+
+  modalEditSubmitElem = modalElem.querySelector("#modal-edit-submit");
+
+  // let inputHomeworkNumberElem = modalEditElem.querySelector("#homework-chapter");
+  // let inputHomeworkTitleElem = modalEditElem.querySelector("#homework-title");
+  // let inputHomeworkFileElem = modalEditElem.querySelector("#homework-file");
+}
 function newApiUrl(pageType, method, tableType, itemID, rowID) {
   let url = apiResourceUrl[pageType][method];
   switch (pageType) {
