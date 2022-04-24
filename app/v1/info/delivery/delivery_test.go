@@ -42,7 +42,7 @@ var (
 type HttpStatusCode int
 
 func TestCreate(t *testing.T) {
-	NewInfoHandler(ctx, route, usecaseMock, conf)
+	NewHandler(ctx, route, usecaseMock, conf)
 	data := `{"content":""}`
 	urlFormat := `/%v/bulletin`
 	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
@@ -99,7 +99,7 @@ func TestCreate(t *testing.T) {
 // todo: teacher_domain
 // todo: none last_modified error handle
 func TestGet(t *testing.T) {
-	NewInfoHandler(ctx, route, usecaseMock, conf)
+	NewHandler(ctx, route, usecaseMock, conf)
 
 	testCases := []struct {
 		desc   string
@@ -131,7 +131,7 @@ func TestGet(t *testing.T) {
 	}
 }
 func TestUpdate(t *testing.T) {
-	NewInfoHandler(ctx, route, usecaseMock, conf)
+	NewHandler(ctx, route, usecaseMock, conf)
 	data := `{"content":""}`
 	urlFormat := `/%v/bulletin/%v`
 	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
@@ -198,7 +198,7 @@ func TestUpdate(t *testing.T) {
 	}
 }
 func TestDelete(t *testing.T) {
-	NewInfoHandler(ctx, route, usecaseMock, conf)
+	NewHandler(ctx, route, usecaseMock, conf)
 	urlFormat := `/%v/bulletin/%v`
 	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
 	testCases := []struct {

@@ -12,29 +12,29 @@ import (
 
 var errUnnecessaryUpdate = errors.New("the data is up to date")
 
-type InfoUsecase struct {
-	dbRepository    domain.InfoDbRepository
-	cacheRepository domain.InfoCacheRepository
+type Usecase struct {
+	DbRepository    domain.InfoDbRepository
+	CacheRepository domain.InfoCacheRepository
 	conf            *config.Config
 	log             *log.Logger
 }
 
-func NewInfoUsecase(dbRepo domain.InfoDbRepository, cacheRepo domain.InfoCacheRepository, conf *config.Config, logger *log.Logger) domain.InfoUsecase {
-	return &InfoUsecase{
-		dbRepository:    dbRepo,
-		cacheRepository: cacheRepo,
+func NewUsecase(dbRepo domain.InfoDbRepository, cacheRepo domain.InfoCacheRepository, conf *config.Config, logger *log.Logger) domain.InfoUsecase {
+	return &Usecase{
+		DbRepository:    dbRepo,
+		CacheRepository: cacheRepo,
 		conf:            conf,
 		log:             logger,
 	}
 }
 
-func (i *InfoUsecase) Create(ctx context.Context, req *domain.CreateInfoBulletinRequest) (domain.CreateInfoBulletinResponse, error) {
+func (i *Usecase) Create(ctx context.Context, req *domain.CreateInfoBulletinRequest) (domain.CreateInfoBulletinResponse, error) {
 	var res domain.CreateInfoBulletinResponse
-	bulletin, err := i.dbRepository.Create(ctx, req)
+	bulletin, err := i.DbRepository.Create(ctx, req)
 	if err != nil {
 		return res, err
 	}
-	lastModified, err := i.dbRepository.GetLastModified(ctx, req.InfoID)
+	lastModified, err := i.DbRepository.GetLastModified(ctx, req.InfoID)
 	if err != nil {
 		// todo: get last modified error
 		i.log.Error(err)
@@ -48,13 +48,13 @@ func (i *InfoUsecase) Create(ctx context.Context, req *domain.CreateInfoBulletin
 	return res, nil
 }
 
-func (i *InfoUsecase) Get(ctx context.Context, req *domain.GetInfoBulletinRequest) (domain.GetInfoBulletinResponse, error) {
+func (i *Usecase) Get(ctx context.Context, req *domain.GetInfoBulletinRequest) (domain.GetInfoBulletinResponse, error) {
 	var (
 		res      domain.GetInfoBulletinResponse
 		bulletin []domain.InfoBulletinResponse
 	)
-	info, err := i.dbRepository.GetByTeacherDomain(ctx, req.TeacherDomain)
-	// lastModified, err := i.dbRepository.GetLastModified(ctx, req.TeacherDomain)
+	info, err := i.DbRepository.GetByTeacherDomain(ctx, req.TeacherDomain)
+	// lastModified, err := i.DbRepository.GetLastModified(ctx, req.TeacherDomain)
 	if err != nil {
 		return res, err
 	}
@@ -66,7 +66,7 @@ func (i *InfoUsecase) Get(ctx context.Context, req *domain.GetInfoBulletinReques
 	res.SetLastModified(info.LastModified)
 	res.SetID(info.AutoModel.ID)
 	// Get by cache
-	data, err := i.cacheRepository.Get(ctx, req)
+	data, err := i.CacheRepository.Get(ctx, req)
 	if err != nil {
 		// todo: make error handle of "get data"(by cache)
 		i.log.Error(err)
@@ -82,7 +82,7 @@ func (i *InfoUsecase) Get(ctx context.Context, req *domain.GetInfoBulletinReques
 	}
 
 	// Get from database
-	bulletins, err := i.dbRepository.GetBulletinsByInfoId(ctx, info.AutoModel.ID)
+	bulletins, err := i.DbRepository.GetBulletinsByInfoId(ctx, info.AutoModel.ID)
 	if err != nil {
 		// todo: make error handle of "get data"(by RDBMS)
 		i.log.Error(err)
@@ -90,22 +90,22 @@ func (i *InfoUsecase) Get(ctx context.Context, req *domain.GetInfoBulletinReques
 	}
 	res.SetBulletins(bulletins)
 	// todo: update the data and last_modified in cache
-	// if err := i.cacheRepository.Update(ctx, &resInfo); err != nil {
+	// if err := i.CacheRepository.Update(ctx, &resInfo); err != nil {
 	// todo: error handle of updating data(by cache)
 	// i.log.Error(err)
 	// }
 	return res, nil
 }
-func (i *InfoUsecase) Update(ctx context.Context, req *domain.UpdateInfoBulletinRequest) (domain.UpdateInfoBulletinResponse, error) {
+func (i *Usecase) Update(ctx context.Context, req *domain.UpdateInfoBulletinRequest) (domain.UpdateInfoBulletinResponse, error) {
 	var res domain.UpdateInfoBulletinResponse
-	info, err := i.dbRepository.Update(ctx, req)
+	info, err := i.DbRepository.Update(ctx, req)
 	if err != nil {
 		// todo: make error handle of "update the data"(by RDBMS)
 		i.log.Error(err)
 		return res, err
 	}
 	// todo: update the data and last_modified in cache
-	// err = i.cacheRepository.Update(ctx, req.Content, info.LastModified)
+	// err = i.CacheRepository.Update(ctx, req.Content, info.LastModified)
 	// if err != nil {
 	// todo: error handle of updating data(by cache)
 	// 	return nil, err
@@ -115,9 +115,9 @@ func (i *InfoUsecase) Update(ctx context.Context, req *domain.UpdateInfoBulletin
 	}
 	return res, nil
 }
-func (i *InfoUsecase) Delete(ctx context.Context, req *domain.DeleteInfoBulletinRequest) (domain.DeleteInfoBulletinResponse, error) {
+func (i *Usecase) Delete(ctx context.Context, req *domain.DeleteInfoBulletinRequest) (domain.DeleteInfoBulletinResponse, error) {
 	var res domain.DeleteInfoBulletinResponse
-	info, err := i.dbRepository.Delete(ctx, req)
+	info, err := i.DbRepository.Delete(ctx, req)
 	if err != nil {
 		// todo: make error handle of "delete the data"(by RDBMS)
 		return res, err

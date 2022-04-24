@@ -22,7 +22,7 @@ var (
 	ctx  = context.Background()
 	conf = config.New()
 	db   = database.NewDB("../../../../pkg/database", conf.DB)
-	repo = NewInfoRepository(db, conf.DB)
+	repo = NewDbRepository(db, conf.DB)
 )
 
 func TestCreateInfo(t *testing.T) {

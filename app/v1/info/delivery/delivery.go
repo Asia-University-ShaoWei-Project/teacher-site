@@ -11,13 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type InfoHandler struct {
+type Handler struct {
 	Usecase domain.InfoUsecase
 	conf    *config.Config
 }
 
-func NewInfoHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.InfoUsecase, conf *config.Config) {
-	handler := &InfoHandler{
+func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.InfoUsecase, conf *config.Config) {
+	handler := &Handler{
 		Usecase: usecase,
 		conf:    conf,
 	}
@@ -33,7 +33,7 @@ func NewInfoHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.Info
 	// }
 }
 
-func (i *InfoHandler) Create(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) Create(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var bind domain.CreateInfoBulletinRequest
 		// bind teacher domain
@@ -47,7 +47,7 @@ func (i *InfoHandler) Create(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		res, err := i.Usecase.Create(ctx, &bind)
+		res, err := h.Usecase.Create(ctx, &bind)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
@@ -58,7 +58,7 @@ func (i *InfoHandler) Create(ctx context.Context) gin.HandlerFunc {
 		})
 	}
 }
-func (i *InfoHandler) Get(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) Get(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var bind domain.GetInfoBulletinRequest
 		// bind teacher domain and last_modified
@@ -69,7 +69,7 @@ func (i *InfoHandler) Get(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 		c.ShouldBindQuery(&bind)
-		res, err := i.Usecase.Get(ctx, &bind)
+		res, err := h.Usecase.Get(ctx, &bind)
 		if err != nil {
 			c.AbortWithStatus(http.StatusNoContent)
 			return
@@ -80,7 +80,7 @@ func (i *InfoHandler) Get(ctx context.Context) gin.HandlerFunc {
 	}
 }
 
-func (i *InfoHandler) Update(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) Update(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var bind domain.UpdateInfoBulletinRequest
 		// bind teacher_domain, info_id and bulletin_id
@@ -95,7 +95,7 @@ func (i *InfoHandler) Update(ctx context.Context) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		res, err := i.Usecase.Update(ctx, &bind)
+		res, err := h.Usecase.Update(ctx, &bind)
 		if err != nil {
 			fmt.Println(err)
 			c.AbortWithStatus(http.StatusBadRequest)
@@ -108,7 +108,7 @@ func (i *InfoHandler) Update(ctx context.Context) gin.HandlerFunc {
 	}
 }
 
-func (i *InfoHandler) Delete(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) Delete(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var bind domain.DeleteInfoBulletinRequest
 		// bind teacher_domain, info_id and bulletin_id
@@ -116,7 +116,7 @@ func (i *InfoHandler) Delete(ctx context.Context) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		res, err := i.Usecase.Delete(ctx, &bind)
+		res, err := h.Usecase.Delete(ctx, &bind)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return

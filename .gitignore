@@ -5,6 +5,7 @@ tmp/
 # DB
 *.db
 *.sql
+/mock/database
 # doc
 todo.md
 swagger.yml

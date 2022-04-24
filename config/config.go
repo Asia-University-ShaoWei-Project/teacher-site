@@ -7,6 +7,7 @@ import (
 // todo: use viper
 type Config struct {
 	Server *Server
+	Limit  *Limit
 	Secure *Secure
 	Jwt    *Jwt
 	Redis  *Redis
@@ -18,7 +19,9 @@ type Server struct {
 	StaticRootPath     string
 	TemplatePath       string
 }
-
+type Limit struct {
+	TeacherListPageCount int
+}
 type Secure struct {
 	Salt          []byte
 	SaltSize      int ``
@@ -37,11 +40,13 @@ type Redis struct {
 	Database int
 }
 type DB struct {
+	Filename string
 }
 
 func New() *Config {
 	return &Config{
 		Server: newServer(),
+		Limit:  newLimit(),
 		Secure: newSecure(),
 		Jwt:    newJwt(),
 		Redis:  newRedis(),
@@ -55,6 +60,11 @@ func newServer() *Server {
 		StaticRelativePath: "/static",
 		StaticRootPath:     "./static",
 		TemplatePath:       "templates/*",
+	}
+}
+func newLimit() *Limit {
+	return &Limit{
+		TeacherListPageCount: 10,
 	}
 }
 func newSecure() *Secure {
@@ -80,5 +90,7 @@ func newRedis() *Redis {
 }
 
 func newDB() *DB {
-	return &DB{}
+	return &DB{
+		Filename: "sqlite.db",
+	}
 }

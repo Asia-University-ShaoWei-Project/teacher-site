@@ -7,20 +7,13 @@ import (
 	"github.com/go-redis/redis"
 )
 
-// hash keys & fields
-const (
-// keyInfo       = `info:%s`
-// fContent      = `content`
-// fLastModified = `last_modified`
-)
-
 // todo
 type CacheRepository struct {
 	db   *redis.Client
 	conf *config.Redis
 }
 
-func NewCacheRepository(db *redis.Client, conf *config.Redis) domain.AuthCacheRepository {
+func NewCacheRepository(db *redis.Client, conf *config.Redis) domain.PageCacheRepository {
 	return &CacheRepository{
 		db:   db,
 		conf: conf,

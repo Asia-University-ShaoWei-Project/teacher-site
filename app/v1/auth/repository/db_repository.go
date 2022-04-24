@@ -8,26 +8,26 @@ import (
 	"gorm.io/gorm"
 )
 
-type dbRepository struct {
+type DbRepository struct {
 	db   *gorm.DB
 	conf *config.DB
 }
 
 func NewDbRepository(db *gorm.DB, conf *config.DB) domain.AuthDbRepository {
-	return &dbRepository{
+	return &DbRepository{
 		db:   db,
 		conf: conf,
 	}
 }
 
-func (r *dbRepository) GetAccountByUserId(ctx context.Context, id string) (domain.Auths, error) {
+func (r *DbRepository) GetAccountByUserId(ctx context.Context, id string) (domain.Auths, error) {
 	auth := domain.Auths{UserID: id}
 	result := r.db.Find(&auth)
 	err := checkErrAndExist(result)
 	return auth, err
 }
 
-func (r *dbRepository) UpdateTokenByUserId(ctx context.Context, id, token string) error {
+func (r *DbRepository) UpdateTokenByUserId(ctx context.Context, id, token string) error {
 	auth := domain.Auths{UserID: id}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&auth).Update("token", token)
@@ -40,7 +40,7 @@ func (r *dbRepository) UpdateTokenByUserId(ctx context.Context, id, token string
 	return err
 }
 
-func (r *dbRepository) DeleteToken(ctx context.Context, id string) error {
+func (r *DbRepository) DeleteToken(ctx context.Context, id string) error {
 	auth := domain.Auths{UserID: id}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&auth).Update("token", "")

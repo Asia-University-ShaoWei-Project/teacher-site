@@ -16,28 +16,28 @@ const (
 	fLastModified = `last_modified`
 )
 
-type cacheRepository struct {
+type CacheRepository struct {
 	db   *redis.Client
 	conf *config.Redis
 }
 
 func NewCacheRepository(db *redis.Client, conf *config.Redis) domain.InfoCacheRepository {
-	return &cacheRepository{
+	return &CacheRepository{
 		db:   db,
 		conf: conf,
 	}
 }
 
-func (c *cacheRepository) Get(ctx context.Context, req *domain.ReqGetInfo) (string, error) {
+func (c *CacheRepository) Get(ctx context.Context, req *domain.ReqGetInfo) (string, error) {
 	k := fmt.Sprintf(keyInfo, req.TeacherDomain)
 	return c.db.HGet(k, fContent).Result()
 }
-func (c *cacheRepository) GetLastModified(ctx context.Context, req *domain.ReqGetInfo) (string, error) {
+func (c *CacheRepository) GetLastModified(ctx context.Context, req *domain.ReqGetInfo) (string, error) {
 	k := fmt.Sprintf(keyInfo, req.TeacherDomain)
 	return c.db.HGet(k, fLastModified).Result()
 }
 
-func (c *cacheRepository) Update(ctx context.Context, req *domain.ResGetInfo) error {
+func (c *CacheRepository) Update(ctx context.Context, req *domain.ResGetInfo) error {
 	// k := fmt.Sprintf(keyInfo, req.TeacherDomain)
 	// todo: how to append the value into the hash
 	// for i := 0; i < c.conf.MaxReTry; i++ {
@@ -57,7 +57,7 @@ func (c *cacheRepository) Update(ctx context.Context, req *domain.ResGetInfo) er
 
 	return nil
 }
-func (c *cacheRepository) UpdateInfoLastModified(ctx context.Context, req *domain.ResGetInfo) error {
+func (c *CacheRepository) UpdateInfoLastModified(ctx context.Context, req *domain.ResGetInfo) error {
 	// k := fmt.Sprintf(keyInfo, req.TeacherDomain)
 	// todo: how to append the value into the hash
 	// for i := 0; i < c.conf.MaxReTry; i++ {

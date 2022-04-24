@@ -14,7 +14,7 @@ var (
 	ctx       = context.Background()
 	dbRepo    = mockRepo.NewInfoDbRepository()
 	cacheRepo = mockRepo.NewInfoCacheRepository()
-	usecase   = NewInfoUsecase(dbRepo, cacheRepo, mock.Conf, mock.Log)
+	usecase   = NewUsecase(dbRepo, cacheRepo, mock.Conf, mock.Log)
 )
 
 // func TestCreateInfo(t *testing.T) {

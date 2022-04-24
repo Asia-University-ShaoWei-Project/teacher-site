@@ -11,19 +11,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type dbRepository struct {
+type DbRepository struct {
 	db   *gorm.DB
 	conf *config.DB
 }
 
-func NewInfoRepository(db *gorm.DB, conf *config.DB) domain.InfoDbRepository {
-	return &dbRepository{
+func NewDbRepository(db *gorm.DB, conf *config.DB) domain.InfoDbRepository {
+	return &DbRepository{
 		db:   db,
 		conf: conf,
 	}
 }
 
-func (r *dbRepository) Create(ctx context.Context, req *domain.CreateInfoBulletinRequest) (domain.InfoBulletinBoards, error) {
+func (r *DbRepository) Create(ctx context.Context, req *domain.CreateInfoBulletinRequest) (domain.InfoBulletinBoards, error) {
 	var bulletin domain.InfoBulletinBoards
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		info := domain.Infos{AutoModel: domain.AutoModel{ID: req.InfoID}}
@@ -41,13 +41,13 @@ func (r *dbRepository) Create(ctx context.Context, req *domain.CreateInfoBulleti
 	return bulletin, err
 }
 
-func (r *dbRepository) GetByTeacherDomain(ctx context.Context, teacherDomain string) (domain.Infos, error) {
+func (r *DbRepository) GetByTeacherDomain(ctx context.Context, teacherDomain string) (domain.Infos, error) {
 	var info domain.Infos
 	result := r.db.Model(&info).Where("teacher_id=? AND deleted_at IS NULL", teacherDomain).Find(&info)
 	err := checkErrAndExist(result)
 	return info, err
 }
-func (r *dbRepository) GetBulletinsByInfoId(ctx context.Context, id uint) ([]domain.InfoBulletinResponse, error) {
+func (r *DbRepository) GetBulletinsByInfoId(ctx context.Context, id uint) ([]domain.InfoBulletinResponse, error) {
 	var infoBulletin []domain.InfoBulletinResponse
 	result := r.db.Table("info_bulletin_boards ib").
 		Select("ib.id, DATE(ib.created_at) AS date, ib.content").
@@ -58,14 +58,14 @@ func (r *dbRepository) GetBulletinsByInfoId(ctx context.Context, id uint) ([]dom
 }
 
 // todo: delete?
-func (r *dbRepository) GetLastModified(ctx context.Context, id uint) (string, error) {
+func (r *DbRepository) GetLastModified(ctx context.Context, id uint) (string, error) {
 	var info domain.Infos
 	result := r.db.Find(&info, id)
 	err := checkErrAndExist(result)
 	return info.LastModified, err
 }
 
-func (r *dbRepository) Update(ctx context.Context, req *domain.UpdateInfoBulletinRequest) (domain.Infos, error) {
+func (r *DbRepository) Update(ctx context.Context, req *domain.UpdateInfoBulletinRequest) (domain.Infos, error) {
 	info := domain.Infos{AutoModel: domain.AutoModel{ID: req.InfoID}}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := updateInfoLastModified(tx, &info); err != nil {
@@ -85,7 +85,7 @@ func (r *dbRepository) Update(ctx context.Context, req *domain.UpdateInfoBulleti
 	})
 	return info, err
 }
-func (r *dbRepository) Delete(ctx context.Context, req *domain.DeleteInfoBulletinRequest) (domain.Infos, error) {
+func (r *DbRepository) Delete(ctx context.Context, req *domain.DeleteInfoBulletinRequest) (domain.Infos, error) {
 	info := domain.Infos{AutoModel: domain.AutoModel{ID: req.InfoID}}
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {

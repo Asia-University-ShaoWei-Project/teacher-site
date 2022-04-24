@@ -33,10 +33,27 @@ func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.AuthUsec
 }
 func (auth *AuthHandler) GetToken(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		isTeacher := false
+		// todo: checkout the domain is existed
 		s := sessions.Default(c)
+		// The token from the cookie
 		token := util.GetSessionToken(s)
-		util.AddBearerHeader(c, token.(string))
-		c.Status(http.StatusOK)
+		if token != nil {
+			_token := token.(string)
+			// todo: check expiration and certify the token with db
+			// add token to the authorization header of response
+			_, err := util.ParseJwt(ctx, _token, auth.conf.Jwt.Secret)
+			if err == nil {
+				isTeacher = true
+				util.AddBearerHeader(c, _token)
+			}
+			util.DeleteSessionToken(s)
+			s.Save()
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"isTeacher": isTeacher,
+		})
+
 	}
 }
 
@@ -50,8 +67,6 @@ func (auth *AuthHandler) Login(ctx context.Context) gin.HandlerFunc {
 		if mw.IsTeacher(ctx, c, auth.conf.Jwt.Secret) {
 			// todo: how to get the domain
 			c.AbortWithStatus(http.StatusFound)
-			// c.Redirect(http.StatusFound, "/")
-			// c.Abort()
 			return
 		}
 
@@ -70,7 +85,8 @@ func (auth *AuthHandler) Login(ctx context.Context) gin.HandlerFunc {
 		util.SetSessionToken(s, token)
 		s.Save()
 		util.AddBearerHeader(c, token)
-		c.Status(http.StatusNoContent)
+		// todo: get teacher domain
+		c.JSON(http.StatusFound, gin.H{"domain": "/rikki"})
 	}
 }
 func (auth *AuthHandler) Logout(ctx context.Context) gin.HandlerFunc {

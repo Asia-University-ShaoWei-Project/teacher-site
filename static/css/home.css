@@ -1,0 +1,100 @@
+main {
+  flex: 9;
+  display: flex;
+  flex-direction: row;
+}
+
+/* Side bar CSS */
+#select {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+select hr {
+  margin: 10px auto;
+  width: 70%;
+  border-color: #f9830d;
+}
+
+#info {
+  /* text-align: left; */
+  flex: 1;
+  margin: 10%;
+  font-size: 16px;
+}
+
+#sub-info {
+  /* text-align: left; */
+  flex: 1;
+  margin: 10%;
+  font-size: 14px;
+  text-align: center;
+}
+
+#option-box {
+  flex: 8;
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-self: center;
+}
+
+.option-item {
+  margin-top: 10px;
+  text-transform: capitalize;
+}
+
+
+/* Content CSS */
+#content {
+  flex: 8;
+}
+
+/* item have id */
+.content-page {
+  margin: 5%;
+}
+
+.item-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-title {
+  flex: 2;
+  font-size: 32 px;
+}
+
+.item-content {
+  flex: 8;
+  padding: 0 5%;
+}
+
+.bulletin-board-box {
+  display: flex;
+  flex-direction: row;
+}
+
+.bulletin-board-setting {
+  flex: 1;
+}
+
+.bulletin-board-date {
+  flex: 2;
+}
+
+.bulletin-board-title {
+  flex: 7;
+  padding-left: 5%;
+}
+
+.file-item {
+  display: flex;
+  flex-direction: row;
+}
+
+/** Loading */
+#loading {
+  display: none;
+}

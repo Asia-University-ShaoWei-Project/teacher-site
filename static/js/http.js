@@ -1,6 +1,6 @@
 const HTTP_STATUS_CODE = {
   ok: 200,
-  // StatusCreated              = 201,
+  created: 201,
   // StatusAccepted             = 202,
   // StatusNonAuthoritativeInfo = 203,
   noContent: 204,
@@ -10,4 +10,11 @@ const HTTP_STATUS_CODE = {
   unauthorized: 401,
   notFound: 404,
   statusInternalServerError: 500,
+};
+
+const HTTP_METHOD = {
+  post: "post",
+  get: "get",
+  put: "put",
+  delete: "delete",
 };

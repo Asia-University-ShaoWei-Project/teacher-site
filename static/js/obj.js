@@ -1,18 +1,6 @@
-class API {
-  constructor(origin, version, teacherDomain, resources) {
-    this.origin = origin;
-    this.version = version;
-    this.teacherDomain = teacherDomain;
-    this.resources = resources;
-    this.url = this.origin + "/api/" + this.version + "/" + this.teacherDomain;
-  }
-  getResourceUrl(type) {
-    return this.url + "/" + this.resources[type];
-  }
-}
-
 class Item {
   constructor(
+    pageType,
     apiUrl = "",
     id,
     nameZh = "",
@@ -20,8 +8,10 @@ class Item {
     bulletin,
     slide,
     homework,
-    lastModified = "0"
+    lastModified = "0",
+    content = ""
   ) {
+    this.pageType = pageType;
     this.apiUrl = apiUrl;
     this.id = id;
     this.nameZh = nameZh;
@@ -30,11 +20,34 @@ class Item {
     this.slide = slide;
     this.homework = homework;
     this.lastModified = lastModified;
-    this.content = "";
+    this.content = content;
   }
-
+  get apiUrl() {
+    return this._apiUrl;
+  }
+  set apiUrl(url) {
+    this._apiUrl = url;
+  }
+  get id() {
+    return this._id;
+  }
   set id(id) {
     this._id = id;
+  }
+  get nameZh() {
+    return this._nameZh;
+  }
+  set nameZh(name) {
+    this._nameZh = name;
+  }
+  get nameUs() {
+    return this._nameUs;
+  }
+  set nameUs(name) {
+    this._nameUs = name;
+  }
+  get lastModified() {
+    return this._lastModified;
   }
   set lastModified(lastModified) {
     this._lastModified = lastModified;
@@ -45,45 +58,62 @@ class Item {
   set bulletin(bulletin) {
     this._bulletin = bulletin;
   }
-  buildContent(rebuild) {
-    if (rebuild) {
-      let content = "";
-      content += createContent(tableType.bulletin, this.bulletin);
-      content += createContent(tableType.slide, this.slide);
-      content += createContent(tableType.homework, this.homework);
-      return content;
-    }
-    return this.content;
+  get content() {
+    return this._content;
   }
   set content(content) {
     this._content = content;
   }
+  buildContent() {
+    let content = "";
+    content += createContent(
+      this._pageType,
+      attr.bulletin.tableType,
+      this._bulletin
+    );
+    content += createContent(this._pageType, attr.slide.tableType, this._slide);
+    content += createContent(
+      this._pageType,
+      attr.homework.tableType,
+      this._homework
+    );
+    this._content = content;
+  }
+  // todo
   updateData() {
     // apiUrl = [ api.resources.info | api.resources.course]
-    let url = this.apiUrl + "/" + this.id + "/" + this.lastUpdateTime;
     axios
-      .get(url)
+      .get(api.url + this.apiUrl, {
+        params: {
+          last_modified: this.lastModified,
+        },
+      })
       .then((res) => {
         let rebuild = true;
+        let data = res.data.data;
         switch (res.status) {
-          // the information is up to date
+          // The information is up to date(Not need to updating the data)
           case HTTP_STATUS_CODE.noContent:
             rebuild = false;
-            alert("the data is up to date!");
+            console.warn("The data is up to date!");
             break;
           // need to update information
           case HTTP_STATUS_CODE.ok:
-            this.lastUpdated = res.data.data.last_updated;
-            this.bulletin = newBulletin(res.data.data.bulletin_board);
-            // todo
-            // this.slide = newSlide()
-            // this.homework = newHomework()
-            break;
-          // todo:
-          default:
+            console.log("update the content");
+
+            this.lastModified = data.last_modified;
+            if (data.bulletins != null && data.bulletins != undefined) {
+              this.bulletin = newBulletin(data.bulletins);
+            }
+            if (data.slides != null && data.slides != undefined) {
+              this.slide = newSlide(data.slides);
+            }
+            if (data.homeworks != null && data.homeworks != undefined) {
+              this.homework = newHomework(data.homeworks);
+            }
+            this.buildContent();
             break;
         }
-        this.showContent(rebuild);
       })
       .catch((err) => {
         switch (err.response.status) {
@@ -129,6 +159,12 @@ class BulletinBoardRow {
     this.date = date;
     this.content = content;
   }
+  get id() {
+    return this._id;
+  }
+  set id(id) {
+    this._id = id;
+  }
   get date() {
     return this._date;
   }
@@ -145,12 +181,19 @@ class BulletinBoardRow {
     return [this._date, this._content];
   }
 }
+
 class SlideRow {
   constructor(id, chapter, fileTitle, fileType) {
     this.id = id;
     this.chapter = chapter;
     this.fileTitle = fileTitle;
     this.fileType = fileType;
+  }
+  get id() {
+    return this._id;
+  }
+  set id(id) {
+    this._id = id;
   }
   get chapter() {
     return this._chapter;
@@ -164,18 +207,42 @@ class SlideRow {
   set fileTitle(title) {
     this._fileTitle = title;
   }
+  get fileType() {
+    return this._fileType;
+  }
+  set fileType(type) {
+    this._fileType = type;
+  }
   get dataList() {
     return ["CH" + this._chapter, this._fileTitle, this._fileType];
   }
 }
-// class HomeworkRow {
-//   constructor(id, number, fileTitle, fileType) {
-//     this.id = id;
-//     this.number = number;
-//     this.fileTitle = fileTitle;
-//     this.fileType = fileType;
-//   }
-//   get dataList() {
-//     return ["#" + this._number, this._fileTitle, this._fileType];
-//   }
-// }
+class HomeworkRow {
+  constructor(id, number, fileTitle, fileType) {
+    this.id = id;
+    this.number = number;
+    this.fileTitle = fileTitle;
+    this.fileType = fileType;
+  }
+  get number() {
+    return this._number;
+  }
+  set number(number) {
+    this._number = number;
+  }
+  get fileTitle() {
+    return this._fileTitle;
+  }
+  set fileTitle(title) {
+    this._fileTitle = title;
+  }
+  get fileType() {
+    return this._fileType;
+  }
+  set fileType(type) {
+    this._fileType = type;
+  }
+  get dataList() {
+    return ["#" + this._number, this._fileTitle, this._fileType];
+  }
+}

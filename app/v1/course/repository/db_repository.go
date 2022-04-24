@@ -10,18 +10,18 @@ import (
 	"gorm.io/gorm"
 )
 
-type dbRepository struct {
+type DbRepository struct {
 	db   *gorm.DB
 	conf *config.DB
 }
 
 func NewInfoRepository(db *gorm.DB, conf *config.DB) domain.InfoDbRepository {
-	return &dbRepository{
+	return &DbRepository{
 		db:   db,
 		conf: conf,
 	}
 }
-func (r *dbRepository) Create(ctx context.Context, req *domain.ReqCreateInfo) (domain.InfoBulletinBoards, error) {
+func (r *DbRepository) Create(ctx context.Context, req *domain.ReqCreateInfo) (domain.InfoBulletinBoards, error) {
 	var (
 		info     domain.Infos
 		bulletin domain.InfoBulletinBoards
@@ -45,7 +45,7 @@ func (r *dbRepository) Create(ctx context.Context, req *domain.ReqCreateInfo) (d
 	return bulletin, nil
 
 }
-func (r *dbRepository) Get(ctx context.Context, req *domain.ReqGetInfo) ([]domain.GetInfoBulletin, error) {
+func (r *DbRepository) Get(ctx context.Context, req *domain.ReqGetInfo) ([]domain.GetInfoBulletin, error) {
 	var infoBulletin []domain.GetInfoBulletin
 	r.db.Table("info_bulletin_boards ib").
 		Select("ib.id, DATE(ib.created_at) AS date, ib.content").
@@ -65,7 +65,7 @@ func (r *dbRepository) Get(ctx context.Context, req *domain.ReqGetInfo) ([]domai
 // }
 
 // todo: checkErrAndExist is require?
-func (r *dbRepository) Update(ctx context.Context, req *domain.ReqUpdateInfoBulletin) (domain.InfoBulletinBoards, error) {
+func (r *DbRepository) Update(ctx context.Context, req *domain.ReqUpdateInfoBulletin) (domain.InfoBulletinBoards, error) {
 	var bulletin domain.InfoBulletinBoards
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		var info domain.Infos
@@ -84,7 +84,7 @@ func (r *dbRepository) Update(ctx context.Context, req *domain.ReqUpdateInfoBull
 	})
 	return bulletin, err
 }
-func (r *dbRepository) Delete(ctx context.Context, req *domain.ReqDeleteInfo) error {
+func (r *DbRepository) Delete(ctx context.Context, req *domain.ReqDeleteInfo) error {
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		var info domain.Infos

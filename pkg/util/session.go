@@ -13,3 +13,7 @@ func GetSessionToken(s sessions.Session) interface{} {
 func SetSessionToken(s sessions.Session, token string) {
 	s.Set(sessionTokenKey, token)
 }
+
+func DeleteSessionToken(s sessions.Session) {
+	s.Delete(sessionTokenKey)
+}

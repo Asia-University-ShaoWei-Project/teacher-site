@@ -1,36 +1,39 @@
 const br_tag = "<br>";
 const elemOptionBox = document.getElementById("option-box");
 const contentPageElem = document.getElementById("content-switch");
-const COURSE = "course";
-const INFO = "info";
-const INIT = "init";
-const tableType = {
-  bulletin: "b",
-  slide: "s",
-  homework: "h",
+const pageTypes = {
+  info: "info",
+  course: "course",
 };
+const attr = {
+  bulletin: {
+    tableType: "bulletin",
+    tableTitle: "Bulletin Board",
+    tableFieldTitles: ["Date", "Information"],
+  },
+  slide: {
+    tableType: "slide",
+    tableTitle: "Slide",
+    tableFieldTitles: ["Chapter", "Type", "Title"],
+  },
+  homework: {
+    tableType: "homework",
+    tableTitle: "Homework",
+    tableFieldTitles: ["#", "Type", "Title"],
+  },
+};
+//? temporary
+var apiData;
 var api = new API(
   // origin(e.g. http://domain)
   window.location.origin,
   // version
   "v1",
   // teacher domain
-  window.location.pathname.replace("/", ""),
-  // resource name
-  {
-    init: INIT,
-    info: INFO,
-    course: COURSE,
-  }
+  window.location.pathname.replace("/", "")
 );
 var options = [];
-
-var tableFieldTitle = {
-  bulletin: ["Date", "Information"],
-  slide: ["Chapter", "Type", "Title"],
-  homework: ["#", "Type", "Title"],
-};
-var headers = {};
+var currPageType;
 
 var isTeacher = false;
 function init() {
@@ -42,10 +45,14 @@ function init() {
       },
     })
     .then((res) => {
-      console.log("init api success, is teacher");
-      headers[headerKeys.auth] = res.headers.authorization;
-      teacherMode();
-      createInitElem();
+      if (res.status == HTTP_STATUS_CODE.ok) {
+        if (res.data.isTeacher) {
+          console.log("init api success, is teacher");
+          headers[headerKeys.auth] = res.headers.authorization;
+          teacherMode();
+        }
+        createInitElem();
+      }
     })
     .catch((err) => {
       console.error("init api error, not a teacher:", err);
@@ -54,11 +61,13 @@ function init() {
 }
 function teacherMode() {
   let editTxt = "Edit";
+  let deleteTxt = "Delete";
   isTeacher = true;
-  tableFieldTitle.bulletin.push(editTxt);
-  tableFieldTitle.slide.push(editTxt);
-  tableFieldTitle.homework.push(editTxt);
+  attr.bulletin.tableFieldTitles.push(editTxt, deleteTxt);
+  attr.slide.tableFieldTitles.push(editTxt, deleteTxt);
+  attr.homework.tableFieldTitles.push(editTxt, deleteTxt);
 }
+
 function createInitElem() {
   let info_get_url = `/info/bulletin`;
   // let course_get_url = `/course`;
@@ -78,21 +87,24 @@ function getInfoApi(url) {
     })
     .then((res) => {
       console.log("getInfo api success");
-      let data = res.data.data;
-      // isTeacher(res.data.auth);
-      // todo: create option for information button
-      // todo: show the information view
-      let infoItem = newItem(null, {
-        name_zh: "公布欄",
-        name_us: "Information",
-      });
-      let bulletin = newBulletin(data.bulletins);
-      infoItem.id = data.id;
-      infoItem.lastModified = data.last_modified;
-      infoItem.bulletin = bulletin;
-      infoItem.content = createContent(tableType.bulletin, bulletin);
+      console.log(res.data);
+      apiData = res.data.data;
+
+      let bulletin = newRow(attr.bulletin.tableType, apiData.bulletins);
+      let infoItem = new Item(
+        pageTypes.info,
+        url,
+        apiData.id,
+        "公布欄",
+        "Information",
+        bulletin,
+        null,
+        null,
+        apiData.last_modified,
+        createContent(pageTypes.info, attr.bulletin.tableType, bulletin)
+      );
       items.push(infoItem);
-      showContent(items[0].buildContent(rebuild));
+      showContent(infoItem.content);
       // todo: temp
       showOptionButtons();
     })
@@ -101,6 +113,7 @@ function getInfoApi(url) {
     });
 }
 // todo
+
 function getCourseApi(url) {
   console.log("API -> getCourse -> ", url);
   // [ bulletins<list>(id, date, content), id(info), last_modified(info) ]
@@ -109,11 +122,11 @@ function getCourseApi(url) {
     .then((res) => {
       console.log("getCourseApi api success");
       console.log(res.data);
-      let data = res.data.data;
+      apiData = res.data.data;
       // isTeacher(res.data.auth);
       //* Course(#The b, s and h is undefined)
-      for (let i = 0; i < data.courses.length; i++) {
-        let item = newItem(api.getResourceUrl(COURSE), data.courses[i]);
+      for (let i = 0; i < apiData.courses.length; i++) {
+        // let item = newItem(pageType.course, apiData.courses[i]);
         items.push();
         // items.push(createOptionButton(COURSE, optionSwitchIndex, data.courses[i]));
         // lastUpdatedOfCourse.push(zeroTime);
@@ -133,51 +146,53 @@ var lastUpdatedOfCourse = [];
 // 0: information index
 var optionSwitchIndex = 0;
 
-function newItem(apiUrl, data, bulletin, slide, hw, lastUpdated) {
+function newItem(
+  pageType,
+  apiUrl,
+  data,
+  bulletin,
+  slide,
+  homework,
+  lastModified
+) {
   // nameZh: any, nameUs: any, bulletin: any, slide: any, homework: any)
   return new Item(
+    pageType,
     apiUrl,
     data.id,
     data.name_zh,
     data.name_us,
     bulletin,
     slide,
-    hw,
-    lastUpdated
+    homework,
+    lastModified
   );
 }
-
-function newBulletin(data) {
-  let title = "Bulletin Board";
-  let bulletinBoard = new Table(title, tableFieldTitle.bulletin);
+function newRow(tableType, data) {
+  let title = attr[tableType].tableTitle;
+  let tableFieldTitles = attr[tableType].tableFieldTitles;
   let rows = [];
-  data.forEach((v) => {
-    rows.push(new BulletinBoardRow(v.id, v.date, v.content));
-  });
-  bulletinBoard.rows = rows;
-  return bulletinBoard;
+  switch (tableType) {
+    case attr.bulletin.tableType:
+      data.forEach((v) => {
+        rows.push(new BulletinBoardRow(v.id, v.date, v.content));
+      });
+      break;
+    case attr.slide.tableType:
+      data.forEach((v) => {
+        rows.push(new SlideRow(v.id, v.chapter, v.file.title, v.file.type));
+      });
+      break;
+    case attr.homework.tableType:
+      data.forEach((v) => {
+        rows.push(new HomeworkRow(v.id, v.number, v.file.title, v.file.type));
+      });
+      break;
+  }
+  let table = new Table(title, tableFieldTitles);
+  table.rows = rows;
+  return table;
 }
-// todo: slide, homework table
-// function newSlide(data) {
-//   let title = "Slide";
-//   let slide = new Table(title, tableFieldTitle.slide);
-//   let rows = [];
-//   data.forEach((v) => {
-//     rows.push(new SlideRow(v.id, v.chapter, v.content));
-//   });
-//   slide.setRows(rows);
-//   return slide;
-// }
-// function newHomework(data) {
-//   let title = "Slide";
-//   let slide = new Table(title, tableFieldTitle.slide);
-//   let rows = [];
-//   data.forEach((v) => {
-//     rows.push(new SlideRow(v.id, v.chapter, v.content));
-//   });
-//   slide.setRows(rows);
-//   return slide;
-// }
 // *option
 
 function showOptionButtons() {
@@ -206,26 +221,38 @@ function createOptionButton(item) {
 function showContent(content) {
   contentPageElem.innerHTML = content;
 }
-function createContent(type, data) {
+function createContent(pageType, tableType, data) {
   console.log("createContent");
   let content = "";
   if (data != null && data != undefined) {
-    content += createTable(type, data);
+    content += createTable(pageType, tableType, data);
   }
   return content;
 }
 
 // * create element
-function createTable(type, table) {
+function createTable(pageType, tableType, table) {
   console.log("createTable");
 
   let thead = createTableHeadElem(table.fieldsTitle);
   let tbody = "";
+  let addBtnElem = "";
+  let editBtnElem = "";
+  let deleteBtnElem = "";
+
   for (let rowIndex = 0; rowIndex < table.rowsLen; rowIndex++) {
     dataList = table.rows[rowIndex].dataList;
-    tbody += createTableBodyElem(type, rowIndex, dataList);
+    if (isTeacher) {
+      editBtnElem = createEditButtonElem(pageType, tableType, rowIndex);
+      deleteBtnElem = createDeleteButtonElem(pageType, tableType, rowIndex);
+    }
+    tbody += createTableBodyElem(dataList, editBtnElem, deleteBtnElem);
   }
-  return CreateCard(table.title, thead, tbody);
+  if (isTeacher) {
+    addBtnElem = createAddButtonElem(pageType, tableType);
+  }
+
+  return createCard(table.title, thead, tbody, addBtnElem);
 }
 
 function createTableHeadElem(fields) {
@@ -235,18 +262,17 @@ function createTableHeadElem(fields) {
   }
   return `<tr>${elems}</tr>`;
 }
-function createTableBodyElem(type, rowIndex, dataList) {
+function createTableBodyElem(dataList, editBtnElem, deleteBtnElem) {
   let elems = "";
   for (let i = 0; i < dataList.length; i++) {
     elems += `<td>${dataList[i]}</td>`;
   }
   if (isTeacher) {
-    let editBtn = createEditButton(type, rowIndex);
-    elems += `<td>${editBtn}</td>`;
+    elems += `<td>${editBtnElem}</td><td>${deleteBtnElem}</td>`;
   }
   return `<tr>${elems}</tr>`;
 }
-function CreateCard(title, thead, tbody) {
+function createCard(title, thead, tbody, addBtnElem) {
   let card = `
     <div class="content-page">
       <div class="item-box">
@@ -256,10 +282,11 @@ function CreateCard(title, thead, tbody) {
           </div>
         </div>
         <div class = "item-content">
-          <table class = "table table-dark table-striped">
+          <table class = "table table-striped table-striped">
             <thead>${thead}</thead> 
             <tbody>${tbody}</tbody>
           </table>
+          ${addBtnElem}
         </div>
       </div>
     </div>`;
