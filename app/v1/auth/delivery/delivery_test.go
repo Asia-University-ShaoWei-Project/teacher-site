@@ -43,7 +43,7 @@ func TestLogin(t *testing.T) {
 	NewHandler(ctx, route, usecaseMock, conf)
 	dataFormat = `{"id":"%s", "password":"%s"}`
 	url := ApiUrl + `/login`
-	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
+	token, _ := util.GenerateJwt(conf.Jwt, mock.GetJwtRequest())
 
 	testCases := []struct {
 		desc         string
@@ -91,7 +91,7 @@ func TestLogin(t *testing.T) {
 func TestLogout(t *testing.T) {
 	NewHandler(ctx, route, usecaseMock, conf)
 	url := ApiUrl + "/logout"
-	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
+	token, _ := util.GenerateJwt(conf.Jwt, mock.GetJwtRequest())
 
 	testCases := []struct {
 		desc       string

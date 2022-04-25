@@ -29,7 +29,7 @@ func Setup(db *gorm.DB) {
 func createAll(db *gorm.DB) {
 	currTime := time.Now()
 	conf := config.New()
-	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
+	token, _ := util.GenerateJwt(conf.Jwt, mock.GetJwtRequest())
 	lastModified := strconv.FormatInt(currTime.Unix(), 10)
 	hashPassword, salt := generalHashPassword(mock.UserPassword, conf.Secure)
 	data := domain.Auths{

@@ -45,7 +45,7 @@ func TestCreate(t *testing.T) {
 	NewHandler(ctx, route, usecaseMock, conf)
 	data := `{"content":""}`
 	urlFormat := `/%v/bulletin`
-	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
+	token, _ := util.GenerateJwt(conf.Jwt, mock.GetJwtRequest())
 
 	testCases := []struct {
 		desc   string
@@ -134,7 +134,7 @@ func TestUpdate(t *testing.T) {
 	NewHandler(ctx, route, usecaseMock, conf)
 	data := `{"content":""}`
 	urlFormat := `/%v/bulletin/%v`
-	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
+	token, _ := util.GenerateJwt(conf.Jwt, mock.GetJwtRequest())
 
 	testCases := []struct {
 		desc       string
@@ -200,7 +200,7 @@ func TestUpdate(t *testing.T) {
 func TestDelete(t *testing.T) {
 	NewHandler(ctx, route, usecaseMock, conf)
 	urlFormat := `/%v/bulletin/%v`
-	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
+	token, _ := util.GenerateJwt(conf.Jwt, mock.GetJwtRequest())
 	testCases := []struct {
 		desc       string
 		token      string

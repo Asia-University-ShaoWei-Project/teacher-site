@@ -41,31 +41,31 @@ func (auth *AuthHandler) GetToken(ctx context.Context) gin.HandlerFunc {
 		if token != nil {
 			_token := token.(string)
 			// todo: check expiration and certify the token with db
-			// add token to the authorization header of response
-			_, err := util.ParseJwt(ctx, _token, auth.conf.Jwt.Secret)
-			if err == nil {
+			// Add token to the authorization header of response
+			if _, err := util.ParseJwt(ctx, _token, auth.conf.Jwt.Secret); err == nil {
 				isTeacher = true
 				util.AddBearerHeader(c, _token)
+			} else {
+				util.DeleteSessionToken(s)
+				s.Save()
 			}
-			util.DeleteSessionToken(s)
-			s.Save()
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"isTeacher": isTeacher,
 		})
-
 	}
 }
 
-// todo
 func (auth *AuthHandler) Login(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		var (
 			req domain.LoginRequest
 			err error
 		)
+
 		if mw.IsTeacher(ctx, c, auth.conf.Jwt.Secret) {
-			// todo: how to get the domain
+			// todo: redirect the teacher domain(response with doamin data)
 			c.AbortWithStatus(http.StatusFound)
 			return
 		}
@@ -75,43 +75,45 @@ func (auth *AuthHandler) Login(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		token, err := auth.Usecase.Login(ctx, &req)
+		res, err := auth.Usecase.Login(ctx, &req)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
 		s := sessions.Default(c)
-		util.SetSessionToken(s, token)
+		util.SetSessionToken(s, res.Token)
+		util.AddBearerHeader(c, res.Token)
 		s.Save()
-		util.AddBearerHeader(c, token)
-		// todo: get teacher domain
-		c.JSON(http.StatusFound, gin.H{"domain": "/rikki"})
+		// todo: redirect the teacher domain(response with doamin data)
+		c.JSON(http.StatusFound, gin.H{"domain": res.Domain})
 	}
 }
+
 func (auth *AuthHandler) Logout(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		bearerToken, err := util.GetBearerToken(ctx, c)
-		// ? token not existed
-		if err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
-		claims, err := util.ParseJwt(ctx, bearerToken, auth.conf.Jwt.Secret)
 
+		bearerToken, err := util.GetBearerToken(ctx, c)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		claims, err := util.ParseJwt(ctx, bearerToken, auth.conf.Jwt.Secret)
 		if err != nil {
 			log.Println(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
+
 		id := util.GetJwtUser(claims)
-		err = auth.Usecase.Logout(ctx, id)
-		if err != nil {
-			log.Println(err)
+
+		if err = auth.Usecase.Logout(ctx, id); err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		util.RemoveBearerHeader(c)
+
+		util.RemoveAuthHeader(c)
 		c.Status(http.StatusNoContent)
 	}
 }

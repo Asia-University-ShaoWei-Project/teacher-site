@@ -10,10 +10,14 @@ type Auths struct {
 	Teacher      Teachers `gorm:"foreignKey:AuthID;references:UserID"`
 	Time
 }
+type JwtInfoRequest struct {
+	UserID string
+	Domain string
+}
 
 //* usecase & repository
 type AuthUsecase interface {
-	Login(ctx context.Context, req *LoginRequest) (string, error)
+	Login(ctx context.Context, req *LoginRequest) (LoginResponse, error)
 	Logout(ctx context.Context, id string) error
 	// Create(ctx context.Context, req *ReqCreateAuth) (InfoBulletinBoards, error)
 	// Get(ctx context.Context, req *ReqGetAuth) (ResGetInfo, error)
@@ -23,6 +27,7 @@ type AuthUsecase interface {
 type AuthDbRepository interface {
 	// Login(ctx context.Context, id, password string) error
 	GetAccountByUserId(ctx context.Context, id string) (Auths, error)
+	GetTeacherDomainByUserId(ctx context.Context, id string) (Teachers, error)
 	UpdateTokenByUserId(ctx context.Context, id, token string) error
 	DeleteToken(ctx context.Context, id string) error
 	// DeleteToken(ctx context.Context) error
@@ -42,6 +47,10 @@ type AuthCacheRepository interface {
 type LoginRequest struct {
 	UserID       string `json:"id" binding:"required"`
 	UserPassword string `json:"password" binding:"required"`
+}
+type LoginResponse struct {
+	Token  string
+	Domain string
 }
 
 // type RegisterRequest struct {

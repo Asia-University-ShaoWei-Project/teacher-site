@@ -27,7 +27,6 @@ func NewUsecase(dbRepo domain.PageDbRepository, cacheRepo domain.PageCacheReposi
 // todo
 func (u *Usecase) TeacherList(ctx context.Context, req *domain.TeacherListRequest) (domain.TeacherListResponse, error) {
 	var res domain.TeacherListResponse
-	// todo: get teachers -> make a list to response for teacher-list html
 	limit := u.conf.Limit.TeacherListPageCount
 	offset := (limit * req.Page) - limit
 	teachers, err := u.DbRepository.GetTeachers(ctx, limit, offset)
@@ -39,7 +38,6 @@ func (u *Usecase) TeacherList(ctx context.Context, req *domain.TeacherListReques
 
 }
 func (u *Usecase) Home(ctx context.Context, req *domain.HomeRequest) (domain.HomeResponse, error) {
-	//todo the domain is exist
 	var res domain.HomeResponse
 	teacher, err := u.DbRepository.GetTeacherByDomain(ctx, req.Domain)
 	if err != nil {
@@ -55,7 +53,6 @@ func (u *Usecase) Home(ctx context.Context, req *domain.HomeRequest) (domain.Hom
 	}
 	return res, nil
 }
-func (u *Usecase) Login(ctx context.Context) {
-	//todo: usecase to check the userID and token
-
+func (u *Usecase) Login(ctx context.Context, userId, token string) error {
+	return u.DbRepository.CheckAuthByIdAndToken(ctx, userId, token)
 }

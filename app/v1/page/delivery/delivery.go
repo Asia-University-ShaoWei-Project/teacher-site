@@ -30,22 +30,36 @@ func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.PageUsec
 		conf:    conf,
 	}
 
-	r.GET("/", handler.TeacherList(ctx))
+	r.GET("/", handler.TeacherListPage(ctx))
 	// todo: get teacher list by api
-	// r.GET("/page/:page_number", handler.TeacherList(ctx))
+	r.GET("/page/:page_number", handler.TeacherList(ctx))
 	r.GET("/:teacher_domain", handler.Home(ctx))
 	r.GET("/login", handler.Login(ctx, conf.Jwt))
+}
+func (p *PageHandler) TeacherListPage(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.HTML(http.StatusOK, teacherListHtml, gin.H{})
+	}
 }
 
 func (p *PageHandler) TeacherList(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// The "1" mean is first page
-		req := domain.TeacherListRequest{Page: 1}
+		var req domain.TeacherListRequest
+		if err := c.ShouldBindUri(&req); err != nil {
+			c.Status(http.StatusBadRequest)
+			return
+		}
+		// issue: A negative digit of the input
+		if req.Page < 0 {
+			c.Status(http.StatusBadRequest)
+			return
+		}
 		res, err := p.Usecase.TeacherList(ctx, &req)
 		if err != nil {
-			c.HTML(http.StatusOK, serverErrorHtml, gin.H{})
+			c.Status(http.StatusInternalServerError)
+			return
 		}
-		c.HTML(http.StatusOK, teacherListHtml, gin.H{"data": res})
+		c.JSON(http.StatusOK, gin.H{"data": res})
 	}
 }
 
@@ -78,7 +92,6 @@ func (p *PageHandler) Home(ctx context.Context) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
-
 		c.HTML(http.StatusOK, homeHtml, gin.H{"data": res})
 	}
 }
@@ -88,11 +101,14 @@ func (p *PageHandler) Login(ctx context.Context, conf *config.Jwt) gin.HandlerFu
 		// todo: check session error, can't get the token!!
 		s := sessions.Default(c)
 		token := util.GetSessionToken(s)
-		if token != nil {
-			// todo: error here!
-			if claims, err := util.ParseJwt(ctx, token.(string), conf.Secret); err == nil {
-				//todo: usecase to check the userID and token
-				c.Redirect(http.StatusFound, util.GetJwtUser(claims))
+		if token == nil {
+			c.HTML(http.StatusOK, loginHtml, gin.H{})
+			return
+		}
+		if claims, err := util.ParseJwt(ctx, token.(string), conf.Secret); err == nil {
+			userId := util.GetJwtUser(claims)
+			if err := p.Usecase.Login(ctx, userId, token.(string)); err == nil {
+				c.Redirect(http.StatusFound, util.GetJwtUserDomain(claims))
 				return
 			}
 		}

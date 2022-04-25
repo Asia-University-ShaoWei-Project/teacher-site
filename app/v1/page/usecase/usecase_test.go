@@ -19,7 +19,7 @@ var (
 )
 var err error
 
-// todo TestTeacherList
+// todo: TestTeacherList, TestLogin
 func TestHome(t *testing.T) {
 	var req domain.HomeRequest
 

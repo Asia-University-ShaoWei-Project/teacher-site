@@ -105,8 +105,10 @@ func TestGetBulletinsByInfoId(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			_, err := repo.GetBulletinsByInfoId(ctx, tC.infoID)
+			d, err := repo.GetBulletinsByInfoId(ctx, tC.infoID)
 			assert.Equal(t, tC.result, err)
+			fmt.Println(d)
+
 		})
 	}
 }

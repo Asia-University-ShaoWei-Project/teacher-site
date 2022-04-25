@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"teacher-site/config"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+// todo: TestLogin
 
 const (
 	methodGet       = "GET"
@@ -26,13 +29,47 @@ var (
 	conf        = config.New()
 )
 var (
+	url string
 	req *http.Request
 	w   *httptest.ResponseRecorder
 )
 
 type HttpStatusCode int
 
-// todo: get teacher list by api, test negative digit
+func TestTeacherList(t *testing.T) {
+	NewHandler(ctx, route, usecaseMock, conf)
+	urlFormat := `/page/%s`
+	testCases := []struct {
+		desc   string
+		page   string
+		result HttpStatusCode
+	}{
+		{
+			desc:   "unknown page",
+			page:   mock.Unknown,
+			result: http.StatusBadRequest,
+		},
+		{
+			desc:   "negative digit",
+			page:   "-1",
+			result: http.StatusBadRequest,
+		},
+		{
+			desc:   "normal",
+			page:   "2",
+			result: http.StatusOK,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			url = fmt.Sprintf(urlFormat, tC.page)
+			req, _ = http.NewRequest(methodGet, url, nil)
+			r.ServeHTTP(w, req)
+		})
+	}
+}
+
 func TestHome(t *testing.T) {
 	NewHandler(ctx, route, usecaseMock, conf)
 	testCases := []struct {
@@ -57,7 +94,6 @@ func TestHome(t *testing.T) {
 			url := "/" + tC.teacherDomain
 			req, _ = http.NewRequest(methodGet, url, nil)
 			r.ServeHTTP(w, req)
-
 		})
 	}
 }

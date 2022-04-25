@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"teacher-site/config"
+	"teacher-site/mock"
 	"teacher-site/pkg/database"
 	"testing"
 
@@ -49,4 +50,41 @@ func TestGetTeachers(t *testing.T) {
 }
 func calculateOffset(limit, page int) int {
 	return (limit * page) - limit
+}
+func TestCheckAuthByIdAndToken(t *testing.T) {
+	realUserToken, err := mock.GetUserToken(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testCases := []struct {
+		desc   string
+		userId string
+		token  string
+		result error
+	}{
+		{
+			desc:   "unknown the userId",
+			userId: mock.Unknown,
+			token:  realUserToken,
+			result: gorm.ErrRecordNotFound,
+		},
+		{
+			desc:   "unknown the token",
+			userId: mock.UserID,
+			token:  mock.Unknown,
+			result: gorm.ErrRecordNotFound,
+		},
+		{
+			desc:   "normal",
+			userId: mock.UserID,
+			token:  realUserToken,
+			result: nil,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			err = repo.CheckAuthByIdAndToken(ctx, tC.userId, tC.token)
+			assert.Equal(t, tC.result, err)
+		})
+	}
 }

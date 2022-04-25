@@ -26,6 +26,12 @@ func (r *DbRepository) GetAccountByUserId(ctx context.Context, id string) (domai
 	err := checkErrAndExist(result)
 	return auth, err
 }
+func (r *DbRepository) GetTeacherDomainByUserId(ctx context.Context, id string) (domain.Teachers, error) {
+	var teacher domain.Teachers
+	result := r.db.Model(&teacher).Select("domain").Where("auth_id", id).Find(&teacher)
+	err := checkErrAndExist(result)
+	return teacher, err
+}
 
 func (r *DbRepository) UpdateTokenByUserId(ctx context.Context, id, token string) error {
 	auth := domain.Auths{UserID: id}

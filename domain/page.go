@@ -6,16 +6,17 @@ type PageUsecase interface {
 	TeacherList(ctx context.Context, req *TeacherListRequest) (TeacherListResponse, error)
 	// TeacherListByApi(ctx context.Context, req *TeacherListRequest) (TeacherListResponse, error)
 	Home(ctx context.Context, req *HomeRequest) (HomeResponse, error)
-	Login(ctx context.Context)
+	Login(ctx context.Context, userId, token string) error
 }
 type PageDbRepository interface {
 	GetTeachers(ctx context.Context, limit, offset int) ([]TeacherListRow, error)
 	GetTeacherByDomain(ctx context.Context, teacherDomain string) (Teachers, error)
+	CheckAuthByIdAndToken(ctx context.Context, userId, token string) error
 }
 type PageCacheRepository interface {
 }
 type TeacherListRequest struct {
-	Page int `uri:"page"`
+	Page int `uri:"page_number"`
 }
 
 // func (t *TeacherListRequest) SetPage(num int) {

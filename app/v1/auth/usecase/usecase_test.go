@@ -22,31 +22,30 @@ var (
 	err error
 )
 
-// todo: test the login
 func TestLogin(t *testing.T) {
 	var req domain.LoginRequest
 
 	testCases := []struct {
 		desc     string
-		id       string
+		userId   string
 		password string
 		result   error
 	}{
 		{
-			desc:     "invalid account of id(Not found the user)",
-			id:       mock.Unknown,
+			desc:     "invalid user id(Not found the user)",
+			userId:   mock.Unknown,
 			password: mock.UserPassword,
 			result:   gorm.ErrRecordNotFound,
 		},
 		{
-			desc:     "invalid account of password",
-			id:       mock.UserID,
+			desc:     "invalid password",
+			userId:   mock.UserID,
 			password: mock.Unknown,
 			result:   bcrypt.ErrMismatchedHashAndPassword,
 		},
 		{
 			desc:     "normal",
-			id:       mock.UserID,
+			userId:   mock.UserID,
 			password: mock.UserPassword,
 			result:   nil,
 		},
@@ -54,7 +53,7 @@ func TestLogin(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			req = domain.LoginRequest{
-				UserID:       tC.id,
+				UserID:       tC.userId,
 				UserPassword: tC.password,
 			}
 			_, err = usecase.Login(ctx, &req)
@@ -62,5 +61,3 @@ func TestLogin(t *testing.T) {
 		})
 	}
 }
-
-// todo: test invalid password

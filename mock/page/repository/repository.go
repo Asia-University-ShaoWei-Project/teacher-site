@@ -32,6 +32,12 @@ func (r *DbRepository) GetTeacherByDomain(ctx context.Context, teacherDomain str
 	return teacher, nil
 }
 
+// todo
+func (r *DbRepository) CheckAuthByIdAndToken(ctx context.Context, userId, token string) error {
+	return nil
+}
+
+// *
 type CacheRepository struct{}
 
 func NewCacheRepository() domain.AuthCacheRepository {

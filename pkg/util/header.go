@@ -9,21 +9,21 @@ import (
 )
 
 const (
-	headerTokenKey = "Authorization"
+	authHeaderKey = "Authorization"
 )
 
 var errInvalidBearerToken = errors.New("invalid bearer token")
 
 func AddBearerHeader(c *gin.Context, token string) {
-	c.Header(headerTokenKey, "Bearer "+token)
+	c.Header(authHeaderKey, "Bearer "+token)
 }
 
-func RemoveBearerHeader(c *gin.Context) {
-	c.Header(headerTokenKey, "")
+func RemoveAuthHeader(c *gin.Context) {
+	c.Header(authHeaderKey, "")
 }
 
 func GetBearerToken(ctx context.Context, c *gin.Context) (string, error) {
-	auth := c.GetHeader("Authorization")
+	auth := c.GetHeader(authHeaderKey)
 
 	field := strings.Split(auth, " ")
 	if len(field) != 2 {

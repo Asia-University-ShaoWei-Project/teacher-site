@@ -18,40 +18,63 @@ var (
 	db   = database.NewDB("../../../../pkg/database", conf.DB)
 	repo = NewDbRepository(db, conf.DB)
 )
-var (
-	err error
-)
+var err error
 
 func TestGetAccountByUserId(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		id       string
+		userId   string
 		password string
 		result   error
 	}{
 		{
 			desc:     "invalid account of id",
-			id:       mock.Unknown,
+			userId:   mock.Unknown,
 			password: mock.UserPassword,
 			result:   gorm.ErrRecordNotFound,
 		},
 
 		{
 			desc:     "normal",
-			id:       mock.UserID,
+			userId:   mock.UserID,
 			password: mock.UserPassword,
 			result:   nil,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			_, err = repo.GetAccountByUserId(ctx, tC.id)
+			_, err = repo.GetAccountByUserId(ctx, tC.userId)
+			assert.Equal(t, tC.result, err)
+		})
+	}
+}
+func TestGetTeacherDomainByUserId(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		userId string
+		result error
+	}{
+		{
+			desc:   "invalid user id",
+			userId: mock.Unknown,
+			result: gorm.ErrRecordNotFound,
+		},
+
+		{
+			desc:   "normal",
+			userId: mock.UserID,
+			result: nil,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			_, err = repo.GetTeacherDomainByUserId(ctx, tC.userId)
 			assert.Equal(t, tC.result, err)
 		})
 	}
 }
 func TestUpdateTokenByUserId(t *testing.T) {
-	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
+	token, _ := util.GenerateJwt(conf.Jwt, mock.GetJwtRequest())
 	testCases := []struct {
 		desc   string
 		id     string
@@ -77,7 +100,7 @@ func TestUpdateTokenByUserId(t *testing.T) {
 }
 
 func TestDeleteToken(t *testing.T) {
-	// token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
+	// token, _ := util.GenerateJwt(conf.Jwt, mock.GetJwtRequest())
 	testCases := []struct {
 		desc   string
 		id     string

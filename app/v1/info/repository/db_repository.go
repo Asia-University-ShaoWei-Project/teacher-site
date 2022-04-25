@@ -52,7 +52,9 @@ func (r *DbRepository) GetBulletinsByInfoId(ctx context.Context, id uint) ([]dom
 	result := r.db.Table("info_bulletin_boards ib").
 		Select("ib.id, DATE(ib.created_at) AS date, ib.content").
 		Joins("JOIN infos i ON ib.info_id = i.id").
-		Where("i.id=? AND ib.deleted_at IS NULL", id).Find(&infoBulletin)
+		Where("i.id=? AND ib.deleted_at IS NULL", id).
+		Order("ib.created_at desc").
+		Find(&infoBulletin)
 	err := checkErrAndExist(result)
 	return infoBulletin, err
 }

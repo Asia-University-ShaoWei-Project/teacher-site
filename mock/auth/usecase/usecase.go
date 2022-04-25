@@ -12,8 +12,8 @@ func NewUsecase() domain.AuthUsecase {
 }
 
 // todo
-func (u *Usecase) Login(ctx context.Context, req *domain.LoginRequest) (string, error) {
-	return "", nil
+func (u *Usecase) Login(ctx context.Context, req *domain.LoginRequest) (domain.LoginResponse, error) {
+	return domain.LoginResponse{}, nil
 }
 
 // todo

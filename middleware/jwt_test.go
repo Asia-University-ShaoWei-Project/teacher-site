@@ -15,7 +15,7 @@ var (
 )
 
 func TestVerifyJwtValid(t *testing.T) {
-	token, _ := util.GenerateJwt(conf.Jwt, mock.UserID)
+	token, _ := util.GenerateJwt(conf.Jwt, mock.GetJwtRequest())
 	testCases := []struct {
 		desc        string
 		bearerToken string

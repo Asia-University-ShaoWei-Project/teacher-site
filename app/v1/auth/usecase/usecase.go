@@ -25,40 +25,49 @@ func NewUsecase(dbRepo domain.AuthDbRepository, cacheRepo domain.AuthCacheReposi
 		log:             logger,
 	}
 }
-func (auth *AuthUsecase) Login(ctx context.Context, req *domain.LoginRequest) (string, error) {
-	var token string
+func (auth *AuthUsecase) Login(ctx context.Context, req *domain.LoginRequest) (domain.LoginResponse, error) {
+	var res domain.LoginResponse
 
-	// todo: check logged in
 	account, err := auth.DbRepository.GetAccountByUserId(ctx, req.UserID)
 	if err != nil {
 		auth.log.Error(err)
-		return token, err
+		return res, err
 	}
 
 	// compare password
 	saltPassword := []byte(req.UserPassword + account.Salt)
 	if err = bcrypt.CompareHashAndPassword([]byte(account.UserPassword), saltPassword); err != nil {
 		auth.log.Error(err)
-		return token, err
+		return res, err
 	}
-
+	teacher, err := auth.DbRepository.GetTeacherDomainByUserId(ctx, account.UserID)
+	if err != nil {
+		auth.log.Error(err)
+		return res, err
+	}
 	// generate new token for the header of client(authorization)
-	token, err = util.GenerateJwt(auth.conf.Jwt, account.UserID)
+	jwtReq := domain.JwtInfoRequest{UserID: account.UserID, Domain: teacher.Domain}
+	token, err := util.GenerateJwt(auth.conf.Jwt, &jwtReq)
 	if err != nil {
 		// todo: try again
 		auth.log.Error(err)
+	}
+	res = domain.LoginResponse{
+		Token:  token,
+		Domain: teacher.Domain,
 	}
 	if err = auth.DbRepository.UpdateTokenByUserId(ctx, account.UserID, token); err != nil {
 		// todo: error handle of update token
 		auth.log.Error(err)
 	}
-	return token, nil
+	return res, nil
 }
 
 func (auth *AuthUsecase) Logout(ctx context.Context, id string) error {
 	return auth.DbRepository.DeleteToken(ctx, id)
 }
 
+// todo
 // func (auth *AuthUsecase) Create(ctx context.Context, req *domain.ReqCreateInfo) (domain.InfoBulletinBoards, error) {
 // 	// todo: use TX to read and write the last_updated
 // 	return auth.DbRepository.Create(ctx, req)

@@ -27,6 +27,11 @@ func (i *DbRepository) GetAccountByUserId(ctx context.Context, id string) (domai
 	return testGetAccount(id)
 }
 
+//todo
+func (i *DbRepository) GetTeacherDomainByUserId(ctx context.Context, id string) (domain.Teachers, error) {
+	return domain.Teachers{}, nil
+}
+
 func (i *DbRepository) UpdateTokenByUserId(ctx context.Context, id, token string) error {
 	if id == mock.Unknown {
 		return gorm.ErrRecordNotFound

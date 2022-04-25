@@ -4,21 +4,24 @@ import (
 	"context"
 	"fmt"
 	"teacher-site/config"
+	"teacher-site/domain"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
 const (
-	JwtUserKey   = "user"
-	JwtExpireKey = "exp"
+	JwtUserKey    = "user"
+	JwtUserDomain = "domain"
+	JwtExpireKey  = "exp"
 )
 
-func GenerateJwt(conf *config.Jwt, userID string) (string, error) {
+func GenerateJwt(conf *config.Jwt, req *domain.JwtInfoRequest) (string, error) {
 	exp := time.Now().Add(conf.TokenExpireTime * time.Minute).Unix()
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		JwtUserKey:   userID,
-		JwtExpireKey: exp,
+		JwtUserKey:    req.UserID,
+		JwtUserDomain: req.Domain,
+		JwtExpireKey:  exp,
 	})
 	token, err := claims.SignedString(conf.Secret)
 	return token, err
@@ -47,4 +50,7 @@ func ParseJwt(ctx context.Context, bearerToken string, secret []byte) (jwt.MapCl
 
 func GetJwtUser(claims jwt.MapClaims) string {
 	return claims[JwtUserKey].(string)
+}
+func GetJwtUserDomain(claims jwt.MapClaims) string {
+	return claims[JwtUserDomain].(string)
 }

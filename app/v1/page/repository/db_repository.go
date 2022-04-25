@@ -38,7 +38,14 @@ func (r *DbRepository) GetTeacherByDomain(ctx context.Context, teacherDomain str
 		Find(&teacher)
 	return teacher, checkErrAndRecord(result)
 }
-
+func (r *DbRepository) CheckAuthByIdAndToken(ctx context.Context, userId, token string) error {
+	// todo: optimize: find id(Pk) -> check token(Srv)
+	var auth domain.Auths
+	result := r.db.Model(&auth).
+		Where("user_id=? AND token=?", userId, token).
+		Find(&auth)
+	return checkErrAndRecord(result)
+}
 func checkErrAndRecord(result *gorm.DB) error {
 	if result.Error != nil {
 		fmt.Println(result.Error)

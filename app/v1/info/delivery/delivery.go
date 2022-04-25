@@ -53,23 +53,22 @@ func (h *Handler) Create(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusCreated, gin.H{
 			"data": res,
 		})
 	}
 }
 func (h *Handler) Get(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var bind domain.GetInfoBulletinRequest
+		var req domain.GetInfoBulletinRequest
 		// bind teacher domain and last_modified
-		if err := c.ShouldBindUri(&bind); err != nil {
+		if err := c.ShouldBindUri(&req); err != nil {
 			// if err := c.ShouldBindUri(&bind); err != nil {
-			fmt.Println("uri, ", err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		c.ShouldBindQuery(&bind)
-		res, err := h.Usecase.Get(ctx, &bind)
+		c.ShouldBindQuery(&req)
+		res, err := h.Usecase.Get(ctx, &req)
 		if err != nil {
 			c.AbortWithStatus(http.StatusNoContent)
 			return

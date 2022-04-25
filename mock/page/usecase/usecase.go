@@ -28,4 +28,6 @@ func (u *Usecase) Home(ctx context.Context, req *domain.HomeRequest) (domain.Hom
 }
 
 // todo
-func (u *Usecase) Login(ctx context.Context) {}
+func (u *Usecase) Login(ctx context.Context, userId, token string) error {
+	return nil
+}
