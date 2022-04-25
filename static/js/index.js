@@ -1,6 +1,7 @@
 const br_tag = "<br>";
 const elemOptionBox = document.getElementById("option-box");
 const contentPageElem = document.getElementById("content-switch");
+const loadingElem = document.getElementById("loading");
 const pageTypes = {
   info: "info",
   course: "course",
@@ -24,22 +25,14 @@ const attr = {
 };
 //? temporary
 var apiData;
-var api = new API(
-  // origin(e.g. http://domain)
-  window.location.origin,
-  // version
-  "v1",
-  // teacher domain
-  window.location.pathname.replace("/", "")
-);
+
 var options = [];
 var currPageType;
 
 var isTeacher = false;
 function init() {
-  console.log("API -> /api/v1/auth/token");
   axios
-    .post("/api/v1/auth/token", {
+    .post(api.getVerifyAuthUrl(), {
       params: {
         last_modified: "0",
       },
@@ -69,41 +62,54 @@ function teacherMode() {
 }
 
 function createInitElem() {
-  let info_get_url = `/info/bulletin`;
   // let course_get_url = `/course`;
-  getInfoApi(info_get_url);
+  getInfoApi();
   // getCourseApi(course_get_url);
 }
 // *
-const rebuild = true;
-function getInfoApi(url) {
+
+const turn = {
+  on: true,
+  off: false,
+};
+function loadingView(switcher = false) {
+  if (switcher) {
+    loadingElem.style.display = "block";
+    return;
+  }
+  loadingElem.style.display = "none";
+}
+function getInfoApi() {
   // [ bulletins<list>(id, date, content), id(info), last_modified(info) ]
-  console.log("API -> getInfoApi -> ", api.url + url);
+  console.log("API -> getInfoApi");
+  let url =
+    api.teacherPath + api.getResourceUrl(pageTypes.info, null, HTTP_METHOD.get);
   axios
-    .get(api.url + url, {
+    .get(url, {
       params: {
         last_modified: "0",
       },
     })
     .then((res) => {
       console.log("getInfo api success");
-      console.log(res.data);
       apiData = res.data.data;
 
-      let bulletin = newRow(attr.bulletin.tableType, apiData.bulletins);
+      let bulletinRows = newRows(attr.bulletin.tableType, apiData.bulletins);
+      let bulletinTable = newTable(attr.bulletin.tableType, bulletinRows);
       let infoItem = new Item(
         pageTypes.info,
         url,
         apiData.id,
         "公布欄",
         "Information",
-        bulletin,
+        bulletinTable,
         null,
         null,
         apiData.last_modified,
-        createContent(pageTypes.info, attr.bulletin.tableType, bulletin)
+        createContent(pageTypes.info, attr.bulletin.tableType, bulletinTable)
       );
       items.push(infoItem);
+      loadingView(turn.off);
       showContent(infoItem.content);
       // todo: temp
       showOptionButtons();
@@ -168,9 +174,12 @@ function newItem(
     lastModified
   );
 }
-function newRow(tableType, data) {
+function newTable(tableType, rows) {
   let title = attr[tableType].tableTitle;
   let tableFieldTitles = attr[tableType].tableFieldTitles;
+  return new Table(title, tableFieldTitles, rows);
+}
+function newRows(tableType, data) {
   let rows = [];
   switch (tableType) {
     case attr.bulletin.tableType:
@@ -189,9 +198,7 @@ function newRow(tableType, data) {
       });
       break;
   }
-  let table = new Table(title, tableFieldTitles);
-  table.rows = rows;
-  return table;
+  return rows;
 }
 // *option
 

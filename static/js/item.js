@@ -89,45 +89,54 @@ class Item {
   updateData() {
     // apiUrl = [ api.resources.info | api.resources.course]
     axios
-      .get(api.url + this.apiUrl, {
+      .get(this._apiUrl, {
         params: {
-          last_modified: this.lastModified,
+          last_modified: this._lastModified,
         },
       })
       .then((res) => {
         let rebuild = true;
         let data = res.data.data;
+        let rows;
         switch (res.status) {
           // The information is up to date(Not need to updating the data)
           case HTTP_STATUS_CODE.noContent:
             rebuild = false;
+            alert("The data is up to date!");
             console.warn("The data is up to date!");
             break;
           // need to update information
           case HTTP_STATUS_CODE.ok:
             console.log("update the content");
 
-            this.lastModified = data.last_modified;
+            this._lastModified = data.last_modified;
             if (data.bulletins != null && data.bulletins != undefined) {
-              this.bulletin = newBulletin(data.bulletins);
+              rows = newRows(attr.bulletin.tableType, data.bulletins);
+              this._bulletin = newTable(attr.bulletin.tableType, rows);
             }
             if (data.slides != null && data.slides != undefined) {
-              this.slide = newSlide(data.slides);
+              rows = newRows(attr.slide.tableType, data.slides);
+              this._slide = newTable(attr.slide.tableType, data.slides);
             }
             if (data.homeworks != null && data.homeworks != undefined) {
-              this.homework = newHomework(data.homeworks);
+              rows = newRows(attr.homework.tableType, data.homeworks);
+              this._homework = newTable(attr.slide.tableType, data.homeworks);
             }
             this.buildContent();
+            showContent(this._content);
             break;
         }
       })
       .catch((err) => {
-        switch (err.response.status) {
+        console.log(err);
+        console.log(err.response);
+        console.log(err.response.state);
+        switch (err.response.statue) {
           case HTTP_STATUS_CODE.badRequest:
             console.error("bad request");
             break;
           default:
-            console.error("error status code:", err.response.status);
+            console.error("error status code:", err.response.statue);
             break;
         }
       });
@@ -187,7 +196,9 @@ class BulletinBoardRow {
     return [this._date, this._content];
   }
 }
-
+function newBulletinBoardRow(id, date, content) {
+  return new BulletinBoardRow(id, date, content);
+}
 class SlideRow {
   constructor(id, chapter, fileTitle, fileType) {
     this.id = id;
@@ -223,6 +234,9 @@ class SlideRow {
     return ["CH" + this._chapter, this._fileTitle, this._fileType];
   }
 }
+function newSlideRow(id, chapter, fileTitle, fileType) {
+  return new SlideRow(id, chapter, fileTitle, fileType);
+}
 class HomeworkRow {
   constructor(id, number, fileTitle, fileType) {
     this.id = id;
@@ -251,4 +265,7 @@ class HomeworkRow {
   get dataList() {
     return ["#" + this._number, this._fileTitle, this._fileType];
   }
+}
+function newHomeworkRow(id, number, fileTitle, fileType) {
+  return new HomeworkRow(id, number, fileTitle, fileType);
 }

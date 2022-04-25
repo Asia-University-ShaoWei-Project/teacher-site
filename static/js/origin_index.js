@@ -1,4 +1,4 @@
-var form_modal = document.getElementById("modal-edit-bulletin");
+var form_modal = document.getElementById("form-modal-bulletin");
 form_modal.addEventListener("show.bs.modal", function (event) {
   var btn = event.relatedTarget;
   // todo: add attribute in generate html function

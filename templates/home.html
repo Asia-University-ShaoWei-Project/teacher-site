@@ -44,21 +44,22 @@
           <p>電話: {{ .data.Call }}</p>
           <p>E-mail: {{ .data.Email }}</p>
           <!-- todo -->
-          <a href="/login">Login</a>
+          <div class="btn-group btn-group-vertical" role="group" aria-label="Basic example">
+            <button onclick="login()"type="button" class="btn btn-outline-primary">Login</button>
+            <button onclick="logout()" type="button" class="btn btn-outline-primary">Logout</button>
+            <button onclick="is_logged_in()" type="button" class="btn btn-outline-primary">Check auth</button>
+          </div>
+          
         </div>
         <hr />
         <div id="option-box"></div>
         <hr />
       </section>
       <div id="content">
-        <div id="loading">
-          <p class="card-text placeholder-glow">
-            <span class="placeholder col-7"></span>
-            <span class="placeholder col-4"></span>
-            <span class="placeholder col-4"></span>
-            <span class="placeholder col-6"></span>
-            <span class="placeholder col-8"></span>
-          </p>
+        <div id="loading" class="text-center" style=" position: fixed;top: 50%;left: 50%;">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
         </div>
         <div id="content-switch"></div>
       </div>
@@ -101,14 +102,43 @@
 
   </body>
   <script type="text/javascript" src="../static/js/http.js"></script>
-  <script type="text/javascript" src="../static/js/header.js"></script>
-  <script type="text/javascript" src="../static/js/obj.js"></script>
-  <script type="text/javascript" src="../static/js/elem.js"></script>
   <script type="text/javascript" src="../static/js/api.js"></script>
+  <script type="text/javascript" src="../static/js/item.js"></script>
+  <script type="text/javascript" src="../static/js/edit-elem.js"></script>
   <script type="text/javascript" src="../static/js/index.js"></script>
   <script>
     // alert("功能尚未完成，持續更新中...")
     init();
+    function login() {
+      window.open('/login', '_blank');
+    }
+    function is_logged_in() {
+      let url = `/api/v1/test`
+      axios
+        .get(url, { headers: { Authorization: getAuthorization() } })
+        .then((res) => {
+          if (res.status == HTTP_STATUS_CODE.ok) {
+            console.warn("is logged in");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+    function logout() {
+      let url = "/api/v1/auth/logout";
+      axios
+        .post(url,{},axiosConfig,)
+        .then((res) => {
+          console.log("logout status code=", res.status);
+          if (res.status == HTTP_STATUS_CODE.noContent) {
+            console.warn("logout success");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
   </script>
 </html>
 

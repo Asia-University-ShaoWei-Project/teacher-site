@@ -18,3 +18,11 @@ const HTTP_METHOD = {
   put: "put",
   delete: "delete",
 };
+
+const headerKeys = {
+  auth: "Authorization",
+};
+
+var headers = {};
+
+var axiosConfig = { headers: headers };
