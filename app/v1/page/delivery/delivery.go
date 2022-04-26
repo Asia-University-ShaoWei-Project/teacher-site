@@ -33,7 +33,7 @@ func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.PageUsec
 	r.GET("/", handler.TeacherListPage(ctx))
 	// todo: get teacher list by api
 	r.GET("/page/:page_number", handler.TeacherList(ctx))
-	r.GET("/:teacher_domain", handler.Home(ctx))
+	r.GET("/:teacherDomain", handler.Home(ctx))
 	r.GET("/login", handler.Login(ctx, conf.Jwt))
 }
 func (p *PageHandler) TeacherListPage(ctx context.Context) gin.HandlerFunc {

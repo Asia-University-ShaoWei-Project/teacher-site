@@ -41,7 +41,7 @@ func (i *Usecase) Create(ctx context.Context, req *domain.CreateInfoBulletinRequ
 	}
 	// todo: update the data in redis
 	res = domain.CreateInfoBulletinResponse{
-		ID:           bulletin.AutoModel.ID,
+		Id:           bulletin.AutoModel.Id,
 		Date:         bulletin.AutoModel.CreatedAT.Format(domain.BulletinDateFormat),
 		LastModified: lastModified,
 	}
@@ -64,7 +64,7 @@ func (i *Usecase) Get(ctx context.Context, req *domain.GetInfoBulletinRequest) (
 		return res, errUnnecessaryUpdate
 	}
 	res.SetLastModified(info.LastModified)
-	res.SetID(info.AutoModel.ID)
+	res.SetID(info.AutoModel.Id)
 	// Get by cache
 	data, err := i.CacheRepository.Get(ctx, req)
 	if err != nil {
@@ -82,7 +82,7 @@ func (i *Usecase) Get(ctx context.Context, req *domain.GetInfoBulletinRequest) (
 	}
 
 	// Get from database
-	bulletins, err := i.DbRepository.GetBulletinsByInfoId(ctx, info.AutoModel.ID)
+	bulletins, err := i.DbRepository.GetBulletinsByInfoId(ctx, info.AutoModel.Id)
 	if err != nil {
 		// todo: make error handle of "get data"(by RDBMS)
 		i.log.Error(err)

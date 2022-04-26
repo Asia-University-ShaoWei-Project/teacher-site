@@ -6,11 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RiKKi</title>
     <!-- new -->
-    <link rel="stylesheet" type="text/css" href="../static/css/header.css" />
     <link rel="stylesheet" type="text/css" href="../static/css/home.css" />
-    <link rel="stylesheet" type="text/css" href="../static/css/content.css" />
     <link rel="stylesheet" type="text/css" href="../static/css/index.css" />
-    <link rel="stylesheet" type="text/css" href="../static/css/side-bar.css" />
     <link
       rel="stylesheet"
       type="text/css"
@@ -61,7 +58,7 @@
             <span class="visually-hidden">Loading...</span>
           </div>
         </div>
-        <div id="content-switch"></div>
+        <div id="page-content"></div>
       </div>
       <!-- *Form modal -->
       <div class="modal fade" id="modal-edit" tabindex="-1" aria-labelledby="exampleModalLabel"aria-hidden="true">
@@ -117,7 +114,7 @@
       axios
         .get(url, { headers: { Authorization: getAuthorization() } })
         .then((res) => {
-          if (res.status == HTTP_STATUS_CODE.ok) {
+          if (res.status == HttpStatusCode.OK) {
             console.warn("is logged in");
           }
         })
@@ -131,7 +128,7 @@
         .post(url,{},axiosConfig,)
         .then((res) => {
           console.log("logout status code=", res.status);
-          if (res.status == HTTP_STATUS_CODE.noContent) {
+          if (res.status == HttpStatusCode.NO_CONTENT) {
             console.warn("logout success");
           }
         })

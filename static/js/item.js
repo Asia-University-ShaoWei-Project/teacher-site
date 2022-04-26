@@ -1,17 +1,27 @@
 class Item {
   constructor(
-    pageType,
+    /** @type {number} */
+    recourseType,
+    /** @type {string} */
     apiUrl = "",
+    /** @type {number} */
     id,
+    /** @type {string} */
     nameZh = "",
+    /** @type {string} */
     nameUs = "",
+    /** @type {Table} */
     bulletin,
+    /** @type {Table} */
     slide,
+    /** @type {Table} */
     homework,
+    /** @type {string} */
     lastModified = "0",
+    /** @type {string} */
     content = ""
   ) {
-    this.pageType = pageType;
+    this.recourseType = recourseType;
     this.apiUrl = apiUrl;
     this.id = id;
     this.nameZh = nameZh;
@@ -22,76 +32,81 @@ class Item {
     this.lastModified = lastModified;
     this.content = content;
   }
-  get pageType() {
-    return this._pageType;
+
+  getRecourseType() {
+    return this.recourseType;
   }
-  set pageType(pageType) {
-    this._pageType = pageType;
+  setRecourseType(recourseType) {
+    this.recourseType = recourseType;
   }
-  get apiUrl() {
-    return this._apiUrl;
+  getApiUrl() {
+    return this.apiUrl;
   }
-  set apiUrl(url) {
-    this._apiUrl = url;
+  setApiUrl(url) {
+    this.apiUrl = url;
   }
-  get id() {
-    return this._id;
+  getId() {
+    return this.id;
   }
-  set id(id) {
-    this._id = id;
+  setId(id) {
+    this.id = id;
   }
-  get nameZh() {
-    return this._nameZh;
+  getNameZh() {
+    return this.nameZh;
   }
-  set nameZh(name) {
-    this._nameZh = name;
+  setNameZh(name) {
+    this.nameZh = name;
   }
-  get nameUs() {
-    return this._nameUs;
+  getNameUs() {
+    return this.nameUs;
   }
-  set nameUs(name) {
-    this._nameUs = name;
+  setNameUs(name) {
+    this.nameUs = name;
   }
-  get lastModified() {
-    return this._lastModified;
+  getLastModified() {
+    return this.lastModified;
   }
-  set lastModified(lastModified) {
-    this._lastModified = lastModified;
+  setLastModified(lastModified) {
+    this.lastModified = lastModified;
   }
-  get bulletin() {
-    return this._bulletin;
+  getBulletin() {
+    return this.bulletin;
   }
-  set bulletin(bulletin) {
-    this._bulletin = bulletin;
+  setBulletin(bulletin) {
+    this.bulletin = bulletin;
   }
-  get content() {
-    return this._content;
+  getContent() {
+    return this.content;
   }
-  set content(content) {
-    this._content = content;
+  setContent(content) {
+    this.content = content;
   }
   buildContent() {
     let content = "";
     content += createContent(
-      this._pageType,
+      this.recourseType,
       attr.bulletin.tableType,
-      this._bulletin
+      this.bulletin
     );
-    content += createContent(this._pageType, attr.slide.tableType, this._slide);
     content += createContent(
-      this._pageType,
-      attr.homework.tableType,
-      this._homework
+      this.recourseType,
+      attr.slide.tableType,
+      this.slide
     );
-    this._content = content;
+    content += createContent(
+      this.recourseType,
+      attr.homework.tableType,
+      this.homework
+    );
+    this.content = content;
   }
   // todo
   updateData() {
     // apiUrl = [ api.resources.info | api.resources.course]
     axios
-      .get(this._apiUrl, {
+      .get(this.apiUrl, {
         params: {
-          last_modified: this._lastModified,
+          lastModified: this.lastModified,
         },
       })
       .then((res) => {
@@ -100,30 +115,30 @@ class Item {
         let rows;
         switch (res.status) {
           // The information is up to date(Not need to updating the data)
-          case HTTP_STATUS_CODE.noContent:
+          case HttpStatusCode.NO_CONTENT:
             rebuild = false;
             alert("The data is up to date!");
             console.warn("The data is up to date!");
             break;
           // need to update information
-          case HTTP_STATUS_CODE.ok:
+          case HttpStatusCode.OK:
             console.log("update the content");
 
-            this._lastModified = data.last_modified;
+            this.lastModified = data.lastModified;
             if (data.bulletins != null && data.bulletins != undefined) {
               rows = newRows(attr.bulletin.tableType, data.bulletins);
-              this._bulletin = newTable(attr.bulletin.tableType, rows);
+              this.bulletin = newTable(attr.bulletin.tableType, rows);
             }
             if (data.slides != null && data.slides != undefined) {
               rows = newRows(attr.slide.tableType, data.slides);
-              this._slide = newTable(attr.slide.tableType, data.slides);
+              this.slide = newTable(attr.slide.tableType, data.slides);
             }
             if (data.homeworks != null && data.homeworks != undefined) {
               rows = newRows(attr.homework.tableType, data.homeworks);
-              this._homework = newTable(attr.slide.tableType, data.homeworks);
+              this.homework = newTable(attr.slide.tableType, data.homeworks);
             }
             this.buildContent();
-            showContent(this._content);
+            showContent(this.content);
             break;
         }
       })
@@ -132,7 +147,7 @@ class Item {
         console.log(err.response);
         console.log(err.response.state);
         switch (err.response.statue) {
-          case HTTP_STATUS_CODE.badRequest:
+          case HttpStatusCode.BAD_REQUEST:
             console.error("bad request");
             break;
           default:
@@ -142,58 +157,108 @@ class Item {
       });
   }
 }
+function newItem(
+  recourseType,
+  apiUrl,
+  data,
+  bulletin,
+  slide,
+  homework,
+  lastModified
+) {
+  return new Item(
+    recourseType,
+    apiUrl,
+    data.id,
+    data.nameZh,
+    data.nameUs,
+    bulletin,
+    slide,
+    homework,
+    lastModified
+  );
+}
 class Table {
   constructor(title = "", fieldsTitle = [], rows = []) {
     this.title = title;
     this.fieldsTitle = fieldsTitle;
     this.rows = rows;
   }
-  get title() {
-    return this._title;
+  getTitle() {
+    return this.title;
   }
-  set title(title) {
-    this._title = title;
+  setTitle(title) {
+    this.title = title;
   }
-  get fieldTitles() {
-    return this._fieldsTitle;
+  getFieldsTitle() {
+    return this.fieldsTitle;
   }
-  get rowsLen() {
-    return this._rows.length;
+  getRowsLen() {
+    return this.rows.length;
   }
-  get rows() {
-    return this._rows;
+  getRow(index) {
+    return this.rows[index];
   }
-  set rows(rows) {
-    this._rows = rows;
+  getRows() {
+    return this.rows;
+  }
+  setRows(rows) {
+    this.rows = rows;
   }
 }
+function newTable(tableType, rows) {
+  let title = attr[tableType].tableTitle;
+  let tableFieldTitles = attr[tableType].tableFieldTitles;
+  return new Table(title, tableFieldTitles, rows);
+}
 
+function newRows(tableType, data) {
+  let rows = [];
+  switch (tableType) {
+    case attr.bulletin.tableType:
+      data.forEach((v) => {
+        rows.push(newBulletinBoardRow(v.id, v.date, v.content));
+      });
+      break;
+    case attr.slide.tableType:
+      data.forEach((v) => {
+        rows.push(newSlideRow(v.id, v.chapter, v.file.title, v.file.type));
+      });
+      break;
+    case attr.homework.tableType:
+      data.forEach((v) => {
+        rows.push(newHomeworkRow(v.id, v.number, v.file.title, v.file.type));
+      });
+      break;
+  }
+  return rows;
+}
 class BulletinBoardRow {
   constructor(id, date, content) {
     this.id = id;
     this.date = date;
     this.content = content;
   }
-  get id() {
-    return this._id;
+  getId() {
+    return this.id;
   }
-  set id(id) {
-    this._id = id;
+  setId(id) {
+    this.id = id;
   }
-  get date() {
-    return this._date;
+  getDate() {
+    return this.date;
   }
-  set date(date) {
-    this._date = date;
+  setDate(date) {
+    this.date = date;
   }
-  get content() {
-    return this._content;
+  getContent() {
+    return this.content;
   }
-  set content(content) {
-    this._content = content;
+  setContent(content) {
+    this.content = content;
   }
-  get dataList() {
-    return [this._date, this._content];
+  getDataList() {
+    return [this.date, this.content];
   }
 }
 function newBulletinBoardRow(id, date, content) {
@@ -206,32 +271,32 @@ class SlideRow {
     this.fileTitle = fileTitle;
     this.fileType = fileType;
   }
-  get id() {
-    return this._id;
+  getId() {
+    return this.id;
   }
-  set id(id) {
-    this._id = id;
+  setId(id) {
+    this.id = id;
   }
-  get chapter() {
-    return this._chapter;
+  getChapter() {
+    return this.chapter;
   }
-  set chapter(chapter) {
-    this._chapter = chapter;
+  setChapter(chapter) {
+    this.chapter = chapter;
   }
-  get fileTitle() {
-    return this._fileTitle;
+  getFileTitle() {
+    return this.fileTitle;
   }
-  set fileTitle(title) {
-    this._fileTitle = title;
+  setFileTitle(title) {
+    this.fileTitle = title;
   }
-  get fileType() {
-    return this._fileType;
+  getFileType() {
+    return this.fileType;
   }
-  set fileType(type) {
-    this._fileType = type;
+  setFileType(type) {
+    this.fileType = type;
   }
-  get dataList() {
-    return ["CH" + this._chapter, this._fileTitle, this._fileType];
+  setFataList() {
+    return ["CH" + this.chapter, this.fileTitle, this.fileType];
   }
 }
 function newSlideRow(id, chapter, fileTitle, fileType) {
@@ -244,26 +309,32 @@ class HomeworkRow {
     this.fileTitle = fileTitle;
     this.fileType = fileType;
   }
-  get number() {
-    return this._number;
+  getId() {
+    return this.id;
   }
-  set number(number) {
-    this._number = number;
+  setId(id) {
+    this.id = id;
   }
-  get fileTitle() {
-    return this._fileTitle;
+  getNumber() {
+    return this.number;
   }
-  set fileTitle(title) {
-    this._fileTitle = title;
+  setNumber(number) {
+    this.number = number;
   }
-  get fileType() {
-    return this._fileType;
+  getFileTitle() {
+    return this.fileTitle;
   }
-  set fileType(type) {
-    this._fileType = type;
+  setFileTitle(title) {
+    this.fileTitle = title;
   }
-  get dataList() {
-    return ["#" + this._number, this._fileTitle, this._fileType];
+  getFileType() {
+    return this.fileType;
+  }
+  setFileType(type) {
+    this.fileType = type;
+  }
+  setFataList() {
+    return ["#" + this.number, this.fileTitle, this.fileType];
   }
 }
 function newHomeworkRow(id, number, fileTitle, fileType) {

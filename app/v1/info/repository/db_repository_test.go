@@ -39,7 +39,7 @@ func TestCreateInfo(t *testing.T) {
 		},
 		{
 			desc:   "existed info id",
-			infoID: mock.NumPK,
+			infoID: mock.PkNum,
 			result: nil,
 		},
 	}
@@ -99,7 +99,7 @@ func TestGetBulletinsByInfoId(t *testing.T) {
 		},
 		{
 			desc:   "existed info id",
-			infoID: mock.NumPK,
+			infoID: mock.PkNum,
 			result: nil,
 		},
 	}
@@ -126,7 +126,7 @@ func TestGetInfoLastUpdated(t *testing.T) {
 		},
 		{
 			desc:   "existed info id",
-			infoID: mock.NumPK,
+			infoID: mock.PkNum,
 			result: nil,
 		},
 	}
@@ -150,19 +150,19 @@ func TestUpdateInfo(t *testing.T) {
 		{
 			desc:       "fail info id",
 			infoID:     mock.UnknownNumPK,
-			bulletinID: mock.NumPK,
+			bulletinID: mock.PkNum,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "fail bulletin id",
-			infoID:     mock.NumPK,
+			infoID:     mock.PkNum,
 			bulletinID: mock.UnknownNumPK,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "existed info, bulletin id",
-			infoID:     mock.NumPK,
-			bulletinID: mock.NumPK,
+			infoID:     mock.PkNum,
+			bulletinID: mock.PkNum,
 			result:     nil,
 		},
 	}
@@ -192,7 +192,7 @@ func TestDeleteInfo(t *testing.T) {
 	// generate a temporary bulletin for testcase(id)
 	bulletin, _ := repo.Create(ctx, &domain.CreateInfoBulletinRequest{
 		TeacherDomainRequest: domain.TeacherDomainRequest{TeacherDomain: mock.TeacherDomain},
-		InfoID:               mock.NumPK,
+		InfoID:               mock.PkNum,
 		Content:              mock.NewMsg(),
 	})
 	testCases := []struct {
@@ -205,19 +205,19 @@ func TestDeleteInfo(t *testing.T) {
 		{
 			desc:       "fail info id",
 			infoID:     mock.UnknownNumPK,
-			bulletinID: bulletin.AutoModel.ID,
+			bulletinID: bulletin.AutoModel.Id,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "fail bulletin id",
-			infoID:     mock.NumPK,
+			infoID:     mock.PkNum,
 			bulletinID: mock.UnknownNumPK,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "existed info, bulletin id",
-			infoID:     mock.NumPK,
-			bulletinID: bulletin.AutoModel.ID,
+			infoID:     mock.PkNum,
+			bulletinID: bulletin.AutoModel.Id,
 			result:     nil,
 		},
 	}
@@ -249,7 +249,7 @@ func TestDeleteInfo(t *testing.T) {
 	}
 }
 func testCheckBulletinIsExistById(id uint, t *testing.T) error {
-	info := domain.InfoBulletinBoards{AutoModel: domain.AutoModel{ID: id}}
+	info := domain.InfoBulletinBoards{AutoModel: domain.AutoModel{Id: id}}
 	result := db.Where(`id=? AND deleted_at IS NULL`, id).Find(&info)
 	t.Error(result.Error)
 	return checkErrAndExist(result)

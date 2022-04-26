@@ -7,5 +7,5 @@ import (
 
 var (
 	Conf = config.New()
-	Log  = log.NewLogrus(ctx)
+	Log  = log.NewLogrus(Ctx)
 )

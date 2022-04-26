@@ -22,32 +22,33 @@ func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.InfoUsec
 		conf:    conf,
 	}
 	r.GET("/bulletin", handler.Get(ctx))
-	r.POST("/:info_id/bulletin", mw.VerifyAuth(ctx, conf.Jwt.Secret), handler.Create(ctx))
-	r.PUT("/:info_id/bulletin/:bulletin_id", mw.VerifyAuth(ctx, conf.Jwt.Secret), handler.Update(ctx))
-	r.DELETE("/:info_id/bulletin/:bulletin_id", mw.VerifyAuth(ctx, conf.Jwt.Secret), handler.Delete(ctx))
-	// bulletin := r.Group("/:info_id/bulletin", mw.VerifyAuth(ctx, conf.Jwt.Secure))
+	// /api/v1/rikki/info/1/bulletin
+	r.POST("/:infoId/bulletin", mw.VerifyAuth(ctx, conf.Jwt.Secret), handler.Create(ctx))
+	r.PUT("/:infoId/bulletin/:bulletinId", mw.VerifyAuth(ctx, conf.Jwt.Secret), handler.Update(ctx))
+	r.DELETE("/:infoId/bulletin/:bulletinId", mw.VerifyAuth(ctx, conf.Jwt.Secret), handler.Delete(ctx))
+	// bulletin := r.Group("/:infoId/bulletin", mw.VerifyAuth(ctx, conf.Jwt.Secure))
 	// {
 	// 	bulletin.POST("/", handler.Create(ctx))
-	// 	bulletin.PUT("/:bulletin_id", handler.Update(ctx))
-	// 	bulletin.DELETE("/:bulletin_id", handler.Delete(ctx))
+	// 	bulletin.PUT("/:bulletinId", handler.Update(ctx))
+	// 	bulletin.DELETE("/:bulletinId", handler.Delete(ctx))
 	// }
 }
 
 func (h *Handler) Create(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var bind domain.CreateInfoBulletinRequest
-		// bind teacher domain
-		if err := c.BindUri(&bind); err != nil {
+		var req domain.CreateInfoBulletinRequest
+		// bind teacher domain and info id
+		if err := c.ShouldBindUri(&req); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 		// bind bulletin content
-		if err := c.ShouldBindJSON(&bind); err != nil {
+		if err := c.ShouldBindJSON(&req); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
-		res, err := h.Usecase.Create(ctx, &bind)
+		res, err := h.Usecase.Create(ctx, &req)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
@@ -82,7 +83,7 @@ func (h *Handler) Get(ctx context.Context) gin.HandlerFunc {
 func (h *Handler) Update(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var bind domain.UpdateInfoBulletinRequest
-		// bind teacher_domain, info_id and bulletin_id
+		// bind teacherDomain, infoId and bulletinId
 		if err := c.ShouldBindUri(&bind); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
@@ -110,7 +111,7 @@ func (h *Handler) Update(ctx context.Context) gin.HandlerFunc {
 func (h *Handler) Delete(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var bind domain.DeleteInfoBulletinRequest
-		// bind teacher_domain, info_id and bulletin_id
+		// bind teacherDomain, infoId and bulletinId
 		if err := c.ShouldBindUri(&bind); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return

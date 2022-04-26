@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"teacher-site/config"
 	"teacher-site/mock"
 	"teacher-site/mock/info/repository"
 	"teacher-site/mock/info/usecase"
@@ -25,10 +24,10 @@ const (
 var (
 	ctx   = context.Background()
 	r     = gin.Default()
-	route = r.Group("/:teacher_domain/api/v1/info")
+	route = r.Group("/:teacherDomain/api/v1/info")
 	// logger      = log.NewLogrus(ctx)
 	usecaseMock = usecase.NewUsecase()
-	conf        = config.New()
+	conf        = mock.Conf
 	ApiUrl      = mock.ApiUrl + "/info"
 )
 var (
@@ -57,7 +56,7 @@ func TestCreate(t *testing.T) {
 		{
 			desc:   "unauthorized",
 			token:  mock.EmptyStr,
-			infoID: mock.NumPK,
+			infoID: mock.PkNum,
 			data:   data,
 			result: http.StatusUnauthorized,
 		},
@@ -71,7 +70,7 @@ func TestCreate(t *testing.T) {
 		{
 			desc:   "empty bulletin content",
 			token:  token,
-			infoID: mock.NumPK,
+			infoID: mock.PkNum,
 			data:   mock.EmptyJson,
 			// todo: concert the binding
 			result: http.StatusBadRequest,
@@ -79,7 +78,7 @@ func TestCreate(t *testing.T) {
 		{
 			desc:   "normal",
 			token:  token,
-			infoID: mock.NumPK,
+			infoID: mock.PkNum,
 			data:   data,
 			result: http.StatusOK,
 		},
@@ -96,7 +95,7 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-// todo: teacher_domain
+// todo: teacherDomain
 // todo: none last_modified error handle
 func TestGet(t *testing.T) {
 	NewHandler(ctx, route, usecaseMock, conf)
@@ -147,32 +146,32 @@ func TestUpdate(t *testing.T) {
 		{
 			desc:       "unauthorized",
 			token:      mock.EmptyStr,
-			infoID:     mock.NumPK,
-			bulletinID: mock.NumPK,
+			infoID:     mock.PkNum,
+			bulletinID: mock.PkNum,
 			data:       data,
 			result:     http.StatusUnauthorized,
 		},
 		{
 			desc:       "fail info id",
 			token:      token,
-			infoID:     mock.StrWord,
-			bulletinID: mock.NumPK,
+			infoID:     mock.WordStr,
+			bulletinID: mock.PkNum,
 			data:       data,
 			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "fail bulletin id",
 			token:      token,
-			infoID:     mock.NumPK,
-			bulletinID: mock.StrWord,
+			infoID:     mock.PkNum,
+			bulletinID: mock.WordStr,
 			data:       data,
 			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "empty bulletin content",
 			token:      token,
-			infoID:     mock.NumPK,
-			bulletinID: mock.NumPK,
+			infoID:     mock.PkNum,
+			bulletinID: mock.PkNum,
 			data:       mock.EmptyJson,
 			// todo: concert the binding
 			result: http.StatusBadRequest,
@@ -180,8 +179,8 @@ func TestUpdate(t *testing.T) {
 		{
 			desc:       "normal",
 			token:      token,
-			infoID:     mock.NumPK,
-			bulletinID: mock.NumPK,
+			infoID:     mock.PkNum,
+			bulletinID: mock.PkNum,
 			data:       data,
 			result:     http.StatusOK,
 		},
@@ -211,37 +210,37 @@ func TestDelete(t *testing.T) {
 		{
 			desc:       "unauthorized",
 			token:      mock.EmptyStr,
-			infoID:     mock.NumPK,
-			bulletinID: mock.NumPK,
+			infoID:     mock.PkNum,
+			bulletinID: mock.PkNum,
 			result:     http.StatusUnauthorized,
 		},
 		{
 			desc:       "fail info id",
 			token:      token,
-			infoID:     mock.StrWord,
-			bulletinID: mock.NumPK,
+			infoID:     mock.WordStr,
+			bulletinID: mock.PkNum,
 			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "fail bulletin id",
 			token:      token,
-			infoID:     mock.NumPK,
-			bulletinID: mock.StrWord,
+			infoID:     mock.PkNum,
+			bulletinID: mock.WordStr,
 			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "empty bulletin content",
 			token:      token,
-			infoID:     mock.NumPK,
-			bulletinID: mock.NumPK,
+			infoID:     mock.PkNum,
+			bulletinID: mock.PkNum,
 			// todo: concert the binding
 			result: http.StatusBadRequest,
 		},
 		{
 			desc:       "normal",
 			token:      token,
-			infoID:     mock.NumPK,
-			bulletinID: mock.NumPK,
+			infoID:     mock.PkNum,
+			bulletinID: mock.PkNum,
 			result:     http.StatusOK,
 		},
 	}

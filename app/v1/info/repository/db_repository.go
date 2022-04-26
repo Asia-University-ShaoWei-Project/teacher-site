@@ -26,12 +26,12 @@ func NewDbRepository(db *gorm.DB, conf *config.DB) domain.InfoDbRepository {
 func (r *DbRepository) Create(ctx context.Context, req *domain.CreateInfoBulletinRequest) (domain.InfoBulletinBoards, error) {
 	var bulletin domain.InfoBulletinBoards
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		info := domain.Infos{AutoModel: domain.AutoModel{ID: req.InfoID}}
+		info := domain.Infos{AutoModel: domain.AutoModel{Id: req.InfoID}}
 		if err := updateInfoLastModified(tx, &info); err != nil {
 			return err
 		}
 		// create info bulletin
-		bulletin = domain.InfoBulletinBoards{InfoID: info.AutoModel.ID, Content: req.Content}
+		bulletin = domain.InfoBulletinBoards{InfoID: info.AutoModel.Id, Content: req.Content}
 		result := tx.Create(&bulletin)
 		if err := checkErrAndExist(result); err != nil {
 			return err
@@ -68,17 +68,17 @@ func (r *DbRepository) GetLastModified(ctx context.Context, id uint) (string, er
 }
 
 func (r *DbRepository) Update(ctx context.Context, req *domain.UpdateInfoBulletinRequest) (domain.Infos, error) {
-	info := domain.Infos{AutoModel: domain.AutoModel{ID: req.InfoID}}
+	info := domain.Infos{AutoModel: domain.AutoModel{Id: req.InfoID}}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := updateInfoLastModified(tx, &info); err != nil {
 			return err
 		}
 		// update the content of infos_bulletin
 		// bulletin := domain.InfoBulletinBoards{
-		// AutoModel: domain.AutoModel{ID: req.BulletinID},
+		// AutoModel: domain.AutoModel{Id: req.BulletinID},
 		// Content:   req.Content}
 		result := tx.Model(&domain.InfoBulletinBoards{}).
-			Where("id=? AND info_id=?", req.BulletinID, info.AutoModel.ID).
+			Where("id=? AND info_id=?", req.BulletinID, info.AutoModel.Id).
 			Update("content", req.Content)
 		if err := checkErrAndExist(result); err != nil {
 			return err
@@ -88,7 +88,7 @@ func (r *DbRepository) Update(ctx context.Context, req *domain.UpdateInfoBulleti
 	return info, err
 }
 func (r *DbRepository) Delete(ctx context.Context, req *domain.DeleteInfoBulletinRequest) (domain.Infos, error) {
-	info := domain.Infos{AutoModel: domain.AutoModel{ID: req.InfoID}}
+	info := domain.Infos{AutoModel: domain.AutoModel{Id: req.InfoID}}
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := updateInfoLastModified(tx, &info); err != nil {
@@ -96,7 +96,7 @@ func (r *DbRepository) Delete(ctx context.Context, req *domain.DeleteInfoBulleti
 		}
 		fmt.Println(`after time:`, info.LastModified)
 
-		result := tx.Where("id=? AND info_id=?", req.BulletinID, info.AutoModel.ID).Delete(&domain.InfoBulletinBoards{})
+		result := tx.Where("id=? AND info_id=?", req.BulletinID, info.AutoModel.Id).Delete(&domain.InfoBulletinBoards{})
 
 		if err := checkErrAndExist(result); err != nil {
 			return err

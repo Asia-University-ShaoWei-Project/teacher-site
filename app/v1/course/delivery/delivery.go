@@ -2,113 +2,297 @@ package delivery
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"teacher-site/config"
 	"teacher-site/domain"
-	mw "teacher-site/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
-type InfoHandler struct {
-	Usecase domain.InfoUsecase
-	conf    *config.Jwt
+type Handler struct {
+	Usecase domain.CourseUsecase
+	conf    *config.Config
 }
 
-func NewInfoHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.InfoUsecase, conf *config.Jwt) {
-	handler := &InfoHandler{
+func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.CourseUsecase, conf *config.Config) {
+	handler := &Handler{
 		Usecase: usecase,
 		conf:    conf,
 	}
-	info := r.Group("/info")
+
+	r.GET("", handler.Get(ctx))
+	r.POST("", handler.Create(ctx))
+	course := r.Group("/:courseId")
 	{
-		info.GET("/", handler.Get(ctx))
-		auth := info.Group("/", mw.VerifyAuth(ctx, conf.Secure))
+		course.GET("", handler.GetContent(ctx))
+
+		bulletin := course.Group("/bulletin")
 		{
-			auth.POST("/", handler.Create(ctx))
-			auth.PUT("/:id", handler.Update(ctx))
-			auth.DELETE("/:id", handler.Delete(ctx))
+			bulletin.POST("", handler.CreateBulletin(ctx))
+			bulletin.PUT("/:bulletinId", handler.UpdateBulletin(ctx))
+			bulletin.DELETE("/:bulletinId", handler.DeleteBulletin(ctx))
 		}
+
+		slide := course.Group("/slide")
+		{
+			slide.POST("", handler.CreateSlide(ctx))
+			slide.PUT("/:slideId", handler.UpdateSlide(ctx))
+			slide.DELETE("/:slideId", handler.DeleteSlide(ctx))
+		}
+
+		homework := course.Group("/homework")
+		{
+			homework.POST("", handler.CreateHomework(ctx))
+			homework.PUT("/:homeworkId", handler.UpdateHomework(ctx))
+			homework.DELETE("/:homeworkId", handler.DeleteHomework(ctx))
+		}
+
 	}
 }
-
-func (i *InfoHandler) Create(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) Create(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var bind domain.ReqCreateInfo
-		if err := c.ShouldBindUri(&bind); err != nil {
+		var req domain.CreateCourseRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if err := c.ShouldBindJSON(&bind); err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
-		bulletin, err := i.Usecase.Create(ctx, &bind)
+		res, err := h.Usecase.Create(ctx, &req)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		res := domain.ResCreateInfo{
-			ID:   bulletin.AutoModel.ID,
-			Date: bulletin.AutoModel.CreatedAT.Format(domain.BulletinDateFormat),
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"data": res,
-		})
+		c.JSON(http.StatusOK, gin.H{"data": res})
 	}
 }
-func (i *InfoHandler) Get(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) CreateBulletin(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var bind domain.ReqGetInfo
-		if err := c.ShouldBindUri(&bind); err != nil {
+		var req domain.CreateCourseBulletinRequest
+		if err := c.ShouldBindUri(&req); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		res, err := i.Usecase.Get(ctx, &bind)
-		if err != nil {
-			c.AbortWithStatus(http.StatusNoContent)
-			return
-		}
-		c.JSON(http.StatusOK, &gin.H{
-			"data": res,
-		})
-	}
-}
-
-func (i *InfoHandler) Update(ctx context.Context) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var bind domain.ReqUpdateInfoBulletin
-		if err := c.ShouldBindUri(&bind); err != nil {
+		if err := c.ShouldBindJSON(&req); err != nil {
+			// todo: test
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if err := c.ShouldBindJSON(&bind); err != nil {
+		if (req.CourseId == 0) || (len(req.Content) == 0) {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		res, err := i.Usecase.Update(ctx, &bind)
+		res, err := h.Usecase.CreateBulletin(ctx, &req)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"data": res,
-		})
-		c.Status(http.StatusOK)
+		c.JSON(http.StatusOK, gin.H{"data": res})
+	}
+}
+func (h *Handler) CreateSlide(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req domain.CreateCourseSlideRequest
+		if err := c.ShouldBindUri(&req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			// todo: test
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if (req.CourseId == 0) || (len(req.Chapter) == 0) || (len(req.FileTitle) == 0) {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		res, err := h.Usecase.CreateSlide(ctx, &req)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": res})
+	}
+}
+func (h *Handler) CreateHomework(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req domain.CreateCourseHomeworkRequest
+		if err := c.ShouldBindUri(&req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			// todo: test
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if (req.CourseId == 0) || (len(req.Number) == 0) || (len(req.FileTitle) == 0) {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		res, err := h.Usecase.CreateHomework(ctx, &req)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": res})
 	}
 }
 
-func (i *InfoHandler) Delete(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) Get(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var bind domain.ReqDeleteInfo
-		if err := c.ShouldBindUri(&bind); err != nil {
+		// todo: test
+		var req domain.GetCourseRequest
+		if err := c.ShouldBindUri(&req); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if err := i.Usecase.Delete(ctx, &bind); err != nil {
+		res, err := h.Usecase.Get(ctx, &req)
+		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		c.Status(http.StatusNoContent)
+		c.JSON(http.StatusOK, gin.H{"data": res})
+
+	}
+}
+func (h *Handler) GetContent(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req domain.GetCourseContentRequest
+		if err := c.ShouldBindUri(&req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if err := c.ShouldBindQuery(&req); err != nil {
+			// todo: test
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		res, err := h.Usecase.GetContent(ctx, &req)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": res})
+
+	}
+}
+
+func (h *Handler) UpdateBulletin(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req domain.UpdateCourseBulletinRequest
+		if err := c.ShouldBindUri(&req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			// todo: test
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if (req.CourseId == 0) || (req.BulletinId == 0) || (len(req.Content) == 0) {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		res, err := h.Usecase.UpdateBulletin(ctx, &req)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": res})
+	}
+}
+func (h *Handler) UpdateSlide(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req domain.UpdateCourseSlideRequest
+		if err := c.ShouldBindUri(&req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			// todo: test
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if (req.CourseId == 0) || (req.SlideId == 0) || (len(req.Chapter) == 0) || (len(req.FileTitle) == 0) {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		res, err := h.Usecase.UpdateSlide(ctx, &req)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": res})
+	}
+}
+func (h *Handler) UpdateHomework(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req domain.UpdateCourseHomeworkRequest
+		if err := c.BindUri(&req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			// todo: test
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if (req.CourseId == 0) || (req.HomeworkId == 0) || (len(req.Number) == 0) || (len(req.FileTitle) == 0) {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		res, err := h.Usecase.UpdateHomework(ctx, &req)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": res})
+	}
+}
+func (h *Handler) DeleteBulletin(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req domain.DeleteCourseBulletinRequest
+		if err := c.ShouldBindUri(&req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		res, err := h.Usecase.DeleteBulletin(ctx, &req)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": res})
+	}
+}
+func (h *Handler) DeleteSlide(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req domain.DeleteCourseSlideRequest
+		if err := c.ShouldBindUri(&req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		res, err := h.Usecase.DeleteSlide(ctx, &req)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": res})
+	}
+}
+func (h *Handler) DeleteHomework(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req domain.DeleteCourseHomeworkRequest
+		if err := c.ShouldBindUri(&req); err != nil {
+			fmt.Println(err)
+
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		res, err := h.Usecase.DeleteHomework(ctx, &req)
+		if err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": res})
 	}
 }

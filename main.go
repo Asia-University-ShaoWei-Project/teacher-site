@@ -35,6 +35,7 @@ func main() {
 	// migrate.Setup(db)
 	// gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
+	r.MaxMultipartMemory = conf.Server.MaxMultipartMemory
 	r.Use(sessions.Sessions("session", cookieStore))
 	r.Use(cors.Default())
 	r.Static(conf.Server.StaticRelativePath, conf.Server.StaticRootPath)

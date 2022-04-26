@@ -1,5 +1,5 @@
 /* ref: https://github.com/codrops/ButtonHoverStyles */
-.button {
+.option-button {
   pointer-events: auto;
   cursor: pointer;
   background: #e7e7e7;
@@ -12,8 +12,8 @@
   display: inline-block;
 }
 
-.button::before,
-.button::after {
+.option-button::before,
+.option-button::after {
   position: absolute;
   top: 0;
   left: 0;

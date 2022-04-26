@@ -32,7 +32,7 @@ type TeacherListRow struct {
 	NameUs string `json:"teacher_name_us"`
 }
 type HomeRequest struct {
-	Domain string `uri:"teacher_domain" binding:"required"`
+	Domain string `uri:"teacherDomain" binding:"required"`
 }
 type HomeResponse struct {
 	Email     string `json:"email"`

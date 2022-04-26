@@ -19,6 +19,7 @@ type Server struct {
 	StaticRelativePath string
 	StaticRootPath     string
 	TemplatePath       string
+	MaxMultipartMemory int64
 }
 type Limit struct {
 	TeacherListPageCount int
@@ -60,6 +61,7 @@ func newServer() *Server {
 		StaticRelativePath: "/static",
 		StaticRootPath:     "./static",
 		TemplatePath:       "templates/*",
+		MaxMultipartMemory: 8 << 20,
 	}
 }
 func newDB() *DB {

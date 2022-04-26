@@ -1,5 +1,7 @@
 package-lock.json
 migrate_dev_test.go
+mian.go
+config.go
 test/
 tmp/
 # DB

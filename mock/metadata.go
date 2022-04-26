@@ -5,16 +5,19 @@ import (
 	"time"
 )
 
-var ctx = context.Background()
+var Ctx = context.Background()
 
 const (
 	Date      = "2020-01-01"
 	EmptyStr  = ""
-	StrWord   = "a"
+	WordStr   = "word"
 	EmptyJson = "{}"
 
-	NumPK        = 1
-	UnknownNumPK = 999
+	PkNum         = 1
+	PkZeroStr     = "0"
+	PkStr         = "1"
+	NegativePkStr = "-1"
+	UnknownNumPK  = 999
 )
 
 // message

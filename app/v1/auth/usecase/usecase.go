@@ -121,7 +121,7 @@ func (auth *AuthUsecase) Logout(ctx context.Context, id string) error {
 // 	// todo: update the data in redis
 // 	// err = auth.CacheRepository.Update(ctx, req*domain.ResGetInfo)
 // 	res = domain.ResUpdateInfo{
-// 		ID:   bulletin.AutoModel.ID,
+// 		Id:   bulletin.AutoModel.Id,
 // 		Date: bulletin.AutoModel.CreatedAT.Format(domain.BulletinDateFormat),
 // 	}
 // 	return res, nil

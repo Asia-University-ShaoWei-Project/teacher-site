@@ -3,34 +3,39 @@ class API {
     this.origin = origin;
     this.version = version;
     this.teacherDomain = teacherDomain;
+    this.recourseType = {
+      INFO: "info",
+      COURSE: "course",
+      COURSE_CONTENT: "courseContent",
+    };
     this.resource = resource;
   }
-  get urlPath() {
+  getUrlPath() {
     return this.origin + "/api/" + this.version;
   }
-  get teacherPath() {
-    return this.urlPath + "/" + this.teacherDomain;
-  }
-  get resource() {
-    return this._resource;
-  }
-  set resource(resource) {
-    this._resource = resource;
+  getTeacherPath() {
+    return this.getUrlPath() + "/" + this.teacherDomain;
   }
   getVerifyAuthUrl() {
-    return this.urlPath + "/auth/token";
+    return this.getUrlPath() + "/auth/token";
   }
-  getResourceUrl(pageType, tableType, method, itemID, rowID) {
-    let url = this._resource[pageType][method];
-    switch (pageType) {
-      case pageTypes.info:
-        url = url.replace(":info_id", itemID).replace(":row_id", rowID);
+  getInfoResourceType() {
+    return this.recourseType.INFO;
+  }
+  getCourseResourceType() {
+    return this.recourseType.COURSE;
+  }
+  getResourceUrl(recourseType, tableType, method, itemID, rowID) {
+    let url = this.resource[recourseType][method];
+    switch (recourseType) {
+      case this.recourseType.INFO:
+        url = url.replace(":infoId", itemID).replace(":rowId", rowID);
         break;
-      case pageTypes.course:
+      case this.recourseType.COURSE:
         url = url
-          .replace(":course_id", itemID)
+          .replace(":courseId", itemID)
           .replace(":tableType", tableType)
-          .replace(":row_id", rowID);
+          .replace(":rowId", rowID);
         break;
     }
     return url;
@@ -50,11 +55,11 @@ var api = new API(
       // 200
       get: "/info/bulletin",
       // 201, 400
-      post: "/info/:info_id/bulletin",
+      post: "/info/:infoId/bulletin",
       // 200, 400, 409
-      put: "/info/:info_id/bulletin/:row_id",
+      put: "/info/:infoId/bulletin/:rowId",
       // 200, 404
-      delete: "/info/:info_id/bulletin/:row_id",
+      delete: "/info/:infoId/bulletin/:rowId",
     },
     course: {
       // 200
@@ -64,13 +69,13 @@ var api = new API(
     },
     courseContent: {
       // 200, 404
-      get: "/course/:course_id/?last_modified",
+      get: "/course/:courseId/?lastModified",
       // 201, 400
-      post: "/course/:course_id/:type",
+      post: "/course/:courseId/:tableType",
       // 200, 400, 409
-      put: "/course/:course_id/:table_type/:row_id",
+      put: "/course/:courseId/:tableType/:rowId",
       // 200, 404
-      delete: "/course/:course_id/:table_type/:row_id",
+      delete: "/course/:courseId/:tableType/:rowId",
     },
   }
 );

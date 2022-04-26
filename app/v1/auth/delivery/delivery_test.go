@@ -24,7 +24,7 @@ const (
 var (
 	ctx         = context.Background()
 	r           = gin.Default()
-	route       = r.Group("/:teacher_domain/api/v1/auth")
+	route       = r.Group("/:teacherDomain/api/v1/auth")
 	usecaseMock = usecase.NewUsecase()
 	conf        = config.New()
 	ApiUrl      = mock.ApiUrl + "/auth"

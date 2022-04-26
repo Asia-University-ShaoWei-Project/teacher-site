@@ -15,3 +15,6 @@ type Teachers struct {
 	Infos    []Infos   `gorm:"foreignKey:TeacherID;references:Domain"`
 	Time     Time      `gorm:"embedded"`
 }
+type TeacherDomainRequest struct {
+	TeacherDomain string `uri:"teacherDomain"  binding:"required"`
+}

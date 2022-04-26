@@ -1,26 +1,26 @@
-const HTTP_STATUS_CODE = {
-  ok: 200,
-  created: 201,
-  // StatusAccepted             = 202,
-  // StatusNonAuthoritativeInfo = 203,
-  noContent: 204,
-  // StatusResetContent         = 205,
-  found: 302,
-  badRequest: 400,
-  unauthorized: 401,
-  notFound: 404,
-  statusInternalServerError: 500,
+const HttpStatusCode = {
+  OK: 200,
+  CREATED: 201,
+  // Accepted             :202,
+  // NonAuthoritativeInfo : 203,
+  NO_CONTENT: 204,
+  // ResetContent         : 205,
+  FOUND: 302,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  NO_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
 };
 
-const HTTP_METHOD = {
-  post: "post",
-  get: "get",
-  put: "put",
-  delete: "delete",
+const HttpMethod = {
+  POST: "post",
+  GET: "get",
+  PUT: "put",
+  DELETE: "delete",
 };
 
-const headerKeys = {
-  auth: "Authorization",
+const HeaderKeys = {
+  AUTH: "Authorization",
 };
 
 var headers = {};
