@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"teacher-site/config"
 	"teacher-site/domain"
+	"teacher-site/pkg/message"
 
 	"github.com/gin-gonic/gin"
 )
@@ -168,12 +169,15 @@ func (h *Handler) GetContent(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 		res, err := h.Usecase.GetContent(ctx, &req)
+		if err == message.ErrUnnecessaryUpdate {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"data": res})
-
 	}
 }
 

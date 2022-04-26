@@ -5,6 +5,7 @@ import (
 	"teacher-site/domain"
 	"teacher-site/mock"
 	mockRepo "teacher-site/mock/info/repository"
+	"teacher-site/pkg/message"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,27 +24,23 @@ var (
 // 	assert.Nil(t, err, err)
 // }
 
-type getInfoResult struct {
-	err error
-}
-
 func TestGetInfo(t *testing.T) {
 	var req domain.GetInfoBulletinRequest
 
 	testCases := []struct {
 		desc         string
 		lastModified string
-		result       getInfoResult
+		result       error
 	}{
 		{
 			desc:         "data is up to date",
 			lastModified: mockRepo.CurrLastModidied,
-			result:       getInfoResult{errUnnecessaryUpdate},
+			result:       message.ErrUnnecessaryUpdate,
 		},
 		{
 			desc:         "the data is late than current date",
 			lastModified: mockRepo.LateLastModified,
-			result:       getInfoResult{nil},
+			result:       nil,
 		},
 	}
 	for _, tC := range testCases {
@@ -53,7 +50,7 @@ func TestGetInfo(t *testing.T) {
 				LastModified:         tC.lastModified,
 			}
 			_, err := usecase.Get(ctx, &req)
-			assert.Equal(t, tC.result.err, err)
+			assert.Equal(t, tC.result, err)
 		})
 	}
 }

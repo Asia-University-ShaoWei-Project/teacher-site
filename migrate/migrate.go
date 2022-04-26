@@ -39,11 +39,11 @@ func createAll(db *gorm.DB) {
 		Token:        token,
 		Teacher: domain.Teachers{
 			Domain:    "rikki",
-			Email:     "rikki@asia.edu.tw",
+			Email:     "rikki@mail.tw",
 			NameZH:    "陳瑞奇",
 			NameUS:    "Jui-Chi Chen(Rikki)",
 			Office:    "HB13",
-			Call:      "(04)2332-3456 ext. 20013",
+			Call:      "(04)1234-5678 ext. 1234",
 			Education: "國立中興大學資訊科學博士",
 			Infos: []domain.Infos{
 				{

@@ -102,7 +102,6 @@ class Item {
   }
   // todo
   updateData() {
-    // apiUrl = [ api.resources.info | api.resources.course]
     axios
       .get(this.apiUrl, {
         params: {
@@ -110,42 +109,40 @@ class Item {
         },
       })
       .then((res) => {
-        let rebuild = true;
-        let data = res.data.data;
+        let resData = res.data.data;
         let rows;
         switch (res.status) {
           // The information is up to date(Not need to updating the data)
           case HttpStatusCode.NO_CONTENT:
-            rebuild = false;
-            alert("The data is up to date!");
             console.warn("The data is up to date!");
             break;
           // need to update information
           case HttpStatusCode.OK:
             console.log("update the content");
-
-            this.lastModified = data.lastModified;
-            if (data.bulletins != null && data.bulletins != undefined) {
-              rows = newRows(attr.bulletin.tableType, data.bulletins);
+            console.log("curr last modified:", this.lastModified);
+            console.log("new last modified:", resData.lastModified);
+            this.lastModified = resData.lastModified;
+            if (resData.bulletins != null && resData.bulletins != undefined) {
+              rows = newRows(attr.bulletin.tableType, resData.bulletins);
               this.bulletin = newTable(attr.bulletin.tableType, rows);
             }
-            if (data.slides != null && data.slides != undefined) {
-              rows = newRows(attr.slide.tableType, data.slides);
-              this.slide = newTable(attr.slide.tableType, data.slides);
+            if (resData.slides != null && resData.slides != undefined) {
+              rows = newRows(attr.slide.tableType, resData.slides);
+              this.slide = newTable(attr.slide.tableType, rows);
             }
-            if (data.homeworks != null && data.homeworks != undefined) {
-              rows = newRows(attr.homework.tableType, data.homeworks);
-              this.homework = newTable(attr.slide.tableType, data.homeworks);
+            if (resData.homeworks != null && resData.homeworks != undefined) {
+              rows = newRows(attr.homework.tableType, resData.homeworks);
+              this.homework = newTable(attr.homework.tableType, rows);
             }
             this.buildContent();
-            showContent(this.content);
             break;
         }
+        showContent(this.content);
       })
       .catch((err) => {
         console.log(err);
         console.log(err.response);
-        console.log(err.response.state);
+        console.log(err.response.status);
         switch (err.response.statue) {
           case HttpStatusCode.BAD_REQUEST:
             console.error("bad request");
@@ -222,12 +219,12 @@ function newRows(tableType, data) {
       break;
     case attr.slide.tableType:
       data.forEach((v) => {
-        rows.push(newSlideRow(v.id, v.chapter, v.file.title, v.file.type));
+        rows.push(newSlideRow(v.id, v.chapter, v.fileTitle, v.fileType));
       });
       break;
     case attr.homework.tableType:
       data.forEach((v) => {
-        rows.push(newHomeworkRow(v.id, v.number, v.file.title, v.file.type));
+        rows.push(newHomeworkRow(v.id, v.number, v.fileTitle, v.fileType));
       });
       break;
   }
@@ -295,7 +292,7 @@ class SlideRow {
   setFileType(type) {
     this.fileType = type;
   }
-  setFataList() {
+  getDataList() {
     return ["CH" + this.chapter, this.fileTitle, this.fileType];
   }
 }
@@ -333,7 +330,7 @@ class HomeworkRow {
   setFileType(type) {
     this.fileType = type;
   }
-  setFataList() {
+  getDataList() {
     return ["#" + this.number, this.fileTitle, this.fileType];
   }
 }

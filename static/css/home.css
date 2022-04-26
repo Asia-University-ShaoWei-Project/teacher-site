@@ -18,14 +18,12 @@ select hr {
 }
 
 #info {
-  /* text-align: left; */
   flex: 1;
   margin: 10%;
   font-size: 16px;
 }
 
 #sub-info {
-  /* text-align: left; */
   flex: 1;
   margin: 10%;
   font-size: 14px;
@@ -34,14 +32,14 @@ select hr {
 
 #option-box {
   flex: 8;
-  padding-right: 10px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   justify-self: center;
 }
 
 .option-item {
-  margin-top: 10px;
+  margin-bottom: 5%;
   text-transform: capitalize;
 }
 
@@ -92,9 +90,4 @@ select hr {
 .file-item {
   display: flex;
   flex-direction: row;
-}
-
-/** Loading */
-#loading {
-  display: none;
 }

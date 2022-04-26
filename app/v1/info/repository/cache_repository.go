@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"teacher-site/config"
 	"teacher-site/domain"
-	"teacher-site/pkg/database"
+	"teacher-site/pkg/message"
 
 	"github.com/go-redis/redis"
 )
@@ -74,5 +74,5 @@ func (c *CacheRepository) UpdateInfoLastModified(ctx context.Context, req *domai
 		}
 		return err
 	}
-	return database.ErrMaximumRetry
+	return message.ErrMaximumRetry
 }

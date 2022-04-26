@@ -31,6 +31,7 @@
     ></script>
   </head>
   <body>
+    <div class="alert alert-warning" role="alert">功能尚未完成，持續更新中...。   可以查看 <a href="https://github.com/Asia-University-ShaoWei-Project/teacher-site" target="_blank">Github</a> 更新狀況</div>
     <main>
       <section id="select">
         <div id="info">
@@ -40,16 +41,15 @@
           <p>辦公室: {{ .data.Office }}</p>
           <p>電話: {{ .data.Call }}</p>
           <p>E-mail: {{ .data.Email }}</p>
-          <!-- todo -->
-          <div class="btn-group btn-group-vertical" role="group" aria-label="Basic example">
-            <button onclick="login()"type="button" class="btn btn-outline-primary">Login</button>
-            <button onclick="logout()" type="button" class="btn btn-outline-primary">Logout</button>
-            <button onclick="is_logged_in()" type="button" class="btn btn-outline-primary">Check auth</button>
-          </div>
-          
         </div>
         <hr />
-        <div id="option-box"></div>
+        <div id="option-box"  class="btn-group" role="group" aria-label="Basic outlined example"></div>
+        <hr />
+        <div class="btn-group btn-group-vertical" style="padding: 10px;" role="group" aria-label="Basic example">
+          <button onclick="login()"type="button" class="btn btn-outline-secondary option-item">Login</button>
+          <button onclick="logout()" type="button" class="btn btn-outline-secondary option-item">Logout</button>
+          <button onclick="is_logged_in()" type="button" class="btn btn-outline-secondary option-item">Check auth</button>
+        </div>
         <hr />
       </section>
       <div id="content">
@@ -104,7 +104,7 @@
   <script type="text/javascript" src="../static/js/edit-elem.js"></script>
   <script type="text/javascript" src="../static/js/index.js"></script>
   <script>
-    // alert("功能尚未完成，持續更新中...")
+    // alert("")
     init();
     function login() {
       window.open('/login', '_blank');

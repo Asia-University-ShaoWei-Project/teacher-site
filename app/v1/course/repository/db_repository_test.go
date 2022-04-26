@@ -39,3 +39,28 @@ func TestGetByTeacherDomain(t *testing.T) {
 		})
 	}
 }
+
+func TestGetContentByCourseId(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		courseId uint
+		result   error
+	}{
+		{
+			desc:     "The teacher domian is not existed",
+			courseId: mock.UnknownNumPK,
+			result:   gorm.ErrRecordNotFound,
+		},
+		{
+			desc:     "Normal",
+			courseId: mock.PkNum,
+			result:   nil,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			_, err := repo.GetContentByCourseId(ctx, tC.courseId)
+			assert.Equal(t, tC.result, err)
+		})
+	}
+}

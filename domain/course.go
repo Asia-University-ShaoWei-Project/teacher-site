@@ -8,8 +8,8 @@ import (
 type Courses struct {
 	AutoModel     AutoModel `gorm:"embedded"`
 	TeacherID     string
-	NameZH        string           `gorm:"not null"`
-	NameUS        string           `gorm:"not null"`
+	NameZH        string `gorm:"not null"`
+	NameUS        string
 	BulletinBoard []BulletinBoards `gorm:"foreignKey:CourseId;references:Id"`
 	Slide         []Slides         `gorm:"foreignKey:CourseId;references:Id"`
 	Homework      []Homeworks      `gorm:"foreignKey:CourseId;references:Id"`
@@ -63,6 +63,8 @@ type CourseUsecase interface {
 type CourseDbRepository interface {
 	// Create(ctx context.Context, req *CreateInfoBulletinRequest) (InfoBulletinBoards, error)
 	GetByTeacherDomain(ctx context.Context, teacherDomain string) ([]CourseResponse, error)
+	GetContentByCourseId(ctx context.Context, courseId uint) (GetCourseContentResponse, error)
+	GetLastModifiedByCourseId(ctx context.Context, courseId uint) (Courses, error)
 	// GetBulletinsByInfoId(ctx context.Context, id uint) ([]InfoBulletinResponse, error)
 	// GetLastModified(ctx context.Context, id uint) (string, error)
 	// Update(ctx context.Context, req *UpdateInfoBulletinRequest) (Infos, error)
@@ -97,14 +99,34 @@ type CourseResponse struct {
 	NameUS string `json:"nameUs"`
 }
 type GetCourseContentRequest struct {
-	AutoModel   uint   `uri:"courseId"`
-	LastUpdated string `form:"lastModified"`
+	Id           uint   `uri:"courseId"`
+	LastModified string `form:"lastModified"`
 }
+
 type GetCourseContentResponse struct {
-	Bulletin    []BulletinBoards `json:"bulletins"`
-	Slides      []Slides         `json:"slides"`
-	Homeworks   []Homeworks      `json:"homeworks"`
-	LastUpdated string           `json:"lastModified"`
+	Id            uint                     `json:"id"`
+	BulletinBoard []CourseBulletinResponse `json:"bulletins" gorm:"foreignKey:Id;references:Id"`
+	Slide         []CourseSlideResponse    `json:"slides" gorm:"foreignKey:Id;references:Id"`
+	Homework      []CourseHomeworkResponse `json:"homeworks" gorm:"foreignKey:Id;references:Id"`
+	LastModified  string                   `json:"lastModified"`
+}
+type CourseBulletinResponse struct {
+	Id      uint   `json:"id"`
+	Content string `json:"content"`
+}
+type CourseSlideResponse struct {
+	Id      uint   `json:"id"`
+	Chapter string `json:"chapter"`
+	Title   string `json:"fileTitle"`
+	Type    string `json:"fileType"`
+	Url     string `json:"fileUrl"`
+}
+type CourseHomeworkResponse struct {
+	Id     uint   `json:"id"`
+	Number string `json:"number"`
+	Title  string `json:"fileTitle"`
+	Type   string `json:"fileType"`
+	Url    string `json:"fileUrl"`
 }
 
 // type UpdateCourseRequest struct{}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"teacher-site/config"
 	"teacher-site/domain"
+	"teacher-site/pkg/message"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -45,14 +46,22 @@ func (u *Usecase) Get(ctx context.Context, req *domain.GetCourseRequest) (domain
 	return res, nil
 }
 
-// todo
 func (u *Usecase) GetContent(ctx context.Context, req *domain.GetCourseContentRequest) (domain.GetCourseContentResponse, error) {
 	var res domain.GetCourseContentResponse
-	// ,err := u.DbRepository
-	// if err != nil {
-	// 	return res, err
-	// }
-	// res = domain.
+
+	course, err := u.DbRepository.GetLastModifiedByCourseId(ctx, req.Id)
+	if err != nil {
+		return res, err
+	}
+	// Unnecessary to get new data if request last modified value is equal the last modified of repository value
+	if req.LastModified == course.LastModified {
+		return res, message.ErrUnnecessaryUpdate
+	}
+
+	res, err = u.DbRepository.GetContentByCourseId(ctx, req.Id)
+	if err != nil {
+		return res, err
+	}
 	return res, nil
 }
 

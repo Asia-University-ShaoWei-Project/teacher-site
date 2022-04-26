@@ -28,113 +28,24 @@ func (r *DbRepository) GetByTeacherDomain(ctx context.Context, teacherDomain str
 	err := checkErrAndExist(result)
 	return coursesRes, err
 }
+func (r *DbRepository) GetContentByCourseId(ctx context.Context, courseId uint) (domain.GetCourseContentResponse, error) {
+	var courseRes domain.GetCourseContentResponse
+	course := domain.Courses{AutoModel: domain.AutoModel{Id: courseId}}
 
-// func (r *DbRepository) Create(ctx context.Context, req *domain.ReqCreateInfo) (domain.InfoBulletinBoards, error) {
-// 	var (
-// 		info     domain.Infos
-// 		bulletin domain.InfoBulletinBoards
-// 	)
-// 	err := r.db.Transaction(func(tx *gorm.DB) error {
-// 		if err := updateInfoLastModified(tx, req.TeacherDomain, &info); err != nil {
-// 			return err
-// 		}
-// 		// create info bulletin
-// 		bulletin = domain.InfoBulletinBoards{InfoID: info.AutoModel.Id, Content: req.Content}
-// 		result := tx.Create(&bulletin)
-// 		if err := checkErrAndExist(result); err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// 	if err != nil {
-// 		return bulletin, err
-// 	}
+	result := r.db.Model(&course).
+		Select("id, last_modified").
+		Where("id=?", courseId).
+		Find(&courseRes)
+	if err := checkErrAndExist(result); err != nil {
+		return courseRes, err
+	}
 
-// 	return bulletin, nil
+	r.db.Model(&course).Association("BulletinBoard").Find(&courseRes.BulletinBoard)
+	r.db.Model(&course).Association("Slide").Find(&courseRes.Slide)
+	r.db.Model(&course).Association("Homework").Find(&courseRes.Homework)
+	return courseRes, nil
+}
 
-// }
-// func (r *DbRepository) Get(ctx context.Context, req *domain.ReqGetInfo) ([]domain.GetInfoBulletin, error) {
-// 	var infoBulletin []domain.GetInfoBulletin
-// 	r.db.Table("info_bulletin_boards ib").
-// 		Select("ib.id, DATE(ib.created_at) AS date, ib.content").
-// 		Joins("JOIN infos i ON ib.infoId = i.id").
-// 		Joins("JOIN teachers t ON teacher_id = t.domain").
-// 		Where("t.domain=? AND ib.deleted_at IS NULL", req.TeacherDomain).Find(&infoBulletin)
-// 	return infoBulletin, nil
-// }
-
-// // func (r *Repository) GetLastModified(ctx context.Context) (string, error)
-
-// // 	var info domain.Infos
-// // 	if err := r.db.Where("teacher_id=?", domain).Find(&info).Error; err != nil {
-// // 		return "", err
-// // 	}
-// // 	return info.LastModified, nil
-// // }
-
-// // todo: checkErrAndExist is require?
-// func (r *DbRepository) Update(ctx context.Context, req *domain.ReqUpdateInfoBulletin) (domain.InfoBulletinBoards, error) {
-// 	var bulletin domain.InfoBulletinBoards
-// 	err := r.db.Transaction(func(tx *gorm.DB) error {
-// 		var info domain.Infos
-// 		if err := updateInfoLastModified(tx, req.TeacherDomain, &info); err != nil {
-// 			return err
-// 		}
-// 		// update the content of infos_bulletin
-// 		// bulletin := domain.InfoBulletinBoards{
-// 		// AutoModel: domain.AutoModel{Id: req.BulletinID},
-// 		// Content:   req.Content}
-// 		result := tx.Model(&bulletin).Where("id=? AND infoId=?", req.BulletinID, info.AutoModel.Id).Update("content", req.Content)
-// 		if err := checkErrAndExist(result); err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// 	return bulletin, err
-// }
-// func (r *DbRepository) Delete(ctx context.Context, req *domain.ReqDeleteInfo) error {
-
-// 	err := r.db.Transaction(func(tx *gorm.DB) error {
-// 		var info domain.Infos
-// 		if err := updateInfoLastModified(tx, req.TeacherDomain, &info); err != nil {
-// 			return err
-// 		}
-// 		if err := tx.Where("id=? AND infoId=?", req.BulletinID, info.AutoModel.Id).Delete(&domain.InfoBulletinBoards{}).Error; err != nil {
-// 			return err
-// 		}
-// 		return nil
-// 	})
-// 	return err
-// }
-// func updateInfoLastModified(tx *gorm.DB, teacherDomain string, info *domain.Infos) error {
-// 	var err error
-// 	// check domain is existed
-// 	result := tx.Model(&info).Where(`teacher_id=?`, teacherDomain).Find(&info)
-// 	err = checkErrAndExist(result)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	// update info modified time
-// 	result = tx.Model(&info).Update("last_modified", newLastModifiedTime())
-// 	err = checkErrAndExist(result)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-// func checkErrAndExist(result *gorm.DB) error {
-// 	if result.Error != nil {
-// 		return result.Error
-// 	}
-// 	if result.RowsAffected == 0 {
-// 		return gorm.ErrRecordNotFound
-// 	}
-// 	return nil
-// }
-// func newLastModifiedTime() string {
-// 	now := time.Now()
-// 	return strconv.FormatInt(now.Unix(), 10)
-// }
 func checkErrAndExist(result *gorm.DB) error {
 	if result.Error != nil {
 		return result.Error
@@ -143,4 +54,11 @@ func checkErrAndExist(result *gorm.DB) error {
 		return gorm.ErrRecordNotFound
 	}
 	return nil
+}
+
+func (r *DbRepository) GetLastModifiedByCourseId(ctx context.Context, courseId uint) (domain.Courses, error) {
+	var course domain.Courses
+	result := r.db.Find(&course, courseId)
+	err := checkErrAndExist(result)
+	return course, err
 }

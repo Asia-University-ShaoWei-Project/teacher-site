@@ -3,14 +3,12 @@ package usecase
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"teacher-site/config"
 	"teacher-site/domain"
+	"teacher-site/pkg/message"
 
 	log "github.com/sirupsen/logrus"
 )
-
-var errUnnecessaryUpdate = errors.New("the data is up to date")
 
 type Usecase struct {
 	DbRepository    domain.InfoDbRepository
@@ -60,8 +58,7 @@ func (i *Usecase) Get(ctx context.Context, req *domain.GetInfoBulletinRequest) (
 	}
 	// Unnecessary to get new data if request last modified value is equal the last modified of repository value
 	if req.LastModified == info.LastModified {
-		i.log.Error(errUnnecessaryUpdate)
-		return res, errUnnecessaryUpdate
+		return res, message.ErrUnnecessaryUpdate
 	}
 	res.SetLastModified(info.LastModified)
 	res.SetID(info.AutoModel.Id)

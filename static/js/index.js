@@ -2,6 +2,9 @@ const brTag = "<br>";
 const optionBoxElem = document.getElementById("option-box");
 const pageContentElem = document.getElementById("page-content");
 const loadingElem = document.getElementById("loading");
+var /** !Object<!Item> */ items = [];
+// 0: information index
+var optionSwitchIndex = 0;
 const PageTypes = {
   INFO: "info",
   COURSE: "course",
@@ -15,12 +18,12 @@ const attr = {
   slide: {
     tableType: "slide",
     tableTitle: "Slide",
-    tableFieldTitles: ["Chapter", "Type", "Title"],
+    tableFieldTitles: ["Chapter", "Title", "Type"],
   },
   homework: {
     tableType: "homework",
     tableTitle: "Homework",
-    tableFieldTitles: ["#", "Type", "Title"],
+    tableFieldTitles: ["#", "Title", "Type"],
   },
 };
 var isTeacher = false;
@@ -58,15 +61,33 @@ function teacherMode() {
   attr.homework.tableFieldTitles.push(editTxt, deleteTxt);
 }
 
+var infoWorkDone = false;
+var courseWorkDone = false;
 function createInitElem() {
-  // let course_get_url = `/course`;
+  var count = 0;
+  // 5 second
+  let timeoutTime = 5;
+  let delay = 200;
+  let timeoutCount = timeoutTime * (1000 /* 1 second */ / delay);
+
   initInfoApi();
   initCourseApi();
+  let work = setInterval(() => {
+    if (count >= timeoutCount) {
+      console.log("timeout");
+      alert("connect error");
+      clearInterval(work);
+    }
+    if (infoWorkDone && courseWorkDone) {
+      showOptionButtons();
+      clearInterval(work);
+    }
+    console.log("add time");
+    count += 1;
+  }, delay);
 }
-// *
 
-function initInfoApi() {
-  // [ bulletins<list>(id, date, content), id(info), last_modified(info) ]
+function initInfoApi(workDone) {
   console.log("API -> getInfoApi");
   let url =
     api.getTeacherPath() +
@@ -99,18 +120,18 @@ function initInfoApi() {
         )
       );
       items.push(infoItem);
+      infoWorkDone = true;
       loadingView(false);
       showContent(infoItem.getContent());
-      // todo: temp
-      showOptionButtons();
     })
     .catch((err) => {
+      infoWorkDone = true;
       console.error("getInfoApi:", err);
     });
 }
 // todo
 
-function initCourseApi() {
+function initCourseApi(workDone) {
   let url =
     api.getTeacherPath() +
     api.getResourceUrl(api.getCourseResourceType(), null, HttpMethod.GET);
@@ -120,34 +141,40 @@ function initCourseApi() {
       console.log("getInfo api success");
       if (res.status == HttpStatusCode.OK) {
         let resData = res.data.data;
+        let apiUrl;
         resData.courses.forEach((v) => {
+          apiUrl = url + "/" + v.id;
           items.push(
-            new Item(api.getCourseResourceType(), url, v.id, v.nameZh, v.nameUs)
+            new Item(
+              api.getCourseResourceType(),
+              apiUrl,
+              v.id,
+              v.nameZh,
+              v.nameUs
+            )
           );
         });
       }
-      showOptionButtons();
+      courseWorkDone = true;
     })
     .catch((err) => {
       console.error("getInfoApi:", err);
+      courseWorkDone = true;
     });
 }
-
-var /** !Object<!Item> */ items = [];
-// 0: information index
-var optionSwitchIndex = 0;
 
 // *option
 
 function showOptionButtons() {
-  let elem;
+  let elem = "";
   items.forEach((v) => {
     elem = createOptionButton(v);
     optionBoxElem.appendChild(elem);
   });
 }
 
-const optionClassAttr = `option-item option-button button--anthe`;
+// const optionClassAttr = `option-item option-button button--anthe`;
+const optionClassAttr = `btn btn-outline-dark option-item`;
 function createOptionButton(item) {
   console.log("createOptionButton");
   let btn = document.createElement("button");
