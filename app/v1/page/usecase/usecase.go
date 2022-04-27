@@ -28,12 +28,12 @@ func NewUsecase(dbRepo domain.PageDbRepository, cacheRepo domain.PageCacheReposi
 func (u *Usecase) TeacherList(ctx context.Context, req *domain.TeacherListRequest) (domain.TeacherListResponse, error) {
 	var res domain.TeacherListResponse
 	limit := u.conf.Limit.TeacherListPageCount
-	offset := (limit * req.Page) - limit
+	offset := (limit * int(req.Page)) - limit
 	teachers, err := u.DbRepository.GetTeachers(ctx, limit, offset)
 	if err != nil {
 		return res, err
 	}
-	res = domain.TeacherListResponse{List: teachers}
+	res = domain.TeacherListResponse{Teachers: teachers}
 	return res, nil
 
 }
@@ -45,8 +45,8 @@ func (u *Usecase) Home(ctx context.Context, req *domain.HomeRequest) (domain.Hom
 	}
 	res = domain.HomeResponse{
 		Email:     teacher.Email,
-		NameZh:    teacher.NameZH,
-		NameUs:    teacher.NameUS,
+		NameZh:    teacher.NameZh,
+		NameUs:    teacher.NameUs,
 		Office:    teacher.Office,
 		Call:      teacher.Call,
 		Education: teacher.Education,

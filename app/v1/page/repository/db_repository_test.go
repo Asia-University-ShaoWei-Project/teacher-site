@@ -30,7 +30,7 @@ func TestGetTeachers(t *testing.T) {
 		result error
 	}{
 		{
-			desc:   "get 999 page is too big",
+			desc:   "Not found",
 			page:   999,
 			result: gorm.ErrRecordNotFound,
 		},
@@ -70,13 +70,13 @@ func TestCheckAuthByIdAndToken(t *testing.T) {
 		},
 		{
 			desc:   "unknown the token",
-			userId: mock.UserID,
+			userId: mock.UserId,
 			token:  mock.Unknown,
 			result: gorm.ErrRecordNotFound,
 		},
 		{
 			desc:   "normal",
-			userId: mock.UserID,
+			userId: mock.UserId,
 			token:  realUserToken,
 			result: nil,
 		},

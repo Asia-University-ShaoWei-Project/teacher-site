@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 // todo: TestLogin
@@ -38,34 +39,53 @@ type HttpStatusCode int
 
 func TestTeacherList(t *testing.T) {
 	NewHandler(ctx, route, usecaseMock, conf)
-	urlFormat := `/page/%s`
+	// urlFormat := `/page/%s`
 	testCases := []struct {
 		desc   string
 		page   string
 		result HttpStatusCode
 	}{
 		{
-			desc:   "unknown page",
-			page:   mock.Unknown,
-			result: http.StatusBadRequest,
+			desc: "invalid digit",
+			// page:   "-1",
+			page:   "/page/" + mock.WordStr,
+			result: http.StatusNotFound,
 		},
 		{
-			desc:   "negative digit",
-			page:   "-1",
-			result: http.StatusBadRequest,
+			desc: "negative digit",
+			// page:   "-1",
+			page:   "/page/-1",
+			result: http.StatusNotFound,
 		},
 		{
-			desc:   "normal",
-			page:   "2",
+			desc: "normal no digit(0)",
+			// page:   "-1",
+			page:   "/",
+			result: http.StatusOK,
+		},
+		{
+			desc: "zero digit",
+			// page:   "-1",
+			page:   "/page/0",
+			result: http.StatusOK,
+		},
+		{
+			desc: "normal page",
+			// page:   "2",
+			page:   "/page/1",
 			result: http.StatusOK,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			w = httptest.NewRecorder()
-			url = fmt.Sprintf(urlFormat, tC.page)
-			req, _ = http.NewRequest(methodGet, url, nil)
+			// url = fmt.Sprintf(urlFormat, tC.page)
+			req, _ = http.NewRequest("GET", tC.page, nil)
+			req.Header.Set("Content-Type", "text/html")
 			r.ServeHTTP(w, req)
+			fmt.Println(req.Header.Get("Content-Type"))
+
+			assert.Equal(t, tC.result, HttpStatusCode(w.Code))
 		})
 	}
 }
@@ -94,6 +114,7 @@ func TestHome(t *testing.T) {
 			url := "/" + tC.teacherDomain
 			req, _ = http.NewRequest(methodGet, url, nil)
 			r.ServeHTTP(w, req)
+
 		})
 	}
 }

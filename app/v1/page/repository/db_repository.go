@@ -21,8 +21,8 @@ func NewDbRepository(db *gorm.DB, conf *config.DB) domain.PageDbRepository {
 	}
 }
 
-func (r *DbRepository) GetTeachers(ctx context.Context, limit, offset int) ([]domain.TeacherListRow, error) {
-	var teachers []domain.TeacherListRow
+func (r *DbRepository) GetTeachers(ctx context.Context, limit, offset int) ([]domain.TeacherResponse, error) {
+	var teachers []domain.TeacherResponse
 	result := r.db.Model(&domain.Teachers{}).
 		Select("domain", "name_zh", "name_us").
 		Limit(limit).
