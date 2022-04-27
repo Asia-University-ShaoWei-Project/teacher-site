@@ -7,9 +7,9 @@ import (
 
 type Courses struct {
 	AutoModel     AutoModel `gorm:"embedded"`
-	TeacherID     string
-	NameZH        string `gorm:"not null"`
-	NameUS        string
+	TeacherId     string
+	NameZh        string `gorm:"not null"`
+	NameUs        string
 	BulletinBoard []BulletinBoards `gorm:"foreignKey:CourseId;references:Id"`
 	Slide         []Slides         `gorm:"foreignKey:CourseId;references:Id"`
 	Homework      []Homeworks      `gorm:"foreignKey:CourseId;references:Id"`
@@ -80,8 +80,8 @@ type CourseCacheRepository interface {
 //* request & response
 // course
 type CreateCourseRequest struct {
-	NameZH string `json:"nameZh"  binding:"required"`
-	NameUS string `json:"nameUs"`
+	NameZh string `json:"nameZh"  binding:"required"`
+	NameUs string `json:"nameUs"`
 }
 type CreateCourseResponse struct {
 	Id           uint   `json:"id"`
@@ -96,7 +96,7 @@ type GetCourseResponse struct {
 type CourseResponse struct {
 	Id     uint   `json:"id"`
 	NameZh string `json:"nameZh"`
-	NameUS string `json:"nameUs"`
+	NameUs string `json:"nameUs"`
 }
 type GetCourseContentRequest struct {
 	Id           uint   `uri:"courseId"`
@@ -112,6 +112,7 @@ type GetCourseContentResponse struct {
 }
 type CourseBulletinResponse struct {
 	Id      uint   `json:"id"`
+	Date    string `json:"date"`
 	Content string `json:"content"`
 }
 type CourseSlideResponse struct {

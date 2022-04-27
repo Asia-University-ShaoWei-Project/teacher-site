@@ -40,10 +40,10 @@ function updateSubmitDeleteEvent(tableType, index) {
   submitDeleteFunc = () => {
     console.log("exec api call");
     let resource = "/" + items[optionSwitchIndex].getRecourseType();
-    let itemID = items[optionSwitchIndex].getId();
-    let rowID = items[optionSwitchIndex][tableType].getRow(index).getId();
+    let itemId = items[optionSwitchIndex].getId();
+    let rowId = items[optionSwitchIndex][tableType].getRow(index).getId();
     let url =
-      api.getTeacherPath() + `${resource}/${itemID}/${tableType}/${rowID}`;
+      api.getTeacherPath() + `${resource}/${itemId}/${tableType}/${rowId}`;
 
     axios
       .delete(url, { headers: headers })
@@ -106,8 +106,8 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
   let rowIndex = btn.getAttribute("data-bs-index");
 
   let item = items[optionSwitchIndex];
-  let itemID = item.id;
-  let rowID;
+  let itemId = item.id;
+  let rowId;
   let url, formElem;
 
   switch (tableType) {
@@ -129,13 +129,13 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
   switch (method) {
     case HttpMethod.POST:
       modalEditSubmitElem.textContent = submitBtnTexts.create;
-      // url = api.getResourceUrl(pageType, method, itemID);
+      // url = api.getResourceUrl(pageType, method, itemId);
       break;
     case HttpMethod.PUT:
       let row = item[tableType].getRow(rowIndex);
-      rowID = row.id;
+      rowId = row.id;
       modalEditSubmitElem.textContent = submitBtnTexts.update;
-      // url = api.getResourceUrl(pageType, method, itemID, rowID, tableType);
+      // url = api.getResourceUrl(pageType, method, itemId, rowId, tableType);
 
       switch (tableType) {
         case attr.bulletin.tableType:
@@ -154,9 +154,9 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
       break;
   }
   // todo:test
-  // url = api.getResourceUrl(pageType, method, itemID, rowID, tableType);
+  // url = api.getResourceUrl(pageType, method, itemId, rowId, tableType);
 
-  updateSubmitEditEvent(recourseType, tableType, method, itemID, rowID);
+  updateSubmitEditEvent(recourseType, tableType, method, itemId, rowId);
 });
 function refreshInputElem(modalElem) {
   inputBulletinContentElem = modalElem.querySelector("#bulletin-content");
@@ -173,11 +173,11 @@ function refreshInputElem(modalElem) {
   // let inputHomeworkFileElem = modalEditElem.querySelector("#homework-file");
 }
 
-function updateSubmitEditEvent(recourseType, tableType, method, itemID, rowID) {
+function updateSubmitEditEvent(recourseType, tableType, method, itemId, rowId) {
   // post or put
   url =
     api.getTeacherPath() +
-    api.getResourceUrl(recourseType, tableType, method, itemID, rowID);
+    api.getResourceUrl(recourseType, tableType, method, itemId, rowId);
 
   modalEditSubmitElem.removeEventListener("click", submitFunc);
   submitFunc = () => {
@@ -210,7 +210,7 @@ function updateSubmitEditEvent(recourseType, tableType, method, itemID, rowID) {
         break;
       case HttpMethod.PUT:
         console.log("use: updateFieldApi()");
-        updateFieldApi(tableType, url, params, rowID);
+        updateFieldApi(tableType, url, params, rowId);
         break;
     }
   };
@@ -256,7 +256,7 @@ function createFieldApi(tableType, url, params) {
       }
     });
 }
-function updateFieldApi(tableType, url, params, rowID) {
+function updateFieldApi(tableType, url, params, rowId) {
   axios
     .put(url, params, axiosConfig)
     .then((res) => {
@@ -270,23 +270,23 @@ function updateFieldApi(tableType, url, params, rowID) {
         switch (tableType) {
           case attr.bulletin.tableType:
             items[optionSwitchIndex][tableType]
-              .getRow(rowID)
+              .getRow(rowId)
               .setContent(params.content);
             break;
           case attr.slide.tableType:
             items[optionSwitchIndex][tableType]
-              .getRow(rowID)
+              .getRow(rowId)
               .setChapter(params.chapter);
             items[optionSwitchIndex][tableType]
-              .getRow(rowID)
+              .getRow(rowId)
               .setFileTitle(params.fileTitle);
           // todo: file url
-          // items[optionSwitchIndex][tableType].rows[rowID].chapter = params.content;
+          // items[optionSwitchIndex][tableType].rows[rowId].chapter = params.content;
           // todo: homework
           // case attr.homework.tableType:
-          //   items[optionSwitchIndex][tableType].rows[rowID].number =
+          //   items[optionSwitchIndex][tableType].rows[rowId].number =
           //     params.number;
-          //   items[optionSwitchIndex][tableType].rows[rowID].fileTitle =
+          //   items[optionSwitchIndex][tableType].rows[rowId].fileTitle =
           //     params.fileTitle;
           //   break;
         }

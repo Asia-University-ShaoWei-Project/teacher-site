@@ -70,25 +70,24 @@ function createInitElem() {
   let delay = 200;
   let timeoutCount = timeoutTime * (1000 /* 1 second */ / delay);
 
-  initInfoApi();
-  initCourseApi();
   let work = setInterval(() => {
     if (count >= timeoutCount) {
-      console.log("timeout");
       alert("connect error");
+      loadingView(false);
       clearInterval(work);
     }
     if (infoWorkDone && courseWorkDone) {
+      loadingView(false);
       showOptionButtons();
       clearInterval(work);
     }
-    console.log("add time");
     count += 1;
   }, delay);
+  initInfoApi();
+  initCourseApi();
 }
 
 function initInfoApi(workDone) {
-  console.log("API -> getInfoApi");
   let url =
     api.getTeacherPath() +
     api.getResourceUrl(api.getInfoResourceType(), null, HttpMethod.GET);
@@ -99,7 +98,6 @@ function initInfoApi(workDone) {
       },
     })
     .then((res) => {
-      console.log("getInfo api success");
       let resData = res.data.data;
       let bulletinRows = newRows(attr.bulletin.tableType, resData.bulletins);
       let bulletinTable = newTable(attr.bulletin.tableType, bulletinRows);
@@ -121,7 +119,6 @@ function initInfoApi(workDone) {
       );
       items.push(infoItem);
       infoWorkDone = true;
-      loadingView(false);
       showContent(infoItem.getContent());
     })
     .catch((err) => {
@@ -129,7 +126,6 @@ function initInfoApi(workDone) {
       console.error("getInfoApi:", err);
     });
 }
-// todo
 
 function initCourseApi(workDone) {
   let url =
@@ -176,7 +172,6 @@ function showOptionButtons() {
 // const optionClassAttr = `option-item option-button button--anthe`;
 const optionClassAttr = `btn btn-outline-dark option-item`;
 function createOptionButton(item) {
-  console.log("createOptionButton");
   let btn = document.createElement("button");
   let span = document.createElement("span");
   let text = item.getNameZh() + brTag + item.getNameUs();
@@ -193,7 +188,6 @@ function showContent(content = "") {
   pageContentElem.innerHTML = content;
 }
 function createContent(recourseType, tableType, data) {
-  console.log("createContent");
   let content = "";
   if (data != null && data != undefined) {
     content += createTable(recourseType, tableType, data);
@@ -203,8 +197,6 @@ function createContent(recourseType, tableType, data) {
 
 // * create element
 function createTable(recourseType, tableType, table) {
-  console.log("createTable");
-
   let thead = createTableHeadElem(table.getFieldsTitle());
   let tbody = "";
   let addBtnElem = "";

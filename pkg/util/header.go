@@ -18,7 +18,7 @@ func AddBearerHeader(c *gin.Context, token string) {
 	c.Header(authHeaderKey, "Bearer "+token)
 }
 
-func RemoveAuthHeader(c *gin.Context) {
+func DeleteAuthHeader(c *gin.Context) {
 	c.Header(authHeaderKey, "")
 }
 

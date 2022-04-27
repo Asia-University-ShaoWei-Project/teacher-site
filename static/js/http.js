@@ -26,3 +26,6 @@ const HeaderKeys = {
 var headers = {};
 
 var axiosConfig = { headers: headers };
+function clearAuthHeader() {
+  headers[HeaderKeys.AUTH] = "";
+}

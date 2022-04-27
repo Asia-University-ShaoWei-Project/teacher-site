@@ -3,15 +3,15 @@ package domain
 import "context"
 
 type Auths struct {
-	UserID       string `gorm:"primaryKey"`
+	UserId       string `gorm:"primaryKey"`
 	UserPassword string
 	Salt         string
 	Token        string
-	Teacher      Teachers `gorm:"foreignKey:AuthID;references:UserID"`
+	Teacher      Teachers `gorm:"foreignKey:AuthId;references:UserId"`
 	Time
 }
 type JwtInfoRequest struct {
-	UserID string
+	UserId string
 	Domain string
 }
 
@@ -45,7 +45,7 @@ type AuthCacheRepository interface {
 
 //* request & response
 type LoginRequest struct {
-	UserID       string `json:"id" binding:"required"`
+	UserId       string `json:"id" binding:"required"`
 	UserPassword string `json:"password" binding:"required"`
 }
 type LoginResponse struct {
@@ -54,9 +54,9 @@ type LoginResponse struct {
 }
 
 // type RegisterRequest struct {
-// 	UserID       string `json:"id" binding:"required"`
+// 	UserId       string `json:"id" binding:"required"`
 // 	UserPassword string `json:"password" binding:"required"`
 // 	Domain       string `json:"domain" binding:"required"`
 // 	Email        string `json:"email" binding:"required"`
-// 	NameZH       string `json:"name_zh" binding:"required"`
+// 	NameZh       string `json:"name_zh" binding:"required"`
 // }

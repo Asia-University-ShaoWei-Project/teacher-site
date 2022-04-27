@@ -39,13 +39,13 @@ func TestLogin(t *testing.T) {
 		},
 		{
 			desc:     "invalid password",
-			userId:   mock.UserID,
+			userId:   mock.UserId,
 			password: mock.Unknown,
 			result:   bcrypt.ErrMismatchedHashAndPassword,
 		},
 		{
 			desc:     "normal",
-			userId:   mock.UserID,
+			userId:   mock.UserId,
 			password: mock.UserPassword,
 			result:   nil,
 		},
@@ -53,7 +53,7 @@ func TestLogin(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			req = domain.LoginRequest{
-				UserID:       tC.userId,
+				UserId:       tC.userId,
 				UserPassword: tC.password,
 			}
 			_, err = usecase.Login(ctx, &req)

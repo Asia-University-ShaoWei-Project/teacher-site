@@ -47,28 +47,28 @@ func TestLogin(t *testing.T) {
 
 	testCases := []struct {
 		desc         string
-		userID       string
+		userId       string
 		userPassword string
 		isLogged     bool
 		result       HttpStatusCode
 	}{
 		{
 			desc:         "logged in",
-			userID:       mock.UserID,
+			userId:       mock.UserId,
 			userPassword: mock.UserPassword,
 			isLogged:     true,
 			result:       http.StatusFound,
 		},
 		{
 			desc:         "fail request data",
-			userID:       mock.EmptyStr,
+			userId:       mock.EmptyStr,
 			userPassword: mock.EmptyStr,
 			isLogged:     false,
 			result:       http.StatusBadRequest,
 		},
 		{
 			desc:         "normal",
-			userID:       mock.UserID,
+			userId:       mock.UserId,
 			userPassword: mock.UserPassword,
 			isLogged:     false,
 			result:       http.StatusOK,
@@ -77,7 +77,7 @@ func TestLogin(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			w = httptest.NewRecorder()
-			data = fmt.Sprintf(dataFormat, tC.userID, tC.userPassword)
+			data = fmt.Sprintf(dataFormat, tC.userId, tC.userPassword)
 			req, _ = http.NewRequest(methodPost, url, strings.NewReader(data))
 			if tC.isLogged {
 				setupHeader(req, JsonContentType, token)

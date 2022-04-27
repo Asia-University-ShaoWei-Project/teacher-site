@@ -9,14 +9,18 @@ type PageUsecase interface {
 	Login(ctx context.Context, userId, token string) error
 }
 type PageDbRepository interface {
-	GetTeachers(ctx context.Context, limit, offset int) ([]TeacherListRow, error)
+	GetTeachers(ctx context.Context, limit, offset int) ([]TeacherResponse, error)
 	GetTeacherByDomain(ctx context.Context, teacherDomain string) (Teachers, error)
 	CheckAuthByIdAndToken(ctx context.Context, userId, token string) error
 }
 type PageCacheRepository interface {
 }
 type TeacherListRequest struct {
-	Page int `uri:"page_number"`
+	Page uint `uri:"page_number"`
+}
+
+func (t *TeacherListRequest) SetToFirstPage() {
+	t.Page = 1
 }
 
 // func (t *TeacherListRequest) SetPage(num int) {
@@ -24,13 +28,14 @@ type TeacherListRequest struct {
 // }
 
 type TeacherListResponse struct {
-	List []TeacherListRow `json:"list"`
+	Teachers []TeacherResponse
 }
-type TeacherListRow struct {
-	Domain string `json:"domain"`
-	NameZh string `json:"teacher_name_zh"`
-	NameUs string `json:"teacher_name_us"`
+type TeacherResponse struct {
+	Domain string
+	NameZh string
+	NameUs string
 }
+
 type HomeRequest struct {
 	Domain string `uri:"teacherDomain" binding:"required"`
 }

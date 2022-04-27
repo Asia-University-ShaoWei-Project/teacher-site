@@ -129,7 +129,7 @@
         .then((res) => {
           console.log("logout status code=", res.status);
           if (res.status == HttpStatusCode.NO_CONTENT) {
-            console.warn("logout success");
+            location.reload();
           }
         })
         .catch((err) => {

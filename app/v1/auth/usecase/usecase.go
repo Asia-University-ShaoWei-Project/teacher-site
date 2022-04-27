@@ -28,7 +28,7 @@ func NewUsecase(dbRepo domain.AuthDbRepository, cacheRepo domain.AuthCacheReposi
 func (auth *AuthUsecase) Login(ctx context.Context, req *domain.LoginRequest) (domain.LoginResponse, error) {
 	var res domain.LoginResponse
 
-	account, err := auth.DbRepository.GetAccountByUserId(ctx, req.UserID)
+	account, err := auth.DbRepository.GetAccountByUserId(ctx, req.UserId)
 	if err != nil {
 		auth.log.Error(err)
 		return res, err
@@ -40,13 +40,13 @@ func (auth *AuthUsecase) Login(ctx context.Context, req *domain.LoginRequest) (d
 		auth.log.Error(err)
 		return res, err
 	}
-	teacher, err := auth.DbRepository.GetTeacherDomainByUserId(ctx, account.UserID)
+	teacher, err := auth.DbRepository.GetTeacherDomainByUserId(ctx, account.UserId)
 	if err != nil {
 		auth.log.Error(err)
 		return res, err
 	}
 	// generate new token for the header of client(authorization)
-	jwtReq := domain.JwtInfoRequest{UserID: account.UserID, Domain: teacher.Domain}
+	jwtReq := domain.JwtInfoRequest{UserId: account.UserId, Domain: teacher.Domain}
 	token, err := util.GenerateJwt(auth.conf.Jwt, &jwtReq)
 	if err != nil {
 		// todo: try again
@@ -56,7 +56,7 @@ func (auth *AuthUsecase) Login(ctx context.Context, req *domain.LoginRequest) (d
 		Token:  token,
 		Domain: teacher.Domain,
 	}
-	if err = auth.DbRepository.UpdateTokenByUserId(ctx, account.UserID, token); err != nil {
+	if err = auth.DbRepository.UpdateTokenByUserId(ctx, account.UserId, token); err != nil {
 		// todo: error handle of update token
 		auth.log.Error(err)
 	}

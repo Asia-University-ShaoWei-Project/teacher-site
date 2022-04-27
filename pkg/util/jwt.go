@@ -19,7 +19,7 @@ const (
 func GenerateJwt(conf *config.Jwt, req *domain.JwtInfoRequest) (string, error) {
 	exp := time.Now().Add(conf.TokenExpireTime * time.Minute).Unix()
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		JwtUserKey:    req.UserID,
+		JwtUserKey:    req.UserId,
 		JwtUserDomain: req.Domain,
 		JwtExpireKey:  exp,
 	})

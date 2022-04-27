@@ -8,14 +8,14 @@ const BulletinDateFormat = "2006-01-02"
 
 type Infos struct {
 	AutoModel      AutoModel            `gorm:"embedded"`
-	TeacherID      string               `gorm:"index"`
-	BulletinBoards []InfoBulletinBoards `gorm:"foreignKey:InfoID;references:Id"`
+	TeacherId      string               `gorm:"index"`
+	BulletinBoards []InfoBulletinBoards `gorm:"foreignKey:InfoId;references:Id"`
 	LastModified   string
 }
 
 type InfoBulletinBoards struct {
 	AutoModel AutoModel `gorm:"embedded"`
-	InfoID    uint
+	InfoId    uint
 	Content   string
 }
 
@@ -46,7 +46,7 @@ type InfoCacheRepository interface {
 // todo: binding:"required"
 type CreateInfoBulletinRequest struct {
 	TeacherDomainRequest
-	InfoID  uint   `uri:"infoId"`
+	InfoId  uint   `uri:"infoId"`
 	Content string `json:"content"`
 }
 type CreateInfoBulletinResponse struct {
@@ -65,7 +65,7 @@ type GetInfoBulletinResponse struct {
 	Bulletins    []InfoBulletinResponse `json:"bulletins"`
 }
 
-func (i *GetInfoBulletinResponse) SetID(id uint) {
+func (i *GetInfoBulletinResponse) SetId(id uint) {
 	i.Id = id
 }
 func (i *GetInfoBulletinResponse) SetLastModified(lastModified string) {
@@ -77,8 +77,8 @@ func (i *GetInfoBulletinResponse) SetBulletins(bulletins []InfoBulletinResponse)
 
 type UpdateInfoBulletinRequest struct {
 	TeacherDomainRequest
-	InfoID     uint   `uri:"infoId"`
-	BulletinID uint   `uri:"bulletinId"`
+	InfoId     uint   `uri:"infoId"`
+	BulletinId uint   `uri:"bulletinId"`
 	Content    string `json:"content"`
 }
 type UpdateInfoBulletinResponse struct {
@@ -86,8 +86,8 @@ type UpdateInfoBulletinResponse struct {
 }
 type DeleteInfoBulletinRequest struct {
 	TeacherDomainRequest
-	InfoID     uint `uri:"infoId" binding:"required"`
-	BulletinID uint `uri:"bulletinId" binding:"required"`
+	InfoId     uint `uri:"infoId" binding:"required"`
+	BulletinId uint `uri:"bulletinId" binding:"required"`
 }
 type DeleteInfoBulletinResponse struct {
 	LastModified string `json:"lastModified"`

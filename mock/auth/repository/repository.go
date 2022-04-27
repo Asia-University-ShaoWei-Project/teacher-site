@@ -45,7 +45,7 @@ func (i *DbRepository) DeleteToken(ctx context.Context, id string) error {
 }
 
 func testGetAccount(id string) (domain.Auths, error) {
-	auth := domain.Auths{UserID: id}
+	auth := domain.Auths{UserId: id}
 	result := db.Find(&auth)
 	return auth, result.Error
 }

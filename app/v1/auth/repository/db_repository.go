@@ -21,7 +21,7 @@ func NewDbRepository(db *gorm.DB, conf *config.DB) domain.AuthDbRepository {
 }
 
 func (r *DbRepository) GetAccountByUserId(ctx context.Context, id string) (domain.Auths, error) {
-	auth := domain.Auths{UserID: id}
+	auth := domain.Auths{UserId: id}
 	result := r.db.Find(&auth)
 	err := checkErrAndExist(result)
 	return auth, err
@@ -34,7 +34,7 @@ func (r *DbRepository) GetTeacherDomainByUserId(ctx context.Context, id string) 
 }
 
 func (r *DbRepository) UpdateTokenByUserId(ctx context.Context, id, token string) error {
-	auth := domain.Auths{UserID: id}
+	auth := domain.Auths{UserId: id}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&auth).Update("token", token)
 		if err := checkErrAndExist(result); err != nil {
@@ -47,7 +47,7 @@ func (r *DbRepository) UpdateTokenByUserId(ctx context.Context, id, token string
 }
 
 func (r *DbRepository) DeleteToken(ctx context.Context, id string) error {
-	auth := domain.Auths{UserID: id}
+	auth := domain.Auths{UserId: id}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&auth).Update("token", "")
 		if err := checkErrAndExist(result); err != nil {

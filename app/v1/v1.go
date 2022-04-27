@@ -37,36 +37,27 @@ func SetupRoute(ctx context.Context, r *gin.Engine, db *gorm.DB, c *redis.Client
 	pagedelivery.NewHandler(ctx, rPage, usecasePage, conf)
 
 	v1 := r.Group("/api/v1")
-	v1.GET("/test", func(c *gin.Context) {
-		isTeacher := mw.IsTeacher(ctx, c, conf.Jwt.Secret)
-		if isTeacher {
-			log.Info("is user")
-			c.AbortWithStatus(200)
-			return
+	{
+		rAuth := v1.Group("/auth")
+		authRepoDb := authrepo.NewDbRepository(db, conf.DB)
+		authRepoCache := authrepo.NewCacheRepository(c, conf.Redis)
+		authUsecase := authusecase.NewUsecase(authRepoDb, authRepoCache, conf, logger)
+		authdelivery.NewHandler(ctx, rAuth, authUsecase, conf)
+
+		rTeacher := v1.Group("/:teacherDomain", mw.CheckTeacherDomain())
+		{
+
+			rInfo := rTeacher.Group("/info")
+			repoDbInfo := inforepo.NewDbRepository(db, conf.DB)
+			repoCacheInfo := inforepo.NewCacheRepository(c, conf.Redis)
+			UsecaseInfo := infousecase.NewUsecase(repoDbInfo, repoCacheInfo, conf, logger)
+			infodelivery.NewHandler(ctx, rInfo, UsecaseInfo, conf)
+
+			rCourse := rTeacher.Group("/course")
+			repoDbCourse := courserepo.NewDbRepository(db, conf.DB)
+			repoCacheCourse := courserepo.NewCacheRepository(c, conf.Redis)
+			UsecaseCourse := courseusecase.NewUsecase(repoDbCourse, repoCacheCourse, conf, logger)
+			coursedelivery.NewHandler(ctx, rCourse, UsecaseCourse, conf)
 		}
-		log.Info("not user")
-		c.Status(400)
-	})
-
-	rTeacher := v1.Group("/:teacherDomain", mw.CheckTeacherDomain())
-
-	rInfo := rTeacher.Group("/info")
-	repoDbInfo := inforepo.NewDbRepository(db, conf.DB)
-	repoCacheInfo := inforepo.NewCacheRepository(c, conf.Redis)
-	UsecaseInfo := infousecase.NewUsecase(repoDbInfo, repoCacheInfo, conf, logger)
-	infodelivery.NewHandler(ctx, rInfo, UsecaseInfo, conf)
-
-	rCourse := rTeacher.Group("/course")
-	repoDbCourse := courserepo.NewDbRepository(db, conf.DB)
-	repoCacheCourse := courserepo.NewCacheRepository(c, conf.Redis)
-	UsecaseCourse := courseusecase.NewUsecase(repoDbCourse, repoCacheCourse, conf, logger)
-	coursedelivery.NewHandler(ctx, rCourse, UsecaseCourse, conf)
-
-	rAuth := v1.Group("/auth")
-	authRepoDb := authrepo.NewDbRepository(db, conf.DB)
-	authRepoCache := authrepo.NewCacheRepository(c, conf.Redis)
-	authUsecase := authusecase.NewUsecase(authRepoDb, authRepoCache, conf, logger)
-	authdelivery.NewHandler(ctx, rAuth, authUsecase, conf)
-
-	// rCourse := teacher.Group("/course")
+	}
 }

@@ -84,8 +84,9 @@ func newSecure() *Secure {
 }
 func newJwt() *Jwt {
 	return &Jwt{
-		Secret:          []byte(`secure`),
-		TokenExpireTime: 2,
+		Secret: []byte(`secure`),
+		// minute
+		TokenExpireTime: 5,
 	}
 }
 func newRedis() *Redis {

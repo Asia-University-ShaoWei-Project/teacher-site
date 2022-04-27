@@ -40,9 +40,10 @@ func (r *DbRepository) GetContentByCourseId(ctx context.Context, courseId uint) 
 		return courseRes, err
 	}
 
-	r.db.Model(&course).Association("BulletinBoard").Find(&courseRes.BulletinBoard)
+	r.db.Model(&course).Select("id", "DATE(created_at) AS date", "content").Association("BulletinBoard").Find(&courseRes.BulletinBoard)
 	r.db.Model(&course).Association("Slide").Find(&courseRes.Slide)
 	r.db.Model(&course).Association("Homework").Find(&courseRes.Homework)
+
 	return courseRes, nil
 }
 

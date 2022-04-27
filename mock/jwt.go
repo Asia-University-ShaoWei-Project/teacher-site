@@ -4,7 +4,7 @@ import "teacher-site/domain"
 
 func GetJwtRequest() *domain.JwtInfoRequest {
 	return &domain.JwtInfoRequest{
-		UserID: UserID,
+		UserId: UserId,
 		Domain: TeacherDomain,
 	}
 }

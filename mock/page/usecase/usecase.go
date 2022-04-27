@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 	"teacher-site/domain"
 	"teacher-site/mock"
 
@@ -15,7 +17,23 @@ func NewUsecase() domain.PageUsecase {
 }
 
 func (u *Usecase) TeacherList(ctx context.Context, req *domain.TeacherListRequest) (domain.TeacherListResponse, error) {
-	return domain.TeacherListResponse{}, nil
+	var _i string
+	teachers := make([]domain.TeacherResponse, 0, 10)
+	for i := 0; i < cap(teachers); i++ {
+		_i = strconv.Itoa(i)
+		teachers = append(teachers, domain.TeacherResponse{
+			Domain: "domain_" + _i,
+			NameZh: "name_zh_" + _i,
+			NameUs: "name_uh_" + _i,
+		})
+	}
+	fmt.Println(teachers)
+	res := domain.TeacherListResponse{
+		Teachers: teachers,
+	}
+	fmt.Println(res)
+
+	return res, nil
 }
 
 func (u *Usecase) Home(ctx context.Context, req *domain.HomeRequest) (domain.HomeResponse, error) {

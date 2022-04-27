@@ -237,28 +237,28 @@ func TestGetContent(t *testing.T) {
 
 	testCases := []struct {
 		desc     string
-		courseID string
+		courseId string
 		result   HttpStatusCode
 	}{
 		{
 			desc:     "not digit value of the course id",
-			courseID: mock.WordStr,
+			courseId: mock.WordStr,
 			result:   http.StatusBadRequest,
 		},
 		{
 			desc:     "negative digit",
-			courseID: mock.NegativePkStr,
+			courseId: mock.NegativePkStr,
 			result:   http.StatusBadRequest,
 		},
 		{
 			desc:     "normal",
-			courseID: mock.PkStr,
+			courseId: mock.PkStr,
 			result:   http.StatusOK,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			url = fmt.Sprintf(urlFormat, tC.courseID)
+			url = fmt.Sprintf(urlFormat, tC.courseId)
 			w = httptest.NewRecorder()
 			req, _ = http.NewRequest("GET", url, nil)
 			r.ServeHTTP(w, req)

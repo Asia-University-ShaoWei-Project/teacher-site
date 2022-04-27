@@ -49,28 +49,28 @@ func TestCreate(t *testing.T) {
 	testCases := []struct {
 		desc   string
 		token  string
-		infoID interface{}
+		infoId interface{}
 		data   string
 		result HttpStatusCode
 	}{
 		{
 			desc:   "unauthorized",
 			token:  mock.EmptyStr,
-			infoID: mock.PkNum,
+			infoId: mock.PkNum,
 			data:   data,
 			result: http.StatusUnauthorized,
 		},
 		{
 			desc:   "fail info id",
 			token:  token,
-			infoID: mock.NewMsg(),
+			infoId: mock.NewMsg(),
 			data:   data,
 			result: http.StatusBadRequest,
 		},
 		{
 			desc:   "empty bulletin content",
 			token:  token,
-			infoID: mock.PkNum,
+			infoId: mock.PkNum,
 			data:   mock.EmptyJson,
 			// todo: concert the binding
 			result: http.StatusBadRequest,
@@ -78,14 +78,14 @@ func TestCreate(t *testing.T) {
 		{
 			desc:   "normal",
 			token:  token,
-			infoID: mock.PkNum,
+			infoId: mock.PkNum,
 			data:   data,
 			result: http.StatusOK,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			url = ApiUrl + fmt.Sprintf(urlFormat, tC.infoID)
+			url = ApiUrl + fmt.Sprintf(urlFormat, tC.infoId)
 			w = httptest.NewRecorder()
 			req, _ = http.NewRequest("POST", url, strings.NewReader(tC.data))
 			setupHeader(req, JsonContentType, tC.token)
@@ -138,40 +138,40 @@ func TestUpdate(t *testing.T) {
 	testCases := []struct {
 		desc       string
 		token      string
-		infoID     interface{}
-		bulletinID interface{}
+		infoId     interface{}
+		bulletinId interface{}
 		data       string
 		result     HttpStatusCode
 	}{
 		{
 			desc:       "unauthorized",
 			token:      mock.EmptyStr,
-			infoID:     mock.PkNum,
-			bulletinID: mock.PkNum,
+			infoId:     mock.PkNum,
+			bulletinId: mock.PkNum,
 			data:       data,
 			result:     http.StatusUnauthorized,
 		},
 		{
 			desc:       "fail info id",
 			token:      token,
-			infoID:     mock.WordStr,
-			bulletinID: mock.PkNum,
+			infoId:     mock.WordStr,
+			bulletinId: mock.PkNum,
 			data:       data,
 			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "fail bulletin id",
 			token:      token,
-			infoID:     mock.PkNum,
-			bulletinID: mock.WordStr,
+			infoId:     mock.PkNum,
+			bulletinId: mock.WordStr,
 			data:       data,
 			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "empty bulletin content",
 			token:      token,
-			infoID:     mock.PkNum,
-			bulletinID: mock.PkNum,
+			infoId:     mock.PkNum,
+			bulletinId: mock.PkNum,
 			data:       mock.EmptyJson,
 			// todo: concert the binding
 			result: http.StatusBadRequest,
@@ -179,15 +179,15 @@ func TestUpdate(t *testing.T) {
 		{
 			desc:       "normal",
 			token:      token,
-			infoID:     mock.PkNum,
-			bulletinID: mock.PkNum,
+			infoId:     mock.PkNum,
+			bulletinId: mock.PkNum,
 			data:       data,
 			result:     http.StatusOK,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			url = ApiUrl + fmt.Sprintf(urlFormat, tC.infoID, tC.bulletinID)
+			url = ApiUrl + fmt.Sprintf(urlFormat, tC.infoId, tC.bulletinId)
 			w = httptest.NewRecorder()
 			req, _ = http.NewRequest("PUT", url, strings.NewReader(tC.data))
 			setupHeader(req, JsonContentType, tC.token)
@@ -203,50 +203,50 @@ func TestDelete(t *testing.T) {
 	testCases := []struct {
 		desc       string
 		token      string
-		infoID     interface{}
-		bulletinID interface{}
+		infoId     interface{}
+		bulletinId interface{}
 		result     HttpStatusCode
 	}{
 		{
 			desc:       "unauthorized",
 			token:      mock.EmptyStr,
-			infoID:     mock.PkNum,
-			bulletinID: mock.PkNum,
+			infoId:     mock.PkNum,
+			bulletinId: mock.PkNum,
 			result:     http.StatusUnauthorized,
 		},
 		{
 			desc:       "fail info id",
 			token:      token,
-			infoID:     mock.WordStr,
-			bulletinID: mock.PkNum,
+			infoId:     mock.WordStr,
+			bulletinId: mock.PkNum,
 			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "fail bulletin id",
 			token:      token,
-			infoID:     mock.PkNum,
-			bulletinID: mock.WordStr,
+			infoId:     mock.PkNum,
+			bulletinId: mock.WordStr,
 			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "empty bulletin content",
 			token:      token,
-			infoID:     mock.PkNum,
-			bulletinID: mock.PkNum,
+			infoId:     mock.PkNum,
+			bulletinId: mock.PkNum,
 			// todo: concert the binding
 			result: http.StatusBadRequest,
 		},
 		{
 			desc:       "normal",
 			token:      token,
-			infoID:     mock.PkNum,
-			bulletinID: mock.PkNum,
+			infoId:     mock.PkNum,
+			bulletinId: mock.PkNum,
 			result:     http.StatusOK,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			url = ApiUrl + fmt.Sprintf(urlFormat, tC.infoID, tC.bulletinID)
+			url = ApiUrl + fmt.Sprintf(urlFormat, tC.infoId, tC.bulletinId)
 			w = httptest.NewRecorder()
 			req, _ = http.NewRequest("DELETE", url, nil)
 			setupHeader(req, JsonContentType, tC.token)

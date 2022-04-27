@@ -9,14 +9,14 @@ import (
 const (
 	Unknown       = "unknown"
 	TeacherDomain = "domain"
-	UserID        = "user_id"
+	UserId        = "user_id"
 	UserPassword  = "password"
 	UserName      = "name"
 	Email         = "mock@asia.edu.tw"
 )
 
 func GetUserToken(db *gorm.DB) (string, error) {
-	auth := domain.Auths{UserID: UserID}
+	auth := domain.Auths{UserId: UserId}
 	result := db.Find(&auth)
 
 	return auth.Token, result.Error

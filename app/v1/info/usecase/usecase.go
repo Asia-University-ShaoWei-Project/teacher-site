@@ -32,7 +32,7 @@ func (i *Usecase) Create(ctx context.Context, req *domain.CreateInfoBulletinRequ
 	if err != nil {
 		return res, err
 	}
-	lastModified, err := i.DbRepository.GetLastModified(ctx, req.InfoID)
+	lastModified, err := i.DbRepository.GetLastModified(ctx, req.InfoId)
 	if err != nil {
 		// todo: get last modified error
 		i.log.Error(err)
@@ -61,7 +61,7 @@ func (i *Usecase) Get(ctx context.Context, req *domain.GetInfoBulletinRequest) (
 		return res, message.ErrUnnecessaryUpdate
 	}
 	res.SetLastModified(info.LastModified)
-	res.SetID(info.AutoModel.Id)
+	res.SetId(info.AutoModel.Id)
 	// Get by cache
 	data, err := i.CacheRepository.Get(ctx, req)
 	if err != nil {

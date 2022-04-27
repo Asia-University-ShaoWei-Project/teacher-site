@@ -20,8 +20,8 @@ func NewDbRepository() domain.PageDbRepository {
 }
 
 // todo
-func (r *DbRepository) GetTeachers(ctx context.Context, limit, offset int) ([]domain.TeacherListRow, error) {
-	return []domain.TeacherListRow{}, nil
+func (r *DbRepository) GetTeachers(ctx context.Context, limit, offset int) ([]domain.TeacherResponse, error) {
+	return []domain.TeacherResponse{}, nil
 }
 
 func (r *DbRepository) GetTeacherByDomain(ctx context.Context, teacherDomain string) (domain.Teachers, error) {

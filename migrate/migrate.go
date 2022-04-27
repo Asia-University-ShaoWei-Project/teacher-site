@@ -33,15 +33,15 @@ func createAll(db *gorm.DB) {
 	lastModified := strconv.FormatInt(currTime.Unix(), 10)
 	hashPassword, salt := generalHashPassword(mock.UserPassword, conf.Secure)
 	data := domain.Auths{
-		UserID:       mock.UserID,
+		UserId:       mock.UserId,
 		UserPassword: string(hashPassword),
 		Salt:         string(salt),
 		Token:        token,
 		Teacher: domain.Teachers{
 			Domain:    "rikki",
 			Email:     "rikki@mail.tw",
-			NameZH:    "陳瑞奇",
-			NameUS:    "Jui-Chi Chen(Rikki)",
+			NameZh:    "陳瑞奇",
+			NameUs:    "Jui-Chi Chen(Rikki)",
 			Office:    "HB13",
 			Call:      "(04)1234-5678 ext. 1234",
 			Education: "國立中興大學資訊科學博士",
@@ -62,8 +62,8 @@ func createAll(db *gorm.DB) {
 			Courses: []domain.Courses{
 				{
 					LastModified: lastModified,
-					NameZH:       "計算機網路",
-					NameUS:       "computer network",
+					NameZh:       "計算機網路",
+					NameUs:       "computer network",
 					BulletinBoard: []domain.BulletinBoards{
 						{Content: "資工2A(第五週)10月14日起恢復實體授課，上課地點:I526教室，請配帶口罩，並按座位表入座，謝謝"},
 						{Content: "資工2計算機網路概論--上課地點在I526教室，但前四週(9/13-10/10)請於創課平台TronClass線上同步遠距學習，後續週數再按學校防疫規定另行公布。"},
@@ -83,8 +83,8 @@ func createAll(db *gorm.DB) {
 				},
 				{
 					LastModified: lastModified,
-					NameZH:       "無線網路",
-					NameUS:       "wireless network",
+					NameZh:       "無線網路",
+					NameUs:       "wireless network",
 					BulletinBoard: []domain.BulletinBoards{
 						{Content: "資工2A在6/23(三)9:30-11:00無線網路期末考，改成：線上考試或學習報告，範圍:第7章到第14章，謝謝。"},
 						{Content: "資工2A在4/21(三)8:30-10:00無線網路期中考，地點改在：L005(行政大樓地下室)，範圍:第1章到第6章，筆試，開書考，本次不得使用計算機，謝謝。"},

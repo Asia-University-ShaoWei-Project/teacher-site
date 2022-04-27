@@ -8,8 +8,6 @@ import (
 	mw "teacher-site/middleware"
 	"teacher-site/pkg/util"
 
-	"log"
-
 	"github.com/gin-contrib/sessions"
 
 	"github.com/gin-gonic/gin"
@@ -101,7 +99,6 @@ func (auth *AuthHandler) Logout(ctx context.Context) gin.HandlerFunc {
 
 		claims, err := util.ParseJwt(ctx, bearerToken, auth.conf.Jwt.Secret)
 		if err != nil {
-			log.Println(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
@@ -112,8 +109,9 @@ func (auth *AuthHandler) Logout(ctx context.Context) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-
-		util.RemoveAuthHeader(c)
+		s := sessions.Default(c)
+		util.DeleteSessionToken(s)
+		s.Save()
 		c.Status(http.StatusNoContent)
 	}
 }

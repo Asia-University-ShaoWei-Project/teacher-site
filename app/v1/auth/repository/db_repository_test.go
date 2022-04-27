@@ -36,7 +36,7 @@ func TestGetAccountByUserId(t *testing.T) {
 
 		{
 			desc:     "normal",
-			userId:   mock.UserID,
+			userId:   mock.UserId,
 			password: mock.UserPassword,
 			result:   nil,
 		},
@@ -62,7 +62,7 @@ func TestGetTeacherDomainByUserId(t *testing.T) {
 
 		{
 			desc:   "normal",
-			userId: mock.UserID,
+			userId: mock.UserId,
 			result: nil,
 		},
 	}
@@ -87,7 +87,7 @@ func TestUpdateTokenByUserId(t *testing.T) {
 		},
 		{
 			desc:   "normal",
-			id:     mock.UserID,
+			id:     mock.UserId,
 			result: nil,
 		},
 	}
@@ -113,7 +113,7 @@ func TestDeleteToken(t *testing.T) {
 		},
 		{
 			desc:   "normal",
-			id:     mock.UserID,
+			id:     mock.UserId,
 			result: nil,
 		},
 	}

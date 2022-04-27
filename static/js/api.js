@@ -25,17 +25,17 @@ class API {
   getCourseResourceType() {
     return this.recourseType.COURSE;
   }
-  getResourceUrl(recourseType, tableType, method, itemID, rowID) {
+  getResourceUrl(recourseType, tableType, method, itemId, rowId) {
     let url = this.resource[recourseType][method];
     switch (recourseType) {
       case this.recourseType.INFO:
-        url = url.replace(":infoId", itemID).replace(":rowId", rowID);
+        url = url.replace(":infoId", itemId).replace(":rowId", rowId);
         break;
       case this.recourseType.COURSE:
         url = url
-          .replace(":courseId", itemID)
+          .replace(":courseId", itemId)
           .replace(":tableType", tableType)
-          .replace(":rowId", rowID);
+          .replace(":rowId", rowId);
         break;
     }
     return url;

@@ -29,17 +29,17 @@ func TestCreateInfo(t *testing.T) {
 	var req domain.CreateInfoBulletinRequest
 	testCases := []struct {
 		desc   string
-		infoID uint
+		infoId uint
 		result error
 	}{
 		{
 			desc:   "fail info id",
-			infoID: mock.UnknownNumPK,
+			infoId: mock.UnknownNumPK,
 			result: gorm.ErrRecordNotFound,
 		},
 		{
 			desc:   "existed info id",
-			infoID: mock.PkNum,
+			infoId: mock.PkNum,
 			result: nil,
 		},
 	}
@@ -47,16 +47,16 @@ func TestCreateInfo(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			req = domain.CreateInfoBulletinRequest{
 				TeacherDomainRequest: domain.TeacherDomainRequest{TeacherDomain: mock.TeacherDomain},
-				InfoID:               tC.infoID,
+				InfoId:               tC.infoId,
 				Content:              mock.NewMsg(),
 			}
 			if tC.result == nil {
-				oldLastModified, _ = repo.GetLastModified(ctx, req.InfoID)
+				oldLastModified, _ = repo.GetLastModified(ctx, req.InfoId)
 			}
 			_, err := repo.Create(ctx, &req)
 			assert.Equal(t, tC.result, err)
 			if tC.result == nil {
-				newLastModified, _ = repo.GetLastModified(ctx, req.InfoID)
+				newLastModified, _ = repo.GetLastModified(ctx, req.InfoId)
 				assert.NotEqual(t, newLastModified, oldLastModified, fmt.Sprintf("new:%s, old:%s", newLastModified, oldLastModified))
 			}
 		})
@@ -89,23 +89,23 @@ func TestGetByTeacherDomain(t *testing.T) {
 func TestGetBulletinsByInfoId(t *testing.T) {
 	testCases := []struct {
 		desc   string
-		infoID uint
+		infoId uint
 		result error
 	}{
 		{
 			desc:   "fail info id",
-			infoID: mock.UnknownNumPK,
+			infoId: mock.UnknownNumPK,
 			result: gorm.ErrRecordNotFound,
 		},
 		{
 			desc:   "existed info id",
-			infoID: mock.PkNum,
+			infoId: mock.PkNum,
 			result: nil,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			d, err := repo.GetBulletinsByInfoId(ctx, tC.infoID)
+			d, err := repo.GetBulletinsByInfoId(ctx, tC.infoId)
 			assert.Equal(t, tC.result, err)
 			fmt.Println(d)
 
@@ -116,23 +116,23 @@ func TestGetBulletinsByInfoId(t *testing.T) {
 func TestGetInfoLastUpdated(t *testing.T) {
 	testCases := []struct {
 		desc   string
-		infoID uint
+		infoId uint
 		result error
 	}{
 		{
 			desc:   "fail info id",
-			infoID: mock.UnknownNumPK,
+			infoId: mock.UnknownNumPK,
 			result: gorm.ErrRecordNotFound,
 		},
 		{
 			desc:   "existed info id",
-			infoID: mock.PkNum,
+			infoId: mock.PkNum,
 			result: nil,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			_, err := repo.GetLastModified(ctx, tC.infoID)
+			_, err := repo.GetLastModified(ctx, tC.infoId)
 			assert.Equal(t, tC.result, err)
 		})
 	}
@@ -142,45 +142,45 @@ func TestUpdateInfo(t *testing.T) {
 	var req domain.UpdateInfoBulletinRequest
 	testCases := []struct {
 		desc       string
-		infoID     uint
-		bulletinID uint
+		infoId     uint
+		bulletinId uint
 		result     error
 	}{
 
 		{
 			desc:       "fail info id",
-			infoID:     mock.UnknownNumPK,
-			bulletinID: mock.PkNum,
+			infoId:     mock.UnknownNumPK,
+			bulletinId: mock.PkNum,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "fail bulletin id",
-			infoID:     mock.PkNum,
-			bulletinID: mock.UnknownNumPK,
+			infoId:     mock.PkNum,
+			bulletinId: mock.UnknownNumPK,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "existed info, bulletin id",
-			infoID:     mock.PkNum,
-			bulletinID: mock.PkNum,
+			infoId:     mock.PkNum,
+			bulletinId: mock.PkNum,
 			result:     nil,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			if tC.result == nil {
-				oldLastModified, _ = repo.GetLastModified(ctx, tC.infoID)
+				oldLastModified, _ = repo.GetLastModified(ctx, tC.infoId)
 			}
 			req = domain.UpdateInfoBulletinRequest{
 				TeacherDomainRequest: domain.TeacherDomainRequest{TeacherDomain: mock.TeacherDomain},
-				InfoID:               tC.infoID,
-				BulletinID:           tC.bulletinID,
+				InfoId:               tC.infoId,
+				BulletinId:           tC.bulletinId,
 				Content:              mock.NewMsg(),
 			}
 			_, err := repo.Update(ctx, &req)
 			assert.Equal(t, tC.result, err)
 			if tC.result == nil {
-				newLastModified, _ = repo.GetLastModified(ctx, tC.infoID)
+				newLastModified, _ = repo.GetLastModified(ctx, tC.infoId)
 				assert.NotEqual(t, newLastModified, oldLastModified, fmt.Sprintf("new:%s, old:%s", newLastModified, oldLastModified))
 			}
 		})
@@ -192,32 +192,32 @@ func TestDeleteInfo(t *testing.T) {
 	// generate a temporary bulletin for testcase(id)
 	bulletin, _ := repo.Create(ctx, &domain.CreateInfoBulletinRequest{
 		TeacherDomainRequest: domain.TeacherDomainRequest{TeacherDomain: mock.TeacherDomain},
-		InfoID:               mock.PkNum,
+		InfoId:               mock.PkNum,
 		Content:              mock.NewMsg(),
 	})
 	testCases := []struct {
 		desc       string
-		infoID     uint
-		bulletinID uint
+		infoId     uint
+		bulletinId uint
 		result     error
 	}{
 
 		{
 			desc:       "fail info id",
-			infoID:     mock.UnknownNumPK,
-			bulletinID: bulletin.AutoModel.Id,
+			infoId:     mock.UnknownNumPK,
+			bulletinId: bulletin.AutoModel.Id,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "fail bulletin id",
-			infoID:     mock.PkNum,
-			bulletinID: mock.UnknownNumPK,
+			infoId:     mock.PkNum,
+			bulletinId: mock.UnknownNumPK,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "existed info, bulletin id",
-			infoID:     mock.PkNum,
-			bulletinID: bulletin.AutoModel.Id,
+			infoId:     mock.PkNum,
+			bulletinId: bulletin.AutoModel.Id,
 			result:     nil,
 		},
 	}
@@ -226,22 +226,22 @@ func TestDeleteInfo(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			req = domain.DeleteInfoBulletinRequest{
 				TeacherDomainRequest: domain.TeacherDomainRequest{TeacherDomain: mock.TeacherDomain},
-				InfoID:               tC.infoID,
-				BulletinID:           tC.bulletinID,
+				InfoId:               tC.infoId,
+				BulletinId:           tC.bulletinId,
 			}
 			if tC.result == nil {
-				oldLastModified, _ = repo.GetLastModified(ctx, tC.infoID)
+				oldLastModified, _ = repo.GetLastModified(ctx, tC.infoId)
 				fmt.Println(`before time:`, oldLastModified)
 
 			}
 			info, err := repo.Delete(ctx, &req)
 			assert.Equal(t, tC.result, err)
 			if tC.result == nil {
-				err := testCheckBulletinIsExistById(req.BulletinID, t)
+				err := testCheckBulletinIsExistById(req.BulletinId, t)
 				// the data is deleted, so that should be not found the data
 				assert.Equal(t, gorm.ErrRecordNotFound, err)
 				// the info.LastModified is newest, that should be not equal to old date
-				newLastModified, _ = repo.GetLastModified(ctx, tC.infoID)
+				newLastModified, _ = repo.GetLastModified(ctx, tC.infoId)
 				// todo: test error! issue: new last-modified == old last-modified
 				assert.NotEqual(t, newLastModified, oldLastModified, fmt.Sprintf("new:%s, old:%s", info.LastModified, oldLastModified))
 			}
