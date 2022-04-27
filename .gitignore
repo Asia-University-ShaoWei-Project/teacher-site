@@ -2,7 +2,7 @@ package-lock.json
 test/
 tmp/
 # DB
-sqlite_dev.db
+*.db
 *.sql
 /mock/database
 # doc
