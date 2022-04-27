@@ -78,6 +78,7 @@ function createInitElem() {
     }
     if (infoWorkDone && courseWorkDone) {
       loadingView(false);
+      showContent(items[0].getContent());
       showOptionButtons();
       clearInterval(work);
     }
@@ -119,7 +120,6 @@ function initInfoApi(workDone) {
       );
       items.push(infoItem);
       infoWorkDone = true;
-      showContent(infoItem.getContent());
     })
     .catch((err) => {
       infoWorkDone = true;
@@ -138,18 +138,34 @@ function initCourseApi(workDone) {
       if (res.status == HttpStatusCode.OK) {
         let resData = res.data.data;
         let apiUrl;
-        resData.courses.forEach((v) => {
-          apiUrl = url + "/" + v.id;
-          items.push(
-            new Item(
-              api.getCourseResourceType(),
-              apiUrl,
-              v.id,
-              v.nameZh,
-              v.nameUs
-            )
-          );
-        });
+        var count = 0;
+        // 5 second
+        let timeoutTime = 5;
+        let delay = 100;
+        let timeoutCount = timeoutTime * (1000 /* 1 second */ / delay);
+        let work = setInterval(() => {
+          if (count >= timeoutCount) {
+            alert("connect error");
+            loadingView(false);
+            clearInterval(work);
+          }
+          if (infoWorkDone) {
+            resData.courses.forEach((v) => {
+              apiUrl = url + "/" + v.id;
+              items.push(
+                new Item(
+                  api.getCourseResourceType(),
+                  apiUrl,
+                  v.id,
+                  v.nameZh,
+                  v.nameUs
+                )
+              );
+            });
+            clearInterval(work);
+          }
+          count += 1;
+        }, delay);
       }
       courseWorkDone = true;
     })
