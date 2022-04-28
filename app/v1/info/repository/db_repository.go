@@ -69,24 +69,23 @@ func (r *DbRepository) GetLastModified(ctx context.Context, id uint) (string, er
 
 func (r *DbRepository) Update(ctx context.Context, req *domain.UpdateInfoBulletinRequest) (domain.Infos, error) {
 	info := domain.Infos{AutoModel: domain.AutoModel{Id: req.InfoId}}
+	var bulletin domain.InfoBulletinBoards
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := updateInfoLastModified(tx, &info); err != nil {
 			return err
 		}
-		// update the content of infos_bulletin
-		// bulletin := domain.InfoBulletinBoards{
-		// AutoModel: domain.AutoModel{Id: req.BulletinId},
-		// Content:   req.Content}
-		result := tx.Model(&domain.InfoBulletinBoards{}).
+		result := tx.Model(&bulletin).
 			Where("id=? AND info_id=?", req.BulletinId, info.AutoModel.Id).
 			Update("content", req.Content)
 		if err := checkErrAndExist(result); err != nil {
+			fmt.Println(`💡updated error`)
 			return err
 		}
 		return nil
 	})
 	return info, err
 }
+
 func (r *DbRepository) Delete(ctx context.Context, req *domain.DeleteInfoBulletinRequest) (domain.Infos, error) {
 	info := domain.Infos{AutoModel: domain.AutoModel{Id: req.InfoId}}
 
@@ -96,7 +95,7 @@ func (r *DbRepository) Delete(ctx context.Context, req *domain.DeleteInfoBulleti
 		}
 		fmt.Println(`after time:`, info.LastModified)
 
-		result := tx.Where("id=? AND info_id=?", req.BulletinId, info.AutoModel.Id).Delete(&domain.InfoBulletinBoards{})
+		result := tx.Where(`id=? AND info_id=?`, req.BulletinId, info.AutoModel.Id).Delete(&domain.InfoBulletinBoards{})
 
 		if err := checkErrAndExist(result); err != nil {
 			return err
@@ -104,6 +103,11 @@ func (r *DbRepository) Delete(ctx context.Context, req *domain.DeleteInfoBulleti
 		return nil
 	})
 	return info, err
+}
+
+func (r *DbRepository) CheckByDomainAndId(ctx context.Context, teacherDomain string, infoId uint) error {
+	result := r.db.Model(&domain.Infos{}).Select("id").Where(`id=? AND teacher_id=?`, infoId, teacherDomain).Find(&domain.Infos{})
+	return checkErrAndExist(result)
 }
 func updateInfoLastModified(tx *gorm.DB, info *domain.Infos) error {
 	result := tx.Model(&info).Update("last_modified", newLastModifiedTime())

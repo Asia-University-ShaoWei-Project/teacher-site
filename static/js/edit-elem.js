@@ -103,7 +103,7 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
   let recourseType = btn.getAttribute("data-bs-recourseType");
   let tableType = btn.getAttribute("data-bs-tableType");
   let method = btn.getAttribute("data-bs-method");
-  let rowIndex = btn.getAttribute("data-bs-index");
+  let index = btn.getAttribute("data-bs-index");
 
   let item = items[optionSwitchIndex];
   let itemId = item.id;
@@ -132,7 +132,7 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
       // url = api.getResourceUrl(pageType, method, itemId);
       break;
     case HttpMethod.PUT:
-      let row = item[tableType].getRow(rowIndex);
+      let row = item[tableType].getRow(index);
       rowId = row.id;
       modalEditSubmitElem.textContent = submitBtnTexts.update;
       // url = api.getResourceUrl(pageType, method, itemId, rowId, tableType);
@@ -156,7 +156,7 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
   // todo:test
   // url = api.getResourceUrl(pageType, method, itemId, rowId, tableType);
 
-  updateSubmitEditEvent(recourseType, tableType, method, itemId, rowId);
+  updateSubmitEditEvent(recourseType, tableType, method, itemId, rowId, index);
 });
 function refreshInputElem(modalElem) {
   inputBulletinContentElem = modalElem.querySelector("#bulletin-content");
@@ -173,7 +173,14 @@ function refreshInputElem(modalElem) {
   // let inputHomeworkFileElem = modalEditElem.querySelector("#homework-file");
 }
 
-function updateSubmitEditEvent(recourseType, tableType, method, itemId, rowId) {
+function updateSubmitEditEvent(
+  recourseType,
+  tableType,
+  method,
+  itemId,
+  rowId,
+  itemsIndex
+) {
   // post or put
   url =
     api.getTeacherPath() +
@@ -182,11 +189,18 @@ function updateSubmitEditEvent(recourseType, tableType, method, itemId, rowId) {
   modalEditSubmitElem.removeEventListener("click", submitFunc);
   submitFunc = () => {
     let params;
+    // let form = new FormData();
+
     switch (tableType) {
       case attr.bulletin.tableType:
+        // form.append("content", inputBulletinContentElem.value);
         params = { content: inputBulletinContentElem.value };
         break;
       case attr.slide.tableType:
+        // form.append("chapter", inputSlideChapterElem.value);
+        // form.append("title", inputSlideTitleElem.value);
+        // form.append("file", inputSlideFileElem.files[0]);
+
         params = {
           chapter: inputSlideChapterElem.value,
           title: inputSlideTitleElem.value,
@@ -194,23 +208,16 @@ function updateSubmitEditEvent(recourseType, tableType, method, itemId, rowId) {
         };
         break;
       // todo: homework
-      // case attr.homework.tableType:
-      //   params = {
-      //     number: hNumberElem.value,
-      //     title: hTitleElem.value,
-      //     file: hFileElem.value,
-      //   };
-      //   break;
+      case attr.homework.tableType:
+        break;
     }
-    console.log("URL:", url, "|| Method:", method, "|| Params", params);
+
     switch (method) {
       case HttpMethod.POST:
-        console.log("use: createFieldApi()");
         createFieldApi(tableType, url, params);
         break;
       case HttpMethod.PUT:
-        console.log("use: updateFieldApi()");
-        updateFieldApi(tableType, url, params, rowId);
+        updateFieldApi(tableType, url, params, rowId, itemsIndex);
         break;
     }
   };
@@ -244,6 +251,8 @@ function createFieldApi(tableType, url, params) {
       }
     })
     .catch((err) => {
+      console.log("url:", url);
+      console.log("params:", params);
       if (err.response) {
         switch (err.response.status) {
           case HttpStatusCode.UNAUTHORIZED:
@@ -256,7 +265,8 @@ function createFieldApi(tableType, url, params) {
       }
     });
 }
-function updateFieldApi(tableType, url, params, rowId) {
+var test;
+function updateFieldApi(tableType, url, params, rowId, itemsIndex) {
   axios
     .put(url, params, axiosConfig)
     .then((res) => {
@@ -269,8 +279,9 @@ function updateFieldApi(tableType, url, params, rowId) {
         params.id = resData.id;
         switch (tableType) {
           case attr.bulletin.tableType:
+            test = items[optionSwitchIndex][tableType].getRow(itemsIndex);
             items[optionSwitchIndex][tableType]
-              .getRow(rowId)
+              .getRow(itemsIndex)
               .setContent(params.content);
             break;
           case attr.slide.tableType:
@@ -298,10 +309,11 @@ function updateFieldApi(tableType, url, params, rowId) {
     .catch((err) => {
       // 400, 409
       // todo:test
-      console.error(err);
-      if (err.response.status == HttpStatusCode.BAD_REQUEST) {
-        alert("update error");
-        console.log("Bad request");
+      if (err.response) {
+        if (err.response.status == HttpStatusCode.BAD_REQUEST) {
+          alert("update error");
+          console.log("Bad request");
+        }
       }
     });
 }
@@ -368,3 +380,16 @@ function createDeleteButtonElem(recourseType, tableType, rowIndex) {
   return `<button type="button" class="btn" data-bs-toggle="modal"
   data-bs-target="#modal-delete" ${recourseTypeAttr} ${typeAttr} ${indexAttr}><i class="fa fa-trash" aria-hidden="true"></i></button>`;
 }
+// method: "post",
+// url: "myurl",
+// data: bodyFormData,
+// headers: { "Content-Type": "multipart/form-data" },
+// })
+// .then(function (response) {
+//   //handle success
+//   console.log(response);
+// })
+// .catch(function (response) {
+//   //handle error
+//   console.log(response);
+// });

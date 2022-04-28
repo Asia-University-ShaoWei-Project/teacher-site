@@ -31,11 +31,11 @@ var (
 	ApiUrl      = mock.ApiUrl + "/info"
 )
 var (
-	url  string
-	err  error
-	body []byte
-	req  *http.Request
-	w    *httptest.ResponseRecorder
+	url, data string
+	err       error
+	body      []byte
+	req       *http.Request
+	w         *httptest.ResponseRecorder
 )
 
 type HttpStatusCode int
@@ -131,68 +131,70 @@ func TestGet(t *testing.T) {
 }
 func TestUpdate(t *testing.T) {
 	NewHandler(ctx, route, usecaseMock, conf)
-	data := `{"content":""}`
-	urlFormat := `/%v/bulletin/%v`
+	dataFormat := `{"content":"%s"}`
+	urlFormat := `/%s/bulletin/%s`
 	token, _ := util.GenerateJwt(conf.Jwt, mock.GetJwtRequest())
 
 	testCases := []struct {
 		desc       string
 		token      string
-		infoId     interface{}
-		bulletinId interface{}
+		infoId     string
+		bulletinId string
 		data       string
 		result     HttpStatusCode
 	}{
 		{
 			desc:       "unauthorized",
 			token:      mock.EmptyStr,
-			infoId:     mock.PkNum,
-			bulletinId: mock.PkNum,
-			data:       data,
+			infoId:     mock.PkStr,
+			bulletinId: mock.PkStr,
+			data:       mock.WordStr,
 			result:     http.StatusUnauthorized,
 		},
 		{
 			desc:       "fail info id",
 			token:      token,
 			infoId:     mock.WordStr,
-			bulletinId: mock.PkNum,
-			data:       data,
+			bulletinId: mock.PkStr,
+			data:       mock.WordStr,
 			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "fail bulletin id",
 			token:      token,
-			infoId:     mock.PkNum,
+			infoId:     mock.PkStr,
 			bulletinId: mock.WordStr,
-			data:       data,
+			data:       mock.WordStr,
 			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "empty bulletin content",
 			token:      token,
-			infoId:     mock.PkNum,
-			bulletinId: mock.PkNum,
-			data:       mock.EmptyJson,
+			infoId:     mock.PkStr,
+			bulletinId: mock.PkStr,
+			data:       mock.EmptyStr,
 			// todo: concert the binding
 			result: http.StatusBadRequest,
 		},
 		{
 			desc:       "normal",
 			token:      token,
-			infoId:     mock.PkNum,
-			bulletinId: mock.PkNum,
-			data:       data,
+			infoId:     mock.PkStr,
+			bulletinId: mock.PkStr,
+			data:       mock.WordStr,
 			result:     http.StatusOK,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			url = ApiUrl + fmt.Sprintf(urlFormat, tC.infoId, tC.bulletinId)
+			data = fmt.Sprintf(dataFormat, tC.data)
 			w = httptest.NewRecorder()
-			req, _ = http.NewRequest("PUT", url, strings.NewReader(tC.data))
+
+			req, _ = http.NewRequest("PUT", url, strings.NewReader(data))
 			setupHeader(req, JsonContentType, tC.token)
 			r.ServeHTTP(w, req)
-			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))
+			assert.Equal(t, tC.result, HttpStatusCode(w.Code))
 		})
 	}
 }

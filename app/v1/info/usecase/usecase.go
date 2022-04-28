@@ -95,6 +95,10 @@ func (i *Usecase) Get(ctx context.Context, req *domain.GetInfoBulletinRequest) (
 }
 func (i *Usecase) Update(ctx context.Context, req *domain.UpdateInfoBulletinRequest) (domain.UpdateInfoBulletinResponse, error) {
 	var res domain.UpdateInfoBulletinResponse
+	if err := i.DbRepository.CheckByDomainAndId(ctx, req.TeacherDomain, req.InfoId); err != nil {
+		i.log.Error(err)
+		return res, err
+	}
 	info, err := i.DbRepository.Update(ctx, req)
 	if err != nil {
 		// todo: make error handle of "update the data"(by RDBMS)

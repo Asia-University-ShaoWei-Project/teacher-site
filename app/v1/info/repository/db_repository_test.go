@@ -148,19 +148,19 @@ func TestUpdateInfo(t *testing.T) {
 	}{
 
 		{
-			desc:       "fail info id",
+			desc:       "Not found the info id",
 			infoId:     mock.UnknownNumPK,
 			bulletinId: mock.PkNum,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
-			desc:       "fail bulletin id",
+			desc:       "Not found the bulletin id",
 			infoId:     mock.PkNum,
 			bulletinId: mock.UnknownNumPK,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
-			desc:       "existed info, bulletin id",
+			desc:       "normal",
 			infoId:     mock.PkNum,
 			bulletinId: mock.PkNum,
 			result:     nil,
@@ -172,10 +172,10 @@ func TestUpdateInfo(t *testing.T) {
 				oldLastModified, _ = repo.GetLastModified(ctx, tC.infoId)
 			}
 			req = domain.UpdateInfoBulletinRequest{
-				TeacherDomainRequest: domain.TeacherDomainRequest{TeacherDomain: mock.TeacherDomain},
-				InfoId:               tC.infoId,
-				BulletinId:           tC.bulletinId,
-				Content:              mock.NewMsg(),
+				TeacherDomain: mock.TeacherDomain,
+				InfoId:        tC.infoId,
+				BulletinId:    tC.bulletinId,
+				Content:       mock.NewMsg(),
 			}
 			_, err := repo.Update(ctx, &req)
 			assert.Equal(t, tC.result, err)
@@ -253,4 +253,39 @@ func testCheckBulletinIsExistById(id uint, t *testing.T) error {
 	result := db.Where(`id=? AND deleted_at IS NULL`, id).Find(&info)
 	t.Error(result.Error)
 	return checkErrAndExist(result)
+}
+func TestCheckByDomainAndId(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		teacherDomain string
+		infoId        uint
+		result        error
+	}{
+
+		{
+			desc:          "fail info id",
+			teacherDomain: mock.TeacherDomain,
+			infoId:        mock.UnknownNumPK,
+			result:        gorm.ErrRecordNotFound,
+		},
+		{
+			desc:          "fail teacherDomain",
+			teacherDomain: mock.Unknown,
+			infoId:        mock.PkNum,
+			result:        gorm.ErrRecordNotFound,
+		},
+		{
+			desc:          "normal",
+			teacherDomain: mock.TeacherDomain,
+			infoId:        mock.PkNum,
+			result:        nil,
+		},
+	}
+
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			err := repo.CheckByDomainAndId(ctx, tC.teacherDomain, tC.infoId)
+			assert.Equal(t, tC.result, err)
+		})
+	}
 }
