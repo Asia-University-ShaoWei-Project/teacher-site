@@ -38,6 +38,9 @@ func (i *InfoDbRepository) Update(ctx context.Context, req *domain.UpdateInfoBul
 func (i *InfoDbRepository) Delete(ctx context.Context, req *domain.DeleteInfoBulletinRequest) (domain.Infos, error) {
 	return domain.Infos{}, nil
 }
+func (i *InfoDbRepository) CheckByDomainAndId(ctx context.Context, teacherDomain string, infoId uint) error {
+	return nil
+}
 
 // cache
 type InfoCacheRepository struct{}

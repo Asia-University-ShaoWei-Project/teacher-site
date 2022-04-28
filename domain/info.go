@@ -29,6 +29,7 @@ type InfoUsecase interface {
 type InfoDbRepository interface {
 	Create(ctx context.Context, req *CreateInfoBulletinRequest) (InfoBulletinBoards, error)
 	GetByTeacherDomain(ctx context.Context, teacherDomain string) (Infos, error)
+	CheckByDomainAndId(ctx context.Context, teacherDomain string, infoId uint) error
 	GetBulletinsByInfoId(ctx context.Context, id uint) ([]InfoBulletinResponse, error)
 	GetLastModified(ctx context.Context, id uint) (string, error)
 	Update(ctx context.Context, req *UpdateInfoBulletinRequest) (Infos, error)
@@ -75,12 +76,24 @@ func (i *GetInfoBulletinResponse) SetBulletins(bulletins []InfoBulletinResponse)
 	i.Bulletins = bulletins
 }
 
-type UpdateInfoBulletinRequest struct {
+type UpdateInfoBulletinUriRequest struct {
 	TeacherDomainRequest
-	InfoId     uint   `uri:"infoId"`
-	BulletinId uint   `uri:"bulletinId"`
-	Content    string `json:"content"`
+	InfoId     uint `uri:"infoId" binding:"required"`
+	BulletinId uint `uri:"bulletinId" binding:"required"`
 }
+type UpdateInfoBulletinRequest struct {
+	TeacherDomain string
+	InfoId        uint
+	BulletinId    uint
+	Content       string `json:"content" binding:"required"`
+}
+
+func (u *UpdateInfoBulletinRequest) SetupUri(req *UpdateInfoBulletinUriRequest) {
+	u.TeacherDomain = req.TeacherDomain
+	u.InfoId = req.InfoId
+	u.BulletinId = req.BulletinId
+}
+
 type UpdateInfoBulletinResponse struct {
 	LastModified string `json:"lastModified"`
 }

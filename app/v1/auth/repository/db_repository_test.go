@@ -33,7 +33,6 @@ func TestGetAccountByUserId(t *testing.T) {
 			password: mock.UserPassword,
 			result:   gorm.ErrRecordNotFound,
 		},
-
 		{
 			desc:     "normal",
 			userId:   mock.UserId,
@@ -107,7 +106,7 @@ func TestDeleteToken(t *testing.T) {
 		result error
 	}{
 		{
-			desc:   "invalid account of id",
+			desc:   "invalid user of id",
 			id:     mock.Unknown,
 			result: gorm.ErrRecordNotFound,
 		},
@@ -119,7 +118,7 @@ func TestDeleteToken(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			err = repo.DeleteToken(ctx, tC.id)
+			err = repo.DeleteTokenById(ctx, tC.id)
 			assert.Equal(t, tC.result, err)
 		})
 	}

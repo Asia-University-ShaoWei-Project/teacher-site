@@ -38,6 +38,7 @@ func (u *Usecase) Get(ctx context.Context, req *domain.GetCourseRequest) (domain
 	var res domain.GetCourseResponse
 	courses, err := u.DbRepository.GetByTeacherDomain(ctx, req.TeacherDomain)
 	if err != nil {
+		log.Error(err)
 		return res, err
 	}
 	res = domain.GetCourseResponse{
@@ -60,11 +61,13 @@ func (u *Usecase) GetContent(ctx context.Context, req *domain.GetCourseContentRe
 
 	res, err = u.DbRepository.GetContentByCourseId(ctx, req.Id)
 	if err != nil {
+		log.Error(err)
 		return res, err
 	}
 	return res, nil
 }
 
+// todo
 // Update()
 // Delete()
 

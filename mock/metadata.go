@@ -28,7 +28,7 @@ const (
 )
 
 func NewMsg() string {
-	format := `01/02 03:04:05PM`
+	format := `03:04:05PM`
 	t := time.Now().Format(format)
 	msg := `new message at ` + t
 	return msg

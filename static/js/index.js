@@ -13,7 +13,10 @@ const attr = {
   bulletin: {
     tableType: "bulletin",
     tableTitle: "Bulletin Board",
-    tableFieldTitles: ["Date", "Information"],
+    tableFieldTitles: [
+      `<i class="fa fa-calendar" aria-hidden="true"></i> Date`,
+      "Information",
+    ],
   },
   slide: {
     tableType: "slide",

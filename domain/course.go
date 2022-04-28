@@ -61,20 +61,11 @@ type CourseUsecase interface {
 	DeleteHomework(ctx context.Context, req *DeleteCourseHomeworkRequest) (DeleteCourseHomeworkResponse, error)
 }
 type CourseDbRepository interface {
-	// Create(ctx context.Context, req *CreateInfoBulletinRequest) (InfoBulletinBoards, error)
 	GetByTeacherDomain(ctx context.Context, teacherDomain string) ([]CourseResponse, error)
 	GetContentByCourseId(ctx context.Context, courseId uint) (GetCourseContentResponse, error)
 	GetLastModifiedByCourseId(ctx context.Context, courseId uint) (Courses, error)
-	// GetBulletinsByInfoId(ctx context.Context, id uint) ([]InfoBulletinResponse, error)
-	// GetLastModified(ctx context.Context, id uint) (string, error)
-	// Update(ctx context.Context, req *UpdateInfoBulletinRequest) (Infos, error)
-	// Delete(ctx context.Context, req *DeleteInfoBulletinRequest) (Infos, error)
 }
 type CourseCacheRepository interface {
-	// Get(ctx context.Context, req *GetInfoBulletinRequest) (string, error)
-	// GetLastModified(ctx context.Context, teacherDomain string) (string, error)
-	// Update(ctx context.Context, req *UpdateInfoBulletinRequest) error
-	// UpdateInfoLastModified(ctx context.Context, req *UpdateInfoBulletinRequest, lastModified string) error
 }
 
 //* request & response

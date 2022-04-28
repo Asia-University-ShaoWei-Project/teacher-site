@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"teacher-site/domain"
 	"teacher-site/pkg/util"
 
 	"github.com/gin-gonic/gin"
@@ -12,37 +12,37 @@ import (
 func IsTeacher(ctx context.Context, c *gin.Context, secret []byte) bool {
 	bearerToken, err := util.GetBearerToken(ctx, c)
 	if err != nil {
-		fmt.Println("not have auth header")
 		return false
 	}
-	if err := verifyJwtValid(ctx, bearerToken, secret); err != nil {
-		fmt.Println("not a teacher")
 
+	if _, err := util.ParseJwt(ctx, bearerToken, secret); err != nil {
 		return false
 	}
-	fmt.Println("is a teacher")
-
 	return true
 }
 
 func VerifyAuth(ctx context.Context, secret []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var req domain.TeacherDomainRequest
+		if err := c.ShouldBindUri(&req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
 		bearerToken, err := util.GetBearerToken(ctx, c)
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		if err := verifyJwtValid(ctx, bearerToken, secret); err != nil {
+		claims, err := util.ParseJwt(ctx, bearerToken, secret)
+		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		teacherDomain := util.GetJwtUserDomain(claims)
+		if req.TeacherDomain != teacherDomain {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
 		}
 	}
-}
-
-func verifyJwtValid(ctx context.Context, bearerToken string, secret []byte) error {
-	_, err := util.ParseJwt(ctx, bearerToken, secret)
-	if err != nil {
-		return err
-	}
-	return nil
 }

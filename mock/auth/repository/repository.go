@@ -40,7 +40,7 @@ func (i *DbRepository) UpdateTokenByUserId(ctx context.Context, id, token string
 }
 
 // todo
-func (i *DbRepository) DeleteToken(ctx context.Context, id string) error {
+func (i *DbRepository) DeleteTokenById(ctx context.Context, id string) error {
 	return nil
 }
 

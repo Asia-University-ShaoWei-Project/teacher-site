@@ -46,7 +46,7 @@ func (r *DbRepository) UpdateTokenByUserId(ctx context.Context, id, token string
 	return err
 }
 
-func (r *DbRepository) DeleteToken(ctx context.Context, id string) error {
+func (r *DbRepository) DeleteTokenById(ctx context.Context, id string) error {
 	auth := domain.Auths{UserId: id}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&auth).Update("token", "")
