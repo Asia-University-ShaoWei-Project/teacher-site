@@ -40,6 +40,7 @@ type HomeRequest struct {
 	Domain string `uri:"teacherDomain" binding:"required"`
 }
 type HomeResponse struct {
+	Domain    string
 	Email     string `json:"email"`
 	NameZh    string `json:"name_zh"`
 	NameUs    string `json:"name_us"`

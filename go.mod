@@ -9,6 +9,7 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/google/uuid v1.1.2
 	github.com/heroku/x v0.0.50
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0

@@ -2,11 +2,9 @@ package repository
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 	"teacher-site/config"
 	"teacher-site/domain"
-	"time"
+	utildb "teacher-site/pkg/database"
 
 	"gorm.io/gorm"
 )
@@ -78,7 +76,6 @@ func (r *DbRepository) Update(ctx context.Context, req *domain.UpdateInfoBulleti
 			Where("id=? AND info_id=?", req.BulletinId, info.AutoModel.Id).
 			Update("content", req.Content)
 		if err := checkErrAndExist(result); err != nil {
-			fmt.Println(`💡updated error`)
 			return err
 		}
 		return nil
@@ -93,10 +90,7 @@ func (r *DbRepository) Delete(ctx context.Context, req *domain.DeleteInfoBulleti
 		if err := updateInfoLastModified(tx, &info); err != nil {
 			return err
 		}
-		fmt.Println(`after time:`, info.LastModified)
-
 		result := tx.Where(`id=? AND info_id=?`, req.BulletinId, info.AutoModel.Id).Delete(&domain.InfoBulletinBoards{})
-
 		if err := checkErrAndExist(result); err != nil {
 			return err
 		}
@@ -110,14 +104,9 @@ func (r *DbRepository) CheckByDomainAndId(ctx context.Context, teacherDomain str
 	return checkErrAndExist(result)
 }
 func updateInfoLastModified(tx *gorm.DB, info *domain.Infos) error {
-	result := tx.Model(&info).Update("last_modified", newLastModifiedTime())
+	lastModifiedTime := utildb.NewLastModifiedTime()
+	result := tx.Model(&info).Update("last_modified", lastModifiedTime)
 	return checkErrAndExist(result)
-}
-
-// unix time
-func newLastModifiedTime() string {
-	now := time.Now()
-	return strconv.FormatInt(now.Unix(), 10)
 }
 
 // result.Err or gorm Not Found

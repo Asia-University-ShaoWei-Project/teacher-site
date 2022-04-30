@@ -19,6 +19,8 @@ type Server struct {
 	StaticRelativePath string
 	StaticRootPath     string
 	TemplatePath       string
+	SlidePathFormat    string
+	HomeworkPathFormat string
 	MaxMultipartMemory int64
 }
 type Limit struct {
@@ -61,6 +63,8 @@ func newServer() *Server {
 		StaticRelativePath: "/static",
 		StaticRootPath:     "./static",
 		TemplatePath:       "templates/*",
+		SlidePathFormat:    `static/doc/%s/slide/%s`,
+		HomeworkPathFormat: `static/doc/%s/hw/%s`,
 		MaxMultipartMemory: 8 << 20,
 	}
 }

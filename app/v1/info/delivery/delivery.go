@@ -118,7 +118,6 @@ func (h *Handler) Update(ctx context.Context) gin.HandlerFunc {
 
 func (h *Handler) Delete(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Println("🤔")
 
 		var bind domain.DeleteInfoBulletinRequest
 		// bind teacherDomain, infoId and bulletinId

@@ -11,3 +11,4 @@ swagger.yml
 # other
 .DS_Store
 .vscode/
+static/doc/domain/

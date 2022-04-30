@@ -1,14 +1,15 @@
 const brTag = "<br>";
 const optionBoxElem = document.getElementById("option-box");
-const pageContentElem = document.getElementById("page-content");
+const contentElem = document.getElementById("content");
 const loadingElem = document.getElementById("loading");
+const authBtnElem = document.getElementById("auth-btn");
+
 var /** !Object<!Item> */ items = [];
+
 // 0: information index
-var optionSwitchIndex = 0;
-const PageTypes = {
-  INFO: "info",
-  COURSE: "course",
-};
+var optCurrIndex = 0;
+var isTeacher = false;
+
 const attr = {
   bulletin: {
     tableType: "bulletin",
@@ -21,43 +22,65 @@ const attr = {
   slide: {
     tableType: "slide",
     tableTitle: "Slide",
-    tableFieldTitles: ["Chapter", "Title", "Type"],
+    tableFieldTitles: ["chapter", "title", "file"],
   },
   homework: {
     tableType: "homework",
     tableTitle: "Homework",
-    tableFieldTitles: ["#", "Title", "Type"],
+    tableFieldTitles: ["#", "title", "file"],
   },
 };
-var isTeacher = false;
 function init() {
   axios
-    .post(api.getVerifyAuthUrl(), {
-      params: {
-        lastModified: "0",
-      },
-    })
+    .post(api.getVerifyAuthUrl())
     .then((res) => {
       if (res.status == HttpStatusCode.OK) {
         if (res.data.isTeacher) {
-          console.log("init api success, is teacher");
           headers[HeaderKeys.AUTH] = res.headers.authorization;
           teacherMode();
         }
         createInitElem();
+        setupAuthBtn();
       }
     })
     .catch((err) => {
       console.error("init api error, not a teacher:", err);
       createInitElem();
+      setupAuthBtn();
     });
 }
 const Texts = {
   TABLE_FIELD: { EDIT: "Edit", DEL: "Delete" },
 };
+function setupAuthBtn() {
+  if (isTeacher) {
+    authBtnElem.innerText = "Logout";
+    let url =
+      api.getUrlPath() +
+      api.getResourceUrl(api.getAuthResourceType(), null, HttpMethod.POST);
+    authBtnElem.onclick = () => {
+      axios
+        .post(url, {}, axiosConfig)
+        .then((res) => {
+          if (res.status == HttpStatusCode.NO_CONTENT) {
+            location.reload();
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    };
+    return;
+  }
+  authBtnElem.innerText = "Login";
+  authBtnElem.onclick = () => {
+    location.replace("/login");
+  };
+}
 function teacherMode() {
   let editTxt = Texts.TABLE_FIELD.EDIT;
   let deleteTxt = Texts.TABLE_FIELD.DEL;
+
   isTeacher = true;
   attr.bulletin.tableFieldTitles.push(editTxt, deleteTxt);
   attr.slide.tableFieldTitles.push(editTxt, deleteTxt);
@@ -82,7 +105,7 @@ function createInitElem() {
     if (infoWorkDone && courseWorkDone) {
       loadingView(false);
       showContent(items[0].getContent());
-      showOptionButtons();
+      showOptionButtons(items);
       clearInterval(work);
     }
     count += 1;
@@ -91,7 +114,7 @@ function createInitElem() {
   initCourseApi();
 }
 
-function initInfoApi(workDone) {
+function initInfoApi() {
   let url =
     api.getTeacherPath() +
     api.getResourceUrl(api.getInfoResourceType(), null, HttpMethod.GET);
@@ -102,10 +125,12 @@ function initInfoApi(workDone) {
       },
     })
     .then((res) => {
+      let infoIndex = 0;
       let resData = res.data.data;
       let bulletinRows = newRows(attr.bulletin.tableType, resData.bulletins);
       let bulletinTable = newTable(attr.bulletin.tableType, bulletinRows);
       let infoItem = new Item(
+        infoIndex,
         api.getInfoResourceType(),
         url,
         resData.id,
@@ -130,14 +155,13 @@ function initInfoApi(workDone) {
     });
 }
 
-function initCourseApi(workDone) {
+function initCourseApi() {
   let url =
     api.getTeacherPath() +
     api.getResourceUrl(api.getCourseResourceType(), null, HttpMethod.GET);
   axios
     .get(url)
     .then((res) => {
-      console.log("getInfo api success");
       if (res.status == HttpStatusCode.OK) {
         let resData = res.data.data;
         let apiUrl;
@@ -147,16 +171,19 @@ function initCourseApi(workDone) {
         let delay = 100;
         let timeoutCount = timeoutTime * (1000 /* 1 second */ / delay);
         let work = setInterval(() => {
+          console.log("waiting for info api...");
           if (count >= timeoutCount) {
             alert("connect error");
             loadingView(false);
             clearInterval(work);
           }
           if (infoWorkDone) {
-            resData.courses.forEach((v) => {
+            resData.courses.forEach((v, itemIndex) => {
               apiUrl = url + "/" + v.id;
               items.push(
                 new Item(
+                  // +1: 0 is information index, so the course index begin at 1
+                  itemIndex + 1,
                   api.getCourseResourceType(),
                   apiUrl,
                   v.id,
@@ -178,33 +205,14 @@ function initCourseApi(workDone) {
     });
 }
 
-// *option
-
-function showOptionButtons() {
-  let elem = "";
-  items.forEach((v) => {
-    elem = createOptionButton(v);
-    optionBoxElem.appendChild(elem);
-  });
-}
-
-// const optionClassAttr = `option-item option-button button--anthe`;
-const optionClassAttr = `btn btn-outline-dark option-item`;
-function createOptionButton(item) {
-  let btn = document.createElement("button");
-  let span = document.createElement("span");
-  let text = item.getNameZh() + brTag + item.getNameUs();
-  btn.className = optionClassAttr;
-  span.innerHTML = text;
-  btn.onclick = () => item.updateData();
-  btn.appendChild(span);
-  return btn;
-}
-
 //* content
-
+function reloadContent() {
+  contentElem.innerHTML = "";
+  loadingView(true);
+}
 function showContent(content = "") {
-  pageContentElem.innerHTML = content;
+  loadingView(false);
+  contentElem.innerHTML = content;
 }
 function createContent(recourseType, tableType, data) {
   let content = "";
@@ -218,9 +226,7 @@ function createContent(recourseType, tableType, data) {
 function createTable(recourseType, tableType, table) {
   let thead = createTableHeadElem(table.getFieldsTitle());
   let tbody = "";
-  let addBtnElem = "";
-  let editBtnElem = "";
-  let deleteBtnElem = "";
+  let addBtnElem, editBtnElem, deleteBtnElem;
 
   for (let rowIndex = 0; rowIndex < table.getRowsLen(); rowIndex++) {
     dataList = table.getRow(rowIndex).getDataList();
@@ -231,6 +237,7 @@ function createTable(recourseType, tableType, table) {
     tbody += createTableBodyElem(dataList, editBtnElem, deleteBtnElem);
   }
   if (isTeacher) {
+    console.log("create add button");
     addBtnElem = createAddButtonElem(recourseType, tableType);
   }
 
@@ -240,7 +247,7 @@ function createTable(recourseType, tableType, table) {
 function createTableHeadElem(fields) {
   let elems = "";
   for (let i = 0; i < fields.length; i++) {
-    elems += `<td>${fields[i]}</td>`;
+    elems += `<th scope="col">${fields[i]}</th>`;
   }
   return `<tr>${elems}</tr>`;
 }
@@ -255,6 +262,9 @@ function createTableBodyElem(dataList, editBtnElem, deleteBtnElem) {
   return `<tr>${elems}</tr>`;
 }
 function createCard(title, thead, tbody, addBtnElem) {
+  if (addBtnElem == undefined) {
+    addBtnElem = "";
+  }
   let card = `
     <div class="content-page">
       <div class="item-box">
@@ -263,8 +273,8 @@ function createCard(title, thead, tbody, addBtnElem) {
             <div class="card-body">${title}</div>
           </div>
         </div>
-        <div class = "item-content">
-          <table class = "table table-striped table-striped">
+        <div class="table-responsive">
+          <table class="table table-striped table-sm">
             <thead>${thead}</thead> 
             <tbody>${tbody}</tbody>
           </table>

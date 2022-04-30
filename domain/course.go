@@ -30,6 +30,10 @@ type Slides struct {
 	File      File `gorm:"embedded"`
 }
 
+func (s *Slides) SetFileName(name string) {
+	s.File.Name = name
+}
+
 // todo: add link field
 type Homeworks struct {
 	AutoModel AutoModel `gorm:"embedded"`
@@ -61,9 +65,22 @@ type CourseUsecase interface {
 	DeleteHomework(ctx context.Context, req *DeleteCourseHomeworkRequest) (DeleteCourseHomeworkResponse, error)
 }
 type CourseDbRepository interface {
+	CreateBulletin(ctx context.Context, bulletin *BulletinBoards) error
+	CreateSlide(ctx context.Context, slide *Slides) error
+
 	GetByTeacherDomain(ctx context.Context, teacherDomain string) ([]CourseResponse, error)
 	GetContentByCourseId(ctx context.Context, courseId uint) (GetCourseContentResponse, error)
-	GetLastModifiedByCourseId(ctx context.Context, courseId uint) (Courses, error)
+	GetLastModifiedByCourseId(ctx context.Context, courseId uint) (string, error)
+
+	UpdateBulletinById(ctx context.Context, bulletin *BulletinBoards) error
+	UpdateSlideById(ctx context.Context, slide *Slides) (string, error)
+
+	DeleteSlideById(ctx context.Context, slide *Slides) (string, error)
+
+	CheckByDomainAndCourseId(ctx context.Context, course *Courses) error
+
+	// Update(ctx context.Context, req *UpdateInfoBulletinRequest) (Infos, error)
+	// Delete(ctx context.Context, req *DeleteInfoBulletinRequest) (Infos, error)
 }
 type CourseCacheRepository interface {
 }
@@ -110,15 +127,13 @@ type CourseSlideResponse struct {
 	Id      uint   `json:"id"`
 	Chapter string `json:"chapter"`
 	Title   string `json:"fileTitle"`
-	Type    string `json:"fileType"`
-	Url     string `json:"fileUrl"`
+	Name    string `json:"filename"`
 }
 type CourseHomeworkResponse struct {
 	Id     uint   `json:"id"`
 	Number string `json:"number"`
 	Title  string `json:"fileTitle"`
-	Type   string `json:"fileType"`
-	Url    string `json:"fileUrl"`
+	Name   string `json:"filename"`
 }
 
 // type UpdateCourseRequest struct{}
@@ -142,7 +157,7 @@ type UpdateCourseBulletinRequest struct {
 	TeacherDomainRequest
 	CourseId   uint   `uri:"courseId"`
 	BulletinId uint   `uri:"bulletinId"`
-	Content    string `uri:"content"`
+	Content    string `json:"content"`
 }
 type UpdateCourseBulletinResponse struct {
 	LastModified string `json:"lastModified"`
@@ -158,27 +173,58 @@ type DeleteCourseBulletinResponse struct {
 }
 
 // slide
-type CreateCourseSlideRequest struct {
+type CreateSlideIdRequest struct {
 	TeacherDomainRequest
-	CourseId  uint                  `uri:"courseId"`
-	Chapter   string                `json:"chapter"`
-	FileTitle string                `json:"fileTitle"`
-	File      *multipart.FileHeader `json:"file"`
+	CourseId uint `uri:"courseId" binding:"required"`
 }
-type CreateCourseSlideResponse struct {
-	Id           uint   `json:"id"`
-	LastModified string `json:"lastModified"`
+type CreateCourseSlideRequest struct {
+	TeacherDomain string
+	CourseId      uint
+	Chapter       string                `form:"chapter" binding:"required"`
+	FileTitle     string                `form:"fileTitle" binding:"required"`
+	File          *multipart.FileHeader `form:"file"`
+	Filename      string
 }
 
-type UpdateCourseSlideRequest struct {
-	TeacherDomainRequest
-	CourseId  uint                  `uri:"courseId"`
-	SlideId   uint                  `uri:"slideId"`
-	Chapter   string                `json:"chapter"`
-	FileTitle string                `json:"fileTitle"`
-	File      *multipart.FileHeader `json:"file"`
+func (u *CreateCourseSlideRequest) SetupId(c *CreateSlideIdRequest) {
+	u.TeacherDomain = c.TeacherDomainRequest.TeacherDomain
+	u.CourseId = c.CourseId
 }
+func (u *CreateCourseSlideRequest) SetFileName(name string) {
+	u.Filename = name
+}
+
+type CreateCourseSlideResponse struct {
+	Id           uint   `json:"id"`
+	Filename     string `json:"filename"`
+	LastModified string `json:"lastModified"`
+}
+type CourseSlideIdRequest struct {
+	TeacherDomainRequest
+	CourseId uint `uri:"courseId" binding:"required"`
+	SlideId  uint `uri:"slideId" binding:"required"`
+}
+type UpdateCourseSlideRequest struct {
+	TeacherDomain string
+	CourseId      uint
+	SlideId       uint
+	Chapter       string                `form:"chapter" binding:"required"`
+	FileTitle     string                `form:"fileTitle" binding:"required"`
+	File          *multipart.FileHeader `form:"file"`
+	Filename      string
+}
+
+func (u *UpdateCourseSlideRequest) SetupId(c *CourseSlideIdRequest) {
+	u.TeacherDomain = c.TeacherDomainRequest.TeacherDomain
+	u.CourseId = c.CourseId
+	u.SlideId = c.SlideId
+}
+func (u *UpdateCourseSlideRequest) SetFileName(name string) {
+	u.Filename = name
+}
+
 type UpdateCourseSlideResponse struct {
+	Filename     string `json:"filename"`
 	LastModified string `json:"lastModified"`
 }
 
@@ -223,4 +269,8 @@ type DeleteCourseHomeworkRequest struct {
 }
 type DeleteCourseHomeworkResponse struct {
 	LastModified string `json:"lastModified"`
+}
+type File struct {
+	Name  string
+	Title string
 }

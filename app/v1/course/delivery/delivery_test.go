@@ -1,10 +1,15 @@
 package delivery
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"teacher-site/mock"
 	"teacher-site/mock/course/usecase"
@@ -25,11 +30,17 @@ var (
 	conf        = mock.Conf
 	usecaseMock = usecase.NewUsecase()
 	ApiUrl      = mock.ApiUrl + "/course"
+	// file path
+	path                = "../../../../mock/file.txt"
+	slideFilePathFormat = `../../../../static/doc/%s/slide/%s`
 )
 var (
 	url, urlFormat string
 	req            *http.Request
 	w              *httptest.ResponseRecorder
+	// form
+	body   *bytes.Buffer
+	writer *multipart.Writer
 )
 
 type HttpStatusCode int
@@ -57,7 +68,7 @@ func TestCreate(t *testing.T) {
 		{
 			desc:   "normal",
 			data:   fmt.Sprintf(dataFormat, mock.WordStr, mock.EmptyStr),
-			result: http.StatusOK,
+			result: http.StatusCreated,
 		},
 	}
 	for _, tC := range testCases {
@@ -105,7 +116,7 @@ func TestCreateBulletin(t *testing.T) {
 			desc:     "normal",
 			courseId: mock.PkStr,
 			data:     fmt.Sprintf(dataFormat, mock.WordStr),
-			result:   http.StatusOK,
+			result:   http.StatusCreated,
 		},
 	}
 	for _, tC := range testCases {
@@ -122,53 +133,90 @@ func TestCreateBulletin(t *testing.T) {
 
 func TestCreateSlide(t *testing.T) {
 	r, route := NewServer()
+	conf.Server.SlidePathFormat = slideFilePathFormat
 	NewHandler(ctx, route, usecaseMock, conf)
 	urlFormat = ApiUrl + `/%s/slide`
-	dataFormat := `{"chapter":"%s","fileTitle":"%s"}`
 
 	testCases := []struct {
-		desc     string
-		courseId string
-		data     string
-		result   HttpStatusCode
+		desc      string
+		courseId  string
+		chapter   string
+		fileTitle string
+		upload    bool
+		result    HttpStatusCode
 	}{
 		{
-			desc:     "invalid course id",
-			courseId: mock.WordStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.WordStr),
-			result:   http.StatusBadRequest,
+			desc:      "invalid course id",
+			courseId:  mock.WordStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.WordStr,
+			upload:    false,
+			result:    http.StatusBadRequest,
 		},
 		{
-			desc:     "empty course id(0)",
-			courseId: mock.EmptyStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.WordStr),
-			result:   http.StatusBadRequest,
+			desc:      "empty course id(0)",
+			courseId:  mock.EmptyStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.WordStr,
+			upload:    false,
+			result:    http.StatusBadRequest,
 		},
 		{
-			desc:     "empty chapter",
-			courseId: mock.PkStr,
-			data:     fmt.Sprintf(dataFormat, mock.EmptyStr, mock.WordStr),
-			result:   http.StatusBadRequest,
+			desc:      "empty chapter",
+			courseId:  mock.PkStr,
+			chapter:   mock.EmptyStr,
+			fileTitle: mock.WordStr,
+			upload:    false,
+			result:    http.StatusBadRequest,
 		},
 		{
-			desc:     "empty fileTitle",
-			courseId: mock.PkStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.EmptyStr),
-			result:   http.StatusBadRequest,
+			desc:      "empty fileTitle",
+			courseId:  mock.PkStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.EmptyStr,
+			upload:    false,
+			result:    http.StatusBadRequest,
 		},
 		{
-			desc:     "normal",
-			courseId: mock.PkStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.WordStr),
-			result:   http.StatusOK,
+			desc:      "normal",
+			courseId:  mock.PkStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.WordStr,
+			upload:    true,
+			result:    http.StatusCreated,
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			url = fmt.Sprintf(urlFormat, tC.courseId)
 			w = httptest.NewRecorder()
-			req, _ = http.NewRequest("POST", url, strings.NewReader(tC.data))
-			req.Header.Add("Content-Type", JsonContentType)
+			url = fmt.Sprintf(urlFormat, tC.courseId)
+			body = &bytes.Buffer{}
+
+			writer = multipart.NewWriter(body)
+			writer.WriteField("chapter", tC.chapter)
+			writer.WriteField("fileTitle", tC.fileTitle)
+
+			if tC.upload {
+				part, err := writer.CreateFormFile("file", filepath.Base(path))
+				if err != nil {
+					t.Error(err)
+				}
+				file, err := os.Open(path)
+				if err != nil {
+					t.Error(err)
+				}
+				_, err = io.Copy(part, file)
+				if err != nil {
+					t.Error(err)
+				}
+				file.Close()
+			}
+
+			writer.Close()
+
+			req, _ = http.NewRequest("POST", url, body)
+			req.Header.Add("Content-Type", writer.FormDataContentType())
+
 			r.ServeHTTP(w, req)
 			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))
 		})
@@ -214,7 +262,7 @@ func TestCreateHomework(t *testing.T) {
 			desc:     "normal",
 			courseId: mock.PkStr,
 			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.WordStr),
-			result:   http.StatusOK,
+			result:   http.StatusCreated,
 		},
 	}
 	for _, tC := range testCases {
@@ -346,81 +394,126 @@ func TestUpdateBulletin(t *testing.T) {
 
 func TestUpdateSlide(t *testing.T) {
 	r, route := NewServer()
+	conf.Server.SlidePathFormat = slideFilePathFormat
 	NewHandler(ctx, route, usecaseMock, conf)
+
 	urlFormat = ApiUrl + `/%s/slide/%s`
-	dataFormat := `{"chapter":"%s", "fileTitle":"%s"}`
 
 	testCases := []struct {
-		desc     string
-		courseId string
-		slideId  string
-		data     string
-		result   HttpStatusCode
+		desc      string
+		courseId  string
+		slideId   string
+		chapter   string
+		fileTitle string
+		upload    bool
+		result    HttpStatusCode
 	}{
 		{
-			desc:     "invalid course id",
-			courseId: mock.WordStr,
-			slideId:  mock.PkStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.WordStr),
-			result:   http.StatusBadRequest,
+			desc:      "invalid course id",
+			courseId:  mock.WordStr,
+			slideId:   mock.PkStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.WordStr,
+			upload:    false,
+			result:    http.StatusBadRequest,
 		},
 		{
-			desc:     "invalid slide id",
-			courseId: mock.PkStr,
-			slideId:  mock.WordStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.WordStr),
-			result:   http.StatusBadRequest,
+			desc:      "invalid slide id",
+			courseId:  mock.PkStr,
+			slideId:   mock.WordStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.WordStr,
+			upload:    false,
+			result:    http.StatusBadRequest,
 		},
 		{
-			desc:     "empty course id(0)",
-			courseId: mock.EmptyStr,
-			slideId:  mock.PkStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.WordStr),
-			result:   http.StatusBadRequest,
+			desc:      "empty course id(0)",
+			courseId:  mock.EmptyStr,
+			slideId:   mock.PkStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.WordStr,
+			upload:    false,
+			result:    http.StatusBadRequest,
 		},
 		{
-			desc:     "empty slide id",
-			courseId: mock.PkStr,
-			slideId:  mock.EmptyStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.WordStr),
+			desc:      "empty slide id",
+			courseId:  mock.PkStr,
+			slideId:   mock.EmptyStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.WordStr,
 			// Note: is not a bad request
+			upload: false,
 			result: http.StatusNotFound,
 		},
 		{
-			desc:     "zero value of slide id",
-			courseId: mock.PkStr,
-			slideId:  mock.PkZeroStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.WordStr),
-			result:   http.StatusBadRequest,
+			desc:      "zero value of slide id",
+			courseId:  mock.PkStr,
+			slideId:   mock.PkZeroStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.WordStr,
+			upload:    false,
+			result:    http.StatusBadRequest,
 		},
 		{
-			desc:     "empty chapter",
-			courseId: mock.PkStr,
-			slideId:  mock.PkStr,
-			data:     fmt.Sprintf(dataFormat, mock.EmptyStr, mock.WordStr),
-			result:   http.StatusBadRequest,
+			desc:      "empty chapter",
+			courseId:  mock.PkStr,
+			slideId:   mock.PkStr,
+			chapter:   mock.EmptyStr,
+			fileTitle: mock.WordStr,
+			upload:    false,
+			result:    http.StatusBadRequest,
 		},
 		{
-			desc:     "empty fileTitle",
-			courseId: mock.PkStr,
-			slideId:  mock.PkStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.EmptyStr),
-			result:   http.StatusBadRequest,
+			desc:      "empty fileTitle",
+			courseId:  mock.PkStr,
+			slideId:   mock.PkStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.EmptyStr,
+			upload:    false,
+			result:    http.StatusBadRequest,
 		},
 		{
-			desc:     "normal",
-			courseId: mock.PkStr,
-			slideId:  mock.PkStr,
-			data:     fmt.Sprintf(dataFormat, mock.WordStr, mock.WordStr),
-			result:   http.StatusOK,
+			desc:      "normal",
+			courseId:  mock.PkStr,
+			slideId:   mock.PkStr,
+			chapter:   mock.WordStr,
+			fileTitle: mock.WordStr,
+			upload:    true,
+			result:    http.StatusOK,
 		},
 	}
+
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			url = fmt.Sprintf(urlFormat, tC.courseId, tC.slideId)
 			w = httptest.NewRecorder()
-			req, _ = http.NewRequest("PUT", url, strings.NewReader(tC.data))
-			req.Header.Add("Content-Type", JsonContentType)
+
+			body = &bytes.Buffer{}
+
+			writer = multipart.NewWriter(body)
+			writer.WriteField("chapter", tC.chapter)
+			writer.WriteField("fileTitle", tC.fileTitle)
+
+			if tC.upload {
+				part, err := writer.CreateFormFile("file", filepath.Base(path))
+				if err != nil {
+					t.Error(err)
+				}
+				file, err := os.Open(path)
+				if err != nil {
+					t.Error(err)
+				}
+				_, err = io.Copy(part, file)
+				if err != nil {
+					t.Error(err)
+				}
+				file.Close()
+			}
+
+			writer.Close()
+
+			req, _ = http.NewRequest("PUT", url, body)
+			req.Header.Add("Content-Type", writer.FormDataContentType())
 			r.ServeHTTP(w, req)
 			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))
 		})

@@ -1,6 +1,8 @@
 class Item {
   constructor(
     /** @type {number} */
+    itemIndex,
+    /** @type {number} */
     recourseType,
     /** @type {string} */
     apiUrl = "",
@@ -21,6 +23,7 @@ class Item {
     /** @type {string} */
     content = ""
   ) {
+    this.itemIndex = itemIndex;
     this.recourseType = recourseType;
     this.apiUrl = apiUrl;
     this.id = id;
@@ -32,7 +35,12 @@ class Item {
     this.lastModified = lastModified;
     this.content = content;
   }
-
+  getItemIndex() {
+    return this.itemIndex;
+  }
+  setItemIndex(index) {
+    this.itemIndex = index;
+  }
   getRecourseType() {
     return this.recourseType;
   }
@@ -75,6 +83,18 @@ class Item {
   setBulletin(bulletin) {
     this.bulletin = bulletin;
   }
+  getSlide() {
+    return this.slide;
+  }
+  setSlide(slide) {
+    this.slide = slide;
+  }
+  getHomework() {
+    return this.homework;
+  }
+  setHomework(homework) {
+    this.homework = homework;
+  }
   getContent() {
     return this.content;
   }
@@ -100,8 +120,8 @@ class Item {
     );
     this.content = content;
   }
-  // todo
   updateData() {
+    optCurrIndex = this.itemIndex;
     axios
       .get(this.apiUrl, {
         params: {
@@ -118,9 +138,6 @@ class Item {
             break;
           // need to update information
           case HttpStatusCode.OK:
-            console.log("update the content");
-            console.log("curr last modified:", this.lastModified);
-            console.log("new last modified:", resData.lastModified);
             this.lastModified = resData.lastModified;
             if (resData.bulletins != null && resData.bulletins != undefined) {
               rows = newRows(attr.bulletin.tableType, resData.bulletins);
@@ -141,20 +158,19 @@ class Item {
       })
       .catch((err) => {
         console.log(err);
-        console.log(err.response);
-        console.log(err.response.status);
         switch (err.response.statue) {
           case HttpStatusCode.BAD_REQUEST:
             console.error("bad request");
             break;
           default:
-            console.error("error status code:", err.response.statue);
+            alert("Unknown error, please reload the page again.");
             break;
         }
       });
   }
 }
 function newItem(
+  itemIndex,
   recourseType,
   apiUrl,
   data,
@@ -164,6 +180,7 @@ function newItem(
   lastModified
 ) {
   return new Item(
+    itemIndex,
     recourseType,
     apiUrl,
     data.id,
@@ -219,12 +236,12 @@ function newRows(tableType, data) {
       break;
     case attr.slide.tableType:
       data.forEach((v) => {
-        rows.push(newSlideRow(v.id, v.chapter, v.fileTitle, v.fileType));
+        rows.push(newSlideRow(v.id, v.chapter, v.fileTitle, v.filename));
       });
       break;
     case attr.homework.tableType:
       data.forEach((v) => {
-        rows.push(newHomeworkRow(v.id, v.number, v.fileTitle, v.fileType));
+        rows.push(newHomeworkRow(v.id, v.number, v.fileTitle, v.filename));
       });
       break;
   }
@@ -262,11 +279,11 @@ function newBulletinBoardRow(id, date, content) {
   return new BulletinBoardRow(id, date, content);
 }
 class SlideRow {
-  constructor(id, chapter, fileTitle, fileType) {
+  constructor(id, chapter, fileTitle, filename) {
     this.id = id;
     this.chapter = chapter;
     this.fileTitle = fileTitle;
-    this.fileType = fileType;
+    this.filename = filename;
   }
   getId() {
     return this.id;
@@ -286,25 +303,29 @@ class SlideRow {
   setFileTitle(title) {
     this.fileTitle = title;
   }
-  getFileType() {
-    return this.fileType;
+  getFilename() {
+    return this.filename;
   }
-  setFileType(type) {
-    this.fileType = type;
+  setFilename(name) {
+    this.filename = name;
   }
   getDataList() {
-    return ["CH" + this.chapter, this.fileTitle, this.fileType];
+    return [
+      "CH" + this.chapter,
+      this.fileTitle,
+      createFileBtn("slide", this.filename),
+    ];
   }
 }
-function newSlideRow(id, chapter, fileTitle, fileType) {
-  return new SlideRow(id, chapter, fileTitle, fileType);
+function newSlideRow(id, chapter, fileTitle, filename) {
+  return new SlideRow(id, chapter, fileTitle, filename);
 }
 class HomeworkRow {
-  constructor(id, number, fileTitle, fileType) {
+  constructor(id, number, fileTitle, filename) {
     this.id = id;
     this.number = number;
     this.fileTitle = fileTitle;
-    this.fileType = fileType;
+    this.filename = filename;
   }
   getId() {
     return this.id;
@@ -324,16 +345,30 @@ class HomeworkRow {
   setFileTitle(title) {
     this.fileTitle = title;
   }
-  getFileType() {
-    return this.fileType;
+  getFilename() {
+    return this.filename;
   }
-  setFileType(type) {
-    this.fileType = type;
+  setFilename(name) {
+    this.filename = name;
   }
   getDataList() {
-    return ["#" + this.number, this.fileTitle, this.fileType];
+    return [
+      "#" + this.number,
+      this.fileTitle,
+      createFileBtn("homework", this.filename),
+    ];
   }
 }
-function newHomeworkRow(id, number, fileTitle, fileType) {
-  return new HomeworkRow(id, number, fileTitle, fileType);
+function newHomeworkRow(id, number, fileTitle, filename) {
+  return new HomeworkRow(id, number, fileTitle, filename);
+}
+function createFileBtn(resourceName, filename) {
+  let url =
+    "/static/doc/" +
+    api.getTeacherDomain() +
+    "/" +
+    resourceName +
+    "/" +
+    filename;
+  return `<a href="${url}" target="_blank"><i class="fa fa-file-text" aria-hidden="true" ></i></a>`;
 }

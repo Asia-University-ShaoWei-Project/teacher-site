@@ -27,7 +27,8 @@ func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.AuthUsec
 	r.POST("/token", handler.GetToken(ctx))
 	r.POST("/login", handler.Login(ctx))
 	r.POST("/logout", handler.Logout(ctx))
-	// auth.POST("/register", handler.Register)
+	// todo
+	// r.POST("/register", handler.Register(ctx))
 }
 func (auth *AuthHandler) GetToken(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -56,7 +57,6 @@ func (auth *AuthHandler) GetToken(ctx context.Context) gin.HandlerFunc {
 
 func (auth *AuthHandler) Login(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		var (
 			req domain.LoginRequest
 			err error
@@ -78,7 +78,6 @@ func (auth *AuthHandler) Login(ctx context.Context) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-
 		s := sessions.Default(c)
 		util.SetSessionToken(s, res.Token)
 		util.AddBearerHeader(c, res.Token)
@@ -113,5 +112,32 @@ func (auth *AuthHandler) Logout(ctx context.Context) gin.HandlerFunc {
 		util.DeleteSessionToken(s)
 		s.Save()
 		c.Status(http.StatusNoContent)
+	}
+}
+
+// todo
+func (auth *AuthHandler) Register(ctx context.Context) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		// checkUserAndDomain(ctx, req.UserID, req.Domain)
+		// salt, err := generateSalt(ctx, srv.conf.SaltSize)
+		// password, err := generatePassword(ctx, conf.HashCost, salt, req.UserPassword)
+
+		// token, err := uuid.NewUUID()
+
+		// auth := &domain.Auths{
+		// 	UserId:       req.UserID,
+		// 	UserPassword: password,
+		// 	Token:        token.String(),
+		// 	Salt:         string(salt),
+		// 	Teacher: domain.Teachers{
+		// 		Domain: req.Domain,
+		// 		NameZh: req.NameZh,
+		// 		Email:  req.Email,
+		// 	},
+		// }
+
+		// db.CreateUser(ctx, auth)
+		// todo: create dir(slide, hw) for user
 	}
 }

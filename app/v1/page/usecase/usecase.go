@@ -44,6 +44,7 @@ func (u *Usecase) Home(ctx context.Context, req *domain.HomeRequest) (domain.Hom
 		return res, err
 	}
 	res = domain.HomeResponse{
+		Domain:    req.Domain,
 		Email:     teacher.Email,
 		NameZh:    teacher.NameZh,
 		NameUs:    teacher.NameUs,

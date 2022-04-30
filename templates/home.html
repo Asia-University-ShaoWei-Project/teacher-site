@@ -4,15 +4,10 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RiKKi</title>
+    <title>{{ .data.Domain }}</title>
     <!-- new -->
     <link rel="stylesheet" type="text/css" href="../static/css/home.css" />
-    <link rel="stylesheet" type="text/css" href="../static/css/index.css" />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="../static/css/option-button.css"
-    />
+    <!-- <link rel="stylesheet" type="text/css" href="../static/css/index.css" /> -->
     <!-- ? icon button -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link
@@ -31,35 +26,52 @@
     ></script>
   </head>
   <body>
-    <div class="alert alert-warning" role="alert">功能尚未完成，持續更新中...。   可以查看 <a href="https://github.com/Asia-University-ShaoWei-Project/teacher-site" target="_blank">Github</a> 更新狀況</div>
-    <main>
-      <section id="select">
-        <div id="info">
-          <p><a href="http://dns2.asia.edu.tw/~rikki/index2.htm" target="_blank">#Origin website link</a></p>
-          <p class="teacher-name">{{ .data.NameZh}}</p>
-          <p class="teacher-name">{{ .data.NameUs }}</p>
-          <p>辦公室: {{ .data.Office }}</p>
-          <p>電話: {{ .data.Call }}</p>
-          <p>E-mail: {{ .data.Email }}</p>
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+      <a id="header-title" class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="#">{{ .data.Domain }}</a>
+      <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="navbar-nav">
+        <div class="nav-item text-nowrap">
+          <a id="auth-btn" class="nav-link px-3" href="#"></a>
         </div>
-        <hr />
-        <div id="option-box"  class="btn-group" role="group" aria-label="Basic outlined example"></div>
-        <hr />
-        <div class="btn-group btn-group-vertical" style="padding: 10px;" role="group" aria-label="Basic example">
-          <button onclick="login()"type="button" class="btn btn-outline-secondary option-item">Login</button>
-          <button onclick="logout()" type="button" class="btn btn-outline-secondary option-item">Logout</button>
-          <button onclick="is_logged_in()" type="button" class="btn btn-outline-secondary option-item">Check auth</button>
-        </div>
-        <hr />
-      </section>
-      <div id="content">
-        <div id="loading" class="text-center" style=" position: fixed;top: 50%;left: 50%;">
-          <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        </div>
-        <div id="page-content"></div>
       </div>
+    </header>
+    <!-- !!! -->
+    <div class="container-fluid">
+      <div class="row">
+        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+          <div class="position-sticky pt-3">
+            <ul  id="info-box" class="nav flex-column"></ul>
+    
+    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"><span>Courses</span></h6>
+    <hr>
+            <ul id="courses-box" class="nav flex-column mb-2"></ul>
+    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"><span>Profile</span></h6>
+    <hr>
+    <ul class="nav flex-column">
+      <li class="nav-item" style="padding: 5%;">
+        <p class="teacher-name">{{ .data.NameZh}}</p>
+        <p class="teacher-name-us">{{ .data.NameUs }}</p>
+        <p>辦公室: {{ .data.Office }}</p>
+        <p>電話: {{ .data.Call }}</p>
+        <p>E-mail: {{ .data.Email }}</p>
+        <p><a href="http://dns2.asia.edu.tw/~rikki/index2.htm" target="_blank">#Origin website link</a></p>
+      </li>
+    </ul>
+          </div>
+        </nav>
+    
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="alert alert-warning" role="alert">功能尚未完成，持續更新中...。   可以查看 <a href="https://github.com/Asia-University-ShaoWei-Project/teacher-site" target="_blank">Github</a> 更新狀況</div>
+
+          <div id="loading" class="text-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+          
+          <div id="content"></div>
       <!-- *Form modal -->
       <div class="modal fade" id="modal-edit" tabindex="-1" aria-labelledby="exampleModalLabel"aria-hidden="true">
         <div class="modal-dialog">
@@ -82,7 +94,7 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel">Are you sure to delete it?</h5>
+              <h5 class="modal-title" id="exampleModalLabel">Are you sure you want to delete it?</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="modal-delete-body" class="container modal-delete-body" style="padding: 10%;"></div>
@@ -93,7 +105,10 @@
           </div>
         </div>
       </div>
-    </main>
+        </main>
+      </div>
+    </div>
+    
 
 
 
@@ -102,40 +117,12 @@
   <script type="text/javascript" src="../static/js/api.js"></script>
   <script type="text/javascript" src="../static/js/item.js"></script>
   <script type="text/javascript" src="../static/js/edit-elem.js"></script>
+  <script type="text/javascript" src="../static/js/option.js"></script>
   <script type="text/javascript" src="../static/js/index.js"></script>
   <script>
     // alert("")
     init();
-    function login() {
-      window.open('/login', '_blank');
-    }
-    function is_logged_in() {
-      let url = `/api/v1/test`
-      axios
-        .get(url, { headers: { Authorization: getAuthorization() } })
-        .then((res) => {
-          if (res.status == HttpStatusCode.OK) {
-            console.warn("is logged in");
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
-    function logout() {
-      let url = "/api/v1/auth/logout";
-      axios
-        .post(url,{},axiosConfig,)
-        .then((res) => {
-          console.log("logout status code=", res.status);
-          if (res.status == HttpStatusCode.NO_CONTENT) {
-            location.reload();
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
+
   </script>
 </html>
 

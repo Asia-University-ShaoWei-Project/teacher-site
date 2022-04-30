@@ -1,10 +1,7 @@
 const HttpStatusCode = {
   OK: 200,
   CREATED: 201,
-  // Accepted             :202,
-  // NonAuthoritativeInfo : 203,
   NO_CONTENT: 204,
-  // ResetContent         : 205,
   FOUND: 302,
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,

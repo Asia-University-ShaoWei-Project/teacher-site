@@ -1,4 +1,4 @@
-// ? delete
+// Delete
 const modalDeleteElem = document.getElementById("modal-delete");
 const modalDeleteControl = new bootstrap.Modal(modalDeleteElem, {
   keyboard: false,
@@ -9,52 +9,42 @@ var submitDeleteFunc = () => {};
 modalDeleteSubmitElem.addEventListener("click", submitDeleteFunc);
 
 modalDeleteElem.addEventListener("show.bs.modal", function (event) {
-  console.log("open window");
   let btn = event.relatedTarget;
+  let resource = btn.getAttribute("data-bs-recoursetype");
   let tableType = btn.getAttribute("data-bs-tableType");
   let index = btn.getAttribute("data-bs-index");
   let body;
-  updateSubmitDeleteEvent(tableType, index);
+  addDeleteEventToSubmit(resource, tableType, index);
   switch (tableType) {
     case attr.bulletin.tableType:
-      console.log("is bulletin type");
-      body = items[optionSwitchIndex].getBulletin().getRow(index).getContent();
+      body = items[optCurrIndex].getBulletin().getRow(index).getContent();
       break;
     case attr.slide.tableType:
-      console.log("is slide type");
-
-      body = items[optionSwitchIndex].getSlide().getRow(index).getFileTitle();
+      body = items[optCurrIndex].getSlide().getRow(index).getFileTitle();
       break;
     case attr.homework.tableType:
-      body = items[optionSwitchIndex]
-        .getHomework()
-        .getRow(index)
-        .getFileTitle();
+      body = items[optCurrIndex].getHomework().getRow(index).getFileTitle();
       break;
   }
   modalDeleteBodyElem.innerText = body;
 });
-function updateSubmitDeleteEvent(tableType, index) {
-  console.log("update my event");
+function addDeleteEventToSubmit(resource, tableType, index) {
   modalDeleteSubmitElem.removeEventListener("click", submitDeleteFunc);
   submitDeleteFunc = () => {
-    console.log("exec api call");
-    let resource = "/" + items[optionSwitchIndex].getRecourseType();
-    let itemId = items[optionSwitchIndex].getId();
-    let rowId = items[optionSwitchIndex][tableType].getRow(index).getId();
+    let itemId = items[optCurrIndex].getId();
+    let rowId = items[optCurrIndex][tableType].getRow(index).getId();
     let url =
-      api.getTeacherPath() + `${resource}/${itemId}/${tableType}/${rowId}`;
-
+      api.getTeacherPath() + `/${resource}/${itemId}/${tableType}/${rowId}`;
     axios
       .delete(url, { headers: headers })
       .then((res) => {
         // 200
         if (res.status == HttpStatusCode.OK) {
           // remove the row[index]
-          items[optionSwitchIndex].lastModified = res.data.data.lastModified;
-          items[optionSwitchIndex][tableType].rows.splice(index, 1);
-          items[optionSwitchIndex].buildContent();
-          showContent(items[optionSwitchIndex].content);
+          items[optCurrIndex].lastModified = res.data.data.lastModified;
+          items[optCurrIndex][tableType].rows.splice(index, 1);
+          items[optCurrIndex].buildContent();
+          showContent(items[optCurrIndex].content);
         }
       })
       // todo:test
@@ -67,6 +57,9 @@ function updateSubmitDeleteEvent(tableType, index) {
             case HttpStatusCode.NO_FOUND:
               alert("Not found");
               break;
+            case HttpStatusCode.UNAUTHORIZED:
+              alert("You not authorized, please login again");
+              break;
           }
         }
       });
@@ -74,7 +67,7 @@ function updateSubmitDeleteEvent(tableType, index) {
   };
   modalDeleteSubmitElem.addEventListener("click", submitDeleteFunc);
 }
-// ? create and update
+// Create & Update
 var modalEditElem = document.getElementById("modal-edit");
 var modalEditControl = new bootstrap.Modal(modalEditElem, { keyboard: false });
 var modalTitle = modalEditElem.querySelector(".modal-title");
@@ -88,11 +81,14 @@ var inputSlideChapterElem;
 var inputSlideTitleElem;
 var inputSlideFileElem;
 
+// var inputHomeworkChapterElem;
+// var inputHomeworkTitleElem;
+// var inputHomeworkFileElem;
+
 var modalEditSubmitElem = modalEditElem.querySelector("#modal-edit-submit");
 var submitFunc = () => {};
 modalEditSubmitElem.addEventListener("click", submitFunc);
 
-// add, edit
 const submitBtnTexts = {
   create: "ADD",
   update: "UPDATE",
@@ -105,10 +101,10 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
   let method = btn.getAttribute("data-bs-method");
   let index = btn.getAttribute("data-bs-index");
 
-  let item = items[optionSwitchIndex];
+  let item = items[optCurrIndex];
   let itemId = item.id;
   let rowId;
-  let url, formElem;
+  let formElem;
 
   switch (tableType) {
     case attr.bulletin.tableType:
@@ -119,6 +115,7 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
       break;
     // todo: homework
     // case attr.homework.tableType:
+    //   formElem = createHomeworkInputElem();
     //   break;
   }
   modalTitle.textContent = attr[tableType].tableTitle;
@@ -129,14 +126,11 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
   switch (method) {
     case HttpMethod.POST:
       modalEditSubmitElem.textContent = submitBtnTexts.create;
-      // url = api.getResourceUrl(pageType, method, itemId);
       break;
     case HttpMethod.PUT:
       let row = item[tableType].getRow(index);
       rowId = row.id;
       modalEditSubmitElem.textContent = submitBtnTexts.update;
-      // url = api.getResourceUrl(pageType, method, itemId, rowId, tableType);
-
       switch (tableType) {
         case attr.bulletin.tableType:
           inputBulletinContentElem.value = row.getContent();
@@ -153,8 +147,6 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
       }
       break;
   }
-  // todo:test
-  // url = api.getResourceUrl(pageType, method, itemId, rowId, tableType);
 
   updateSubmitEditEvent(recourseType, tableType, method, itemId, rowId, index);
 });
@@ -189,64 +181,85 @@ function updateSubmitEditEvent(
   modalEditSubmitElem.removeEventListener("click", submitFunc);
   submitFunc = () => {
     let params;
-    // let form = new FormData();
-
     switch (tableType) {
       case attr.bulletin.tableType:
-        // form.append("content", inputBulletinContentElem.value);
+        // json type
         params = { content: inputBulletinContentElem.value };
         break;
       case attr.slide.tableType:
-        // form.append("chapter", inputSlideChapterElem.value);
-        // form.append("title", inputSlideTitleElem.value);
-        // form.append("file", inputSlideFileElem.files[0]);
-
-        params = {
-          chapter: inputSlideChapterElem.value,
-          title: inputSlideTitleElem.value,
-          file: inputSlideFileElem.value,
-        };
+        // form type
+        params = new FormData();
+        params.append("chapter", inputSlideChapterElem.value);
+        params.append("fileTitle", inputSlideTitleElem.value);
+        if (inputSlideFileElem.files[0] != undefined) {
+          params.append("file", inputSlideFileElem.files[0]);
+        }
         break;
       // todo: homework
       case attr.homework.tableType:
+        // form type
+        // params = new FormData();
+        // form.append("number", .value);
+        // form.append("title", .value);
+        // form.append("file", .files[0]);
         break;
     }
 
     switch (method) {
       case HttpMethod.POST:
-        createFieldApi(tableType, url, params);
+        apiCreateField(tableType, url, params);
         break;
       case HttpMethod.PUT:
-        updateFieldApi(tableType, url, params, rowId, itemsIndex);
+        apiUpdateField(tableType, url, params, rowId, itemsIndex);
         break;
     }
   };
   modalEditSubmitElem.addEventListener("click", submitFunc);
 }
 
-function createFieldApi(tableType, url, params) {
+function apiCreateField(tableType, url, params) {
+  let _params = {};
   axios
     .post(url, params, axiosConfig)
     .then((res) => {
       // code = 201
       if (res.status == HttpStatusCode.CREATED) {
         let resData = res.data.data;
-        params.id = resData.id;
+
         switch (tableType) {
           case attr.bulletin.tableType:
-            params.date = resData.date;
+            _params = params;
+            _params.id = resData.id;
+            _params.date = resData.date;
             break;
+          // todo
           case attr.slide.tableType:
+            _params.id = resData.id;
+            _params.chapter = params.get("chapter");
+            _params.fileTitle = params.get("fileTitle");
+            _params.filename = resData.filename;
             break;
           // todo: homework
           // case attr.homework.tableType:
           //   break;
         }
-        let rows = newRows(tableType, [params]);
-        items[optionSwitchIndex].lastModified = resData.lastModified;
-        items[optionSwitchIndex][tableType].getRows().splice(0, 0, rows[0]);
-        items[optionSwitchIndex].buildContent();
-        showContent(items[optionSwitchIndex].getContent());
+        let rows = newRows(tableType, [_params]);
+        items[optCurrIndex].lastModified = resData.lastModified;
+
+        switch (tableType) {
+          case attr.bulletin.tableType:
+            items[optCurrIndex][tableType].getRows().splice(0, 0, rows[0]);
+            break;
+          case attr.slide.tableType:
+            items[optCurrIndex][tableType].getRows().push(rows[0]);
+            break;
+          // todo: homework
+          // case attr.homework.tableType:
+          //  items[optCurrIndex][tableType].getRows().push(rows[0]);
+          //   break;
+        }
+        items[optCurrIndex].buildContent();
+        showContent(items[optCurrIndex].getContent());
         modalEditElemControl.hide();
       }
     })
@@ -265,8 +278,7 @@ function createFieldApi(tableType, url, params) {
       }
     });
 }
-var test;
-function updateFieldApi(tableType, url, params, rowId, itemsIndex) {
+function apiUpdateField(tableType, url, params, rowId, itemsIndex) {
   axios
     .put(url, params, axiosConfig)
     .then((res) => {
@@ -274,41 +286,39 @@ function updateFieldApi(tableType, url, params, rowId, itemsIndex) {
       if (res.status == HttpStatusCode.OK) {
         let resData = res.data.data;
         console.log("resData:", resData);
-        items[optionSwitchIndex].setLastModified(resData.lastModified);
+        items[optCurrIndex].setLastModified(resData.lastModified);
         // update item content
-        params.id = resData.id;
         switch (tableType) {
           case attr.bulletin.tableType:
-            test = items[optionSwitchIndex][tableType].getRow(itemsIndex);
-            items[optionSwitchIndex][tableType]
+            items[optCurrIndex][tableType]
               .getRow(itemsIndex)
               .setContent(params.content);
             break;
           case attr.slide.tableType:
-            items[optionSwitchIndex][tableType]
-              .getRow(rowId)
-              .setChapter(params.chapter);
-            items[optionSwitchIndex][tableType]
-              .getRow(rowId)
-              .setFileTitle(params.fileTitle);
-          // todo: file url
-          // items[optionSwitchIndex][tableType].rows[rowId].chapter = params.content;
+            items[optCurrIndex][tableType]
+              .getRow(itemsIndex)
+              .setChapter(params.get("chapter"));
+            items[optCurrIndex][tableType]
+              .getRow(itemsIndex)
+              .setFileTitle(params.get("fileTitle"));
+            if (params.get("file") != undefined) {
+              items[optCurrIndex][tableType]
+                .getRow(itemsIndex)
+                .setFilename(resData.filename);
+            }
+            break;
           // todo: homework
           // case attr.homework.tableType:
-          //   items[optionSwitchIndex][tableType].rows[rowId].number =
-          //     params.number;
-          //   items[optionSwitchIndex][tableType].rows[rowId].fileTitle =
-          //     params.fileTitle;
-          //   break;
+          //  break;
         }
-        items[optionSwitchIndex].buildContent();
-        showContent(items[optionSwitchIndex].getContent());
+        items[optCurrIndex].buildContent();
+        showContent(items[optCurrIndex].getContent());
         modalEditElemControl.hide();
       }
     })
+    // todo
     .catch((err) => {
       // 400, 409
-      // todo:test
       if (err.response) {
         if (err.response.status == HttpStatusCode.BAD_REQUEST) {
           alert("update error");
@@ -380,16 +390,3 @@ function createDeleteButtonElem(recourseType, tableType, rowIndex) {
   return `<button type="button" class="btn" data-bs-toggle="modal"
   data-bs-target="#modal-delete" ${recourseTypeAttr} ${typeAttr} ${indexAttr}><i class="fa fa-trash" aria-hidden="true"></i></button>`;
 }
-// method: "post",
-// url: "myurl",
-// data: bodyFormData,
-// headers: { "Content-Type": "multipart/form-data" },
-// })
-// .then(function (response) {
-//   //handle success
-//   console.log(response);
-// })
-// .catch(function (response) {
-//   //handle error
-//   console.log(response);
-// });

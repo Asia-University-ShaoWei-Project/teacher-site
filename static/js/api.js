@@ -1,23 +1,25 @@
 class API {
-  constructor(origin, version, teacherDomain, resource) {
+  constructor(origin, version, teacherDomain, recourseType, resource) {
     this.origin = origin;
     this.version = version;
     this.teacherDomain = teacherDomain;
-    this.recourseType = {
-      INFO: "info",
-      COURSE: "course",
-      COURSE_CONTENT: "courseContent",
-    };
+    this.recourseType = recourseType;
     this.resource = resource;
   }
   getUrlPath() {
     return this.origin + "/api/" + this.version;
+  }
+  getTeacherDomain() {
+    return this.teacherDomain;
   }
   getTeacherPath() {
     return this.getUrlPath() + "/" + this.teacherDomain;
   }
   getVerifyAuthUrl() {
     return this.getUrlPath() + "/auth/token";
+  }
+  getAuthResourceType() {
+    return this.recourseType.AUTH;
   }
   getInfoResourceType() {
     return this.recourseType.INFO;
@@ -26,16 +28,27 @@ class API {
     return this.recourseType.COURSE;
   }
   getResourceUrl(recourseType, tableType, method, itemId, rowId) {
-    let url = this.resource[recourseType][method];
+    let url;
+    console.log("type: " + recourseType);
+    console.log("method: " + method);
     switch (recourseType) {
       case this.recourseType.INFO:
+        url = this.resource.info[method];
         url = url.replace(":infoId", itemId).replace(":rowId", rowId);
         break;
       case this.recourseType.COURSE:
+        if (method == "get") {
+          url = this.resource.course[method];
+        } else {
+          url = this.resource.courseContent[method];
+        }
         url = url
           .replace(":courseId", itemId)
           .replace(":tableType", tableType)
           .replace(":rowId", rowId);
+        break;
+      case this.recourseType.AUTH:
+        url = this.resource.auth[method];
         break;
     }
     return url;
@@ -49,6 +62,13 @@ var api = new API(
   "v1",
   // teacher domain
   window.location.pathname.replace("/", ""),
+  // resource type
+  {
+    AUTH: "auth",
+    INFO: "info",
+    COURSE: "course",
+    COURSE_CONTENT: "courseContent",
+  },
   // resource
   {
     info: {
@@ -76,6 +96,9 @@ var api = new API(
       put: "/course/:courseId/:tableType/:rowId",
       // 200, 404
       delete: "/course/:courseId/:tableType/:rowId",
+    },
+    auth: {
+      post: "/auth/logout",
     },
   }
 );

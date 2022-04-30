@@ -66,3 +66,5 @@ func (auth *AuthUsecase) Login(ctx context.Context, req *domain.LoginRequest) (d
 func (auth *AuthUsecase) Logout(ctx context.Context, id string) error {
 	return auth.DbRepository.DeleteTokenById(ctx, id)
 }
+
+// todo: make dir(slide, hw) for store documents

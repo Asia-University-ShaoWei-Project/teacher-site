@@ -12,7 +12,6 @@ type Infos struct {
 	BulletinBoards []InfoBulletinBoards `gorm:"foreignKey:InfoId;references:Id"`
 	LastModified   string
 }
-
 type InfoBulletinBoards struct {
 	AutoModel AutoModel `gorm:"embedded"`
 	InfoId    uint
