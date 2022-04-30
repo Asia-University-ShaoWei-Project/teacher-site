@@ -34,7 +34,9 @@ func main() {
 
 	// todo: release(mode, migrate, config(port))
 	migrate.Setup(db)
-	migrate.SetupDir()
+	if err := migrate.SetupDir(); err != nil {
+		panic(err)
+	}
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.MaxMultipartMemory = conf.Server.MaxMultipartMemory
