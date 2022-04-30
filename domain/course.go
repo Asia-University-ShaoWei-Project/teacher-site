@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"mime/multipart"
 )
 
 type Courses struct {
@@ -15,32 +14,9 @@ type Courses struct {
 	Homework      []Homeworks      `gorm:"foreignKey:CourseId;references:Id"`
 	LastModified  string
 }
-
-type BulletinBoards struct {
-	AutoModel AutoModel `gorm:"embedded"`
-	CourseId  uint
-	Content   string
-}
-
-// todo: add link field
-type Slides struct {
-	AutoModel AutoModel `gorm:"embedded"`
-	CourseId  uint
-	Chapter   string
-	File      File `gorm:"embedded"`
-}
-
-func (s *Slides) SetFileName(name string) {
-	s.File.Name = name
-}
-
-// todo: add link field
-type Homeworks struct {
-	AutoModel AutoModel `gorm:"embedded"`
-	CourseId  uint
-	// todo: number(str) -> int
-	Number string
-	File   File `gorm:"embedded"`
+type File struct {
+	Name  string
+	Title string
 }
 
 // * Usecase, repository
@@ -65,28 +41,32 @@ type CourseUsecase interface {
 	DeleteHomework(ctx context.Context, req *DeleteCourseHomeworkRequest) (DeleteCourseHomeworkResponse, error)
 }
 type CourseDbRepository interface {
-	CreateBulletin(ctx context.Context, bulletin *BulletinBoards) error
-	CreateSlide(ctx context.Context, slide *Slides) error
+	CreateBulletin(ctx context.Context, bulletin *BulletinBoards) (string, error)
+	CreateSlide(ctx context.Context, slide *Slides) (string, error)
+	CreateHomework(ctx context.Context, homework *Homeworks) (string, error)
 
 	GetByTeacherDomain(ctx context.Context, teacherDomain string) ([]CourseResponse, error)
 	GetContentByCourseId(ctx context.Context, courseId uint) (GetCourseContentResponse, error)
 	GetLastModifiedByCourseId(ctx context.Context, courseId uint) (string, error)
 
-	UpdateBulletinById(ctx context.Context, bulletin *BulletinBoards) error
+	// Update(ctx context.Context,  *) (, error)
+	UpdateBulletinById(ctx context.Context, bulletin *BulletinBoards) (string, error)
 	UpdateSlideById(ctx context.Context, slide *Slides) (string, error)
+	UpdateHomeworkById(ctx context.Context, homework *Homeworks) (string, error)
 
+	// Delete(ctx context.Context,  *) (, error)
+	DeleteBulletinById(ctx context.Context, bulletin *BulletinBoards) (string, error)
 	DeleteSlideById(ctx context.Context, slide *Slides) (string, error)
+	DeleteHomeworkById(ctx context.Context, homework *Homeworks) (string, error)
 
 	CheckByDomainAndCourseId(ctx context.Context, course *Courses) error
-
-	// Update(ctx context.Context, req *UpdateInfoBulletinRequest) (Infos, error)
-	// Delete(ctx context.Context, req *DeleteInfoBulletinRequest) (Infos, error)
 }
+
+// todo: implement interface of the cache
 type CourseCacheRepository interface {
 }
 
 //* request & response
-// course
 type CreateCourseRequest struct {
 	NameZh string `json:"nameZh"  binding:"required"`
 	NameUs string `json:"nameUs"`
@@ -95,6 +75,7 @@ type CreateCourseResponse struct {
 	Id           uint   `json:"id"`
 	LastModified string `json:"lastModified"`
 }
+
 type GetCourseRequest struct {
 	TeacherDomainRequest
 }
@@ -106,6 +87,7 @@ type CourseResponse struct {
 	NameZh string `json:"nameZh"`
 	NameUs string `json:"nameUs"`
 }
+
 type GetCourseContentRequest struct {
 	Id           uint   `uri:"courseId"`
 	LastModified string `form:"lastModified"`
@@ -134,143 +116,4 @@ type CourseHomeworkResponse struct {
 	Number string `json:"number"`
 	Title  string `json:"fileTitle"`
 	Name   string `json:"filename"`
-}
-
-// type UpdateCourseRequest struct{}
-// type UpdateCourseResponse struct{}
-
-// type DeleteCourseRequest struct{}
-// type DeleteCourseResponse struct{}
-
-// bulletin
-type CreateCourseBulletinRequest struct {
-	TeacherDomainRequest
-	CourseId uint   `uri:"courseId"`
-	Content  string `json:"content"`
-}
-type CreateCourseBulletinResponse struct {
-	Id           uint   `json:"bulletinId"`
-	Date         string `json:"date"`
-	LastModified string `json:"lastModified"`
-}
-type UpdateCourseBulletinRequest struct {
-	TeacherDomainRequest
-	CourseId   uint   `uri:"courseId"`
-	BulletinId uint   `uri:"bulletinId"`
-	Content    string `json:"content"`
-}
-type UpdateCourseBulletinResponse struct {
-	LastModified string `json:"lastModified"`
-}
-
-type DeleteCourseBulletinRequest struct {
-	TeacherDomainRequest
-	CourseId   uint `uri:"courseId" binding:"required"`
-	BulletinId uint `uri:"bulletinId" binding:"required"`
-}
-type DeleteCourseBulletinResponse struct {
-	LastModified string `json:"lastModified"`
-}
-
-// slide
-type CreateSlideIdRequest struct {
-	TeacherDomainRequest
-	CourseId uint `uri:"courseId" binding:"required"`
-}
-type CreateCourseSlideRequest struct {
-	TeacherDomain string
-	CourseId      uint
-	Chapter       string                `form:"chapter" binding:"required"`
-	FileTitle     string                `form:"fileTitle" binding:"required"`
-	File          *multipart.FileHeader `form:"file"`
-	Filename      string
-}
-
-func (u *CreateCourseSlideRequest) SetupId(c *CreateSlideIdRequest) {
-	u.TeacherDomain = c.TeacherDomainRequest.TeacherDomain
-	u.CourseId = c.CourseId
-}
-func (u *CreateCourseSlideRequest) SetFileName(name string) {
-	u.Filename = name
-}
-
-type CreateCourseSlideResponse struct {
-	Id           uint   `json:"id"`
-	Filename     string `json:"filename"`
-	LastModified string `json:"lastModified"`
-}
-type CourseSlideIdRequest struct {
-	TeacherDomainRequest
-	CourseId uint `uri:"courseId" binding:"required"`
-	SlideId  uint `uri:"slideId" binding:"required"`
-}
-type UpdateCourseSlideRequest struct {
-	TeacherDomain string
-	CourseId      uint
-	SlideId       uint
-	Chapter       string                `form:"chapter" binding:"required"`
-	FileTitle     string                `form:"fileTitle" binding:"required"`
-	File          *multipart.FileHeader `form:"file"`
-	Filename      string
-}
-
-func (u *UpdateCourseSlideRequest) SetupId(c *CourseSlideIdRequest) {
-	u.TeacherDomain = c.TeacherDomainRequest.TeacherDomain
-	u.CourseId = c.CourseId
-	u.SlideId = c.SlideId
-}
-func (u *UpdateCourseSlideRequest) SetFileName(name string) {
-	u.Filename = name
-}
-
-type UpdateCourseSlideResponse struct {
-	Filename     string `json:"filename"`
-	LastModified string `json:"lastModified"`
-}
-
-type DeleteCourseSlideRequest struct {
-	TeacherDomainRequest
-	CourseId uint `uri:"courseId" binding:"required"`
-	SlideId  uint `uri:"slideId" binding:"required"`
-}
-type DeleteCourseSlideResponse struct {
-	LastModified string `json:"lastModified"`
-}
-
-// homework
-type CreateCourseHomeworkRequest struct {
-	TeacherDomainRequest
-	CourseId  uint                  `uri:"courseId"`
-	Number    string                `json:"number"`
-	FileTitle string                `json:"fileTitle"`
-	File      *multipart.FileHeader `json:"file"`
-}
-type CreateCourseHomeworkResponse struct {
-	Id           uint   `json:"id"`
-	LastModified string `json:"lastModified"`
-}
-
-type UpdateCourseHomeworkRequest struct {
-	TeacherDomainRequest
-	CourseId   uint                  `uri:"courseId"`
-	HomeworkId uint                  `uri:"homeworkId"`
-	Number     string                `json:"number"`
-	FileTitle  string                `json:"fileTitle"`
-	File       *multipart.FileHeader `json:"file"`
-}
-type UpdateCourseHomeworkResponse struct {
-	LastModified string `json:"lastModified"`
-}
-
-type DeleteCourseHomeworkRequest struct {
-	TeacherDomainRequest
-	CourseId   uint `uri:"courseId" binding:"required"`
-	HomeworkId uint `uri:"homeworkId" binding:"required"`
-}
-type DeleteCourseHomeworkResponse struct {
-	LastModified string `json:"lastModified"`
-}
-type File struct {
-	Name  string
-	Title string
 }

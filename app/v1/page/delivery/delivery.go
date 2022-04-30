@@ -54,23 +54,6 @@ func (h *Handler) TeacherList(ctx context.Context) gin.HandlerFunc {
 		c.HTML(http.StatusOK, teacherListHtml, gin.H{"teachers": res})
 	}
 }
-
-// todo: get teacher list by api
-// func (h * Handler) TeacherListByApi(ctx context.Context) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		var req domain.TeacherListRequest
-// 		if err := c.ShouldBindUri(&req); err != nil {
-// 			c.AbortWithStatus(http.StatusBadRequest)
-// 			return
-// 		}
-// 		res, err := h.Usecase.TeacherList(ctx, &req)
-// 		if err != nil {
-// 			c.AbortWithStatus(http.StatusBadRequest)
-// 			return
-// 		}
-// 		c.JSON(http.StatusOK, gin.H{"data":res})
-// 	}
-// }
 func (h *Handler) Home(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req domain.HomeRequest
@@ -90,7 +73,6 @@ func (h *Handler) Home(ctx context.Context) gin.HandlerFunc {
 
 func (h *Handler) Login(ctx context.Context, conf *config.Jwt) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// todo: check session error, can't get the token!!
 		s := sessions.Default(c)
 		token := util.GetSessionToken(s)
 		if token == nil {

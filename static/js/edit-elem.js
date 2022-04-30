@@ -47,20 +47,11 @@ function addDeleteEventToSubmit(resource, tableType, index) {
           showContent(items[optCurrIndex].content);
         }
       })
-      // todo:test
       .catch((err) => {
-        // 404
-        alert("delete error");
+        // 400, 401, 404
         console.error(err);
         if (err.response) {
-          switch (err.response.status) {
-            case HttpStatusCode.NO_FOUND:
-              alert("Not found");
-              break;
-            case HttpStatusCode.UNAUTHORIZED:
-              alert("You not authorized, please login again");
-              break;
-          }
+          errHandler(err.response.status);
         }
       });
     modalDeleteControl.hide();
@@ -81,9 +72,9 @@ var inputSlideChapterElem;
 var inputSlideTitleElem;
 var inputSlideFileElem;
 
-// var inputHomeworkChapterElem;
-// var inputHomeworkTitleElem;
-// var inputHomeworkFileElem;
+var inputHomeworkNumberElem;
+var inputHomeworkTitleElem;
+var inputHomeworkFileElem;
 
 var modalEditSubmitElem = modalEditElem.querySelector("#modal-edit-submit");
 var submitFunc = () => {};
@@ -113,10 +104,9 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
     case attr.slide.tableType:
       formElem = createSlideInputElem();
       break;
-    // todo: homework
-    // case attr.homework.tableType:
-    //   formElem = createHomeworkInputElem();
-    //   break;
+    case attr.homework.tableType:
+      formElem = createHomeworkInputElem();
+      break;
   }
   modalTitle.textContent = attr[tableType].tableTitle;
   modalFormElem.innerHTML = formElem;
@@ -139,11 +129,10 @@ modalEditElem.addEventListener("show.bs.modal", function (event) {
           inputSlideChapterElem.value = row.getChapter();
           inputSlideTitleElem.value = row.getFileTitle();
           break;
-        // todo: homework
-        // case attr.homework.tableType:
-        //   inputHomeworkNumberElem.value = row.number;
-        //   inputHomeworkTitleElem.value = row.fileTitle;
-        //   break;
+        case attr.homework.tableType:
+          inputHomeworkNumberElem.value = row.getNumber();
+          inputHomeworkTitleElem.value = row.getFileTitle();
+          break;
       }
       break;
   }
@@ -157,12 +146,11 @@ function refreshInputElem(modalElem) {
   inputSlideTitleElem = modalElem.querySelector("#slide-title");
   inputSlideFileElem = modalElem.querySelector("#slide-file");
 
-  modalEditSubmitElem = modalElem.querySelector("#modal-edit-submit");
+  inputHomeworkNumberElem = modalEditElem.querySelector("#homework-number");
+  inputHomeworkTitleElem = modalEditElem.querySelector("#homework-title");
+  inputHomeworkFileElem = modalEditElem.querySelector("#homework-file");
 
-  // todo: homework
-  // let inputHomeworkNumberElem = modalEditElem.querySelector("#homework-chapter");
-  // let inputHomeworkTitleElem = modalEditElem.querySelector("#homework-title");
-  // let inputHomeworkFileElem = modalEditElem.querySelector("#homework-file");
+  modalEditSubmitElem = modalElem.querySelector("#modal-edit-submit");
 }
 
 function updateSubmitEditEvent(
@@ -195,13 +183,14 @@ function updateSubmitEditEvent(
           params.append("file", inputSlideFileElem.files[0]);
         }
         break;
-      // todo: homework
       case attr.homework.tableType:
         // form type
-        // params = new FormData();
-        // form.append("number", .value);
-        // form.append("title", .value);
-        // form.append("file", .files[0]);
+        params = new FormData();
+        params.append("number", inputHomeworkNumberElem.value);
+        params.append("fileTitle", inputHomeworkTitleElem.value);
+        if (inputHomeworkFileElem.files[0] != undefined) {
+          params.append("file", inputHomeworkFileElem.files[0]);
+        }
         break;
     }
 
@@ -210,7 +199,7 @@ function updateSubmitEditEvent(
         apiCreateField(tableType, url, params);
         break;
       case HttpMethod.PUT:
-        apiUpdateField(tableType, url, params, rowId, itemsIndex);
+        apiUpdateField(tableType, url, params, itemsIndex);
         break;
     }
   };
@@ -232,16 +221,18 @@ function apiCreateField(tableType, url, params) {
             _params.id = resData.id;
             _params.date = resData.date;
             break;
-          // todo
           case attr.slide.tableType:
             _params.id = resData.id;
             _params.chapter = params.get("chapter");
             _params.fileTitle = params.get("fileTitle");
             _params.filename = resData.filename;
             break;
-          // todo: homework
-          // case attr.homework.tableType:
-          //   break;
+          case attr.homework.tableType:
+            _params.id = resData.id;
+            _params.number = params.get("number");
+            _params.fileTitle = params.get("fileTitle");
+            _params.filename = resData.filename;
+            break;
         }
         let rows = newRows(tableType, [_params]);
         items[optCurrIndex].lastModified = resData.lastModified;
@@ -253,10 +244,9 @@ function apiCreateField(tableType, url, params) {
           case attr.slide.tableType:
             items[optCurrIndex][tableType].getRows().push(rows[0]);
             break;
-          // todo: homework
-          // case attr.homework.tableType:
-          //  items[optCurrIndex][tableType].getRows().push(rows[0]);
-          //   break;
+          case attr.homework.tableType:
+            items[optCurrIndex][tableType].getRows().push(rows[0]);
+            break;
         }
         items[optCurrIndex].buildContent();
         showContent(items[optCurrIndex].getContent());
@@ -264,28 +254,21 @@ function apiCreateField(tableType, url, params) {
       }
     })
     .catch((err) => {
-      console.log("url:", url);
-      console.log("params:", params);
+      console.error(
+        `tableType:${tableType},url:${url}, file:${params.get("file")}`
+      );
       if (err.response) {
-        switch (err.response.status) {
-          case HttpStatusCode.UNAUTHORIZED:
-            alert("驗證過期，請重新登入");
-            break;
-          case HttpStatusCode.BAD_REQUEST:
-            alert("參數錯誤");
-            break;
-        }
+        errHandler(err.response.status);
       }
     });
 }
-function apiUpdateField(tableType, url, params, rowId, itemsIndex) {
+function apiUpdateField(tableType, url, params, itemsIndex) {
   axios
     .put(url, params, axiosConfig)
     .then((res) => {
       // code = 200
       if (res.status == HttpStatusCode.OK) {
         let resData = res.data.data;
-        console.log("resData:", resData);
         items[optCurrIndex].setLastModified(resData.lastModified);
         // update item content
         switch (tableType) {
@@ -307,34 +290,45 @@ function apiUpdateField(tableType, url, params, rowId, itemsIndex) {
                 .setFilename(resData.filename);
             }
             break;
-          // todo: homework
-          // case attr.homework.tableType:
-          //  break;
+          case attr.homework.tableType:
+            items[optCurrIndex][tableType]
+              .getRow(itemsIndex)
+              .setNumber(params.get("number"));
+            items[optCurrIndex][tableType]
+              .getRow(itemsIndex)
+              .setFileTitle(params.get("fileTitle"));
+            if (params.get("file") != undefined) {
+              items[optCurrIndex][tableType]
+                .getRow(itemsIndex)
+                .setFilename(resData.filename);
+            }
+            break;
         }
         items[optCurrIndex].buildContent();
         showContent(items[optCurrIndex].getContent());
         modalEditElemControl.hide();
       }
     })
-    // todo
     .catch((err) => {
-      // 400, 409
+      // 400, 401, 409
       if (err.response) {
-        if (err.response.status == HttpStatusCode.BAD_REQUEST) {
-          alert("update error");
-          console.log("Bad request");
+        console.error(
+          `tableType:${tableType}, url:${url}, params:${params}, itemsIndex: ${itemsIndex}`
+        );
+        if (err.response) {
+          errHandler(err.response.status);
         }
       }
     });
 }
 
-function createBulletinInputElem(params) {
+function createBulletinInputElem() {
   return `<div class="mb-3">
   <label for="bulletin-content" class="col-form-label">Content:</label>
   <textarea class="form-control" id="bulletin-content"" rows="3"></textarea>
   </div>`;
 }
-function createSlideInputElem(params) {
+function createSlideInputElem() {
   return `<div class="mb-3">
   <label for="slide-chapter" class="col-form-label">Chapter:</label>
   <input type="text" class="form-control" id="slide-chapter" /></div>
@@ -349,7 +343,7 @@ function createSlideInputElem(params) {
   
   `;
 }
-function createHomeworkInputElem(params) {
+function createHomeworkInputElem() {
   return `<div class="mb-3">
   <label for="homework-number" class="col-form-label">Number:</label>
   <input type="text" class="form-control" id="homework-number" /></div>
@@ -389,4 +383,19 @@ function createDeleteButtonElem(recourseType, tableType, rowIndex) {
 
   return `<button type="button" class="btn" data-bs-toggle="modal"
   data-bs-target="#modal-delete" ${recourseTypeAttr} ${typeAttr} ${indexAttr}><i class="fa fa-trash" aria-hidden="true"></i></button>`;
+}
+function createFileBtnElem(resourceName, filename) {
+  let elem = "";
+  if (filename != undefined && filename != "") {
+    let url =
+      "/static/doc/" +
+      api.getTeacherDomain() +
+      "/" +
+      resourceName +
+      "/" +
+      filename;
+    elem = `<a href="${url}" target="_blank"><i class="fa fa-file-text" aria-hidden="true" ></i></a>`;
+  }
+
+  return elem;
 }

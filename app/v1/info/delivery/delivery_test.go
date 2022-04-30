@@ -72,7 +72,6 @@ func TestCreate(t *testing.T) {
 			token:  token,
 			infoId: mock.PkNum,
 			data:   mock.EmptyJson,
-			// todo: concert the binding
 			result: http.StatusBadRequest,
 		},
 		{
@@ -173,8 +172,7 @@ func TestUpdate(t *testing.T) {
 			infoId:     mock.PkStr,
 			bulletinId: mock.PkStr,
 			data:       mock.EmptyStr,
-			// todo: concert the binding
-			result: http.StatusBadRequest,
+			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "normal",
@@ -235,8 +233,7 @@ func TestDelete(t *testing.T) {
 			token:      token,
 			infoId:     mock.PkNum,
 			bulletinId: mock.PkNum,
-			// todo: concert the binding
-			result: http.StatusBadRequest,
+			result:     http.StatusBadRequest,
 		},
 		{
 			desc:       "normal",

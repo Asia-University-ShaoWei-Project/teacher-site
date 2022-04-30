@@ -29,8 +29,6 @@ class API {
   }
   getResourceUrl(recourseType, tableType, method, itemId, rowId) {
     let url;
-    console.log("type: " + recourseType);
-    console.log("method: " + method);
     switch (recourseType) {
       case this.recourseType.INFO:
         url = this.resource.info[method];

@@ -43,7 +43,6 @@ type InfoCacheRepository interface {
 
 //* request & response
 
-// todo: binding:"required"
 type CreateInfoBulletinRequest struct {
 	TeacherDomainRequest
 	InfoId  uint   `uri:"infoId"`

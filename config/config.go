@@ -64,7 +64,7 @@ func newServer() *Server {
 		StaticRootPath:     "./static",
 		TemplatePath:       "templates/*",
 		SlidePathFormat:    `static/doc/%s/slide/%s`,
-		HomeworkPathFormat: `static/doc/%s/hw/%s`,
+		HomeworkPathFormat: `static/doc/%s/homework/%s`,
 		MaxMultipartMemory: 8 << 20,
 	}
 }

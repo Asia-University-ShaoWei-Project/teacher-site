@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"teacher-site/config"
 	"teacher-site/domain"
+	mw "teacher-site/middleware"
 	"teacher-site/pkg/message"
 
 	"github.com/gin-gonic/gin"
@@ -24,34 +26,39 @@ func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.CourseUs
 	}
 
 	r.GET("", handler.Get(ctx))
-	r.POST("", handler.Create(ctx))
+	r.POST("", handler.Create(ctx), mw.VerifyAuth(ctx, conf.Jwt.Secret))
 	course := r.Group("/:courseId")
 	{
 		course.GET("", handler.GetContent(ctx))
 
-		bulletin := course.Group("/bulletin")
+		auth := course.Group("")
+		// auth := course.Group("", mw.VerifyAuth(ctx, conf.Jwt.Secret))
 		{
-			bulletin.POST("", handler.CreateBulletin(ctx))
-			bulletin.PUT("/:bulletinId", handler.UpdateBulletin(ctx))
-			bulletin.DELETE("/:bulletinId", handler.DeleteBulletin(ctx))
-		}
+			bulletin := auth.Group("/bulletin")
+			{
+				bulletin.POST("", handler.CreateBulletin(ctx))
+				bulletin.PUT("/:bulletinId", handler.UpdateBulletin(ctx))
+				bulletin.DELETE("/:bulletinId", handler.DeleteBulletin(ctx))
+			}
 
-		slide := course.Group("/slide")
-		{
-			slide.POST("", handler.CreateSlide(ctx))
-			slide.PUT("/:slideId", handler.UpdateSlide(ctx))
-			slide.DELETE("/:slideId", handler.DeleteSlide(ctx))
-		}
+			slide := auth.Group("/slide")
+			{
+				slide.POST("", handler.CreateSlide(ctx))
+				slide.PUT("/:slideId", handler.UpdateSlide(ctx))
+				slide.DELETE("/:slideId", handler.DeleteSlide(ctx))
+			}
 
-		homework := course.Group("/homework")
-		{
-			homework.POST("", handler.CreateHomework(ctx))
-			homework.PUT("/:homeworkId", handler.UpdateHomework(ctx))
-			homework.DELETE("/:homeworkId", handler.DeleteHomework(ctx))
+			homework := auth.Group("/homework")
+			{
+				homework.POST("", handler.CreateHomework(ctx))
+				homework.PUT("/:homeworkId", handler.UpdateHomework(ctx))
+				homework.DELETE("/:homeworkId", handler.DeleteHomework(ctx))
+			}
 		}
 
 	}
 }
+
 func (h *Handler) Create(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req domain.CreateCourseRequest
@@ -67,9 +74,9 @@ func (h *Handler) Create(ctx context.Context) gin.HandlerFunc {
 		c.JSON(http.StatusCreated, gin.H{"data": res})
 	}
 }
+
 func (h *Handler) CreateBulletin(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		var req domain.CreateCourseBulletinRequest
 		if err := c.ShouldBindUri(&req); err != nil {
 			fmt.Println(err)
@@ -79,7 +86,6 @@ func (h *Handler) CreateBulletin(ctx context.Context) gin.HandlerFunc {
 		}
 		if err := c.ShouldBindJSON(&req); err != nil {
 			fmt.Println(err)
-			// todo: test
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
@@ -100,7 +106,7 @@ func (h *Handler) CreateBulletin(ctx context.Context) gin.HandlerFunc {
 func (h *Handler) CreateSlide(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var (
-			uri domain.CreateSlideIdRequest
+			uri domain.CreateSlideUriRequest
 			req domain.CreateCourseSlideRequest
 		)
 		if err := c.ShouldBindUri(&uri); err != nil {
@@ -108,11 +114,10 @@ func (h *Handler) CreateSlide(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 		if err := c.ShouldBind(&req); err != nil {
-			// todo: test
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		req.SetupId(&uri)
+		req.SetupUri(&uri)
 		if req.File != nil && req.File.Size != 0 {
 			filename := uuid.New().String()
 			dst := fmt.Sprintf(h.conf.Server.SlidePathFormat, req.TeacherDomain, filename)
@@ -121,7 +126,7 @@ func (h *Handler) CreateSlide(ctx context.Context) gin.HandlerFunc {
 				c.AbortWithStatus(http.StatusBadRequest)
 				return
 			}
-			req.SetFileName(filename)
+			req.SetFilename(filename)
 		}
 
 		res, err := h.Usecase.CreateSlide(ctx, &req)
@@ -133,34 +138,45 @@ func (h *Handler) CreateSlide(ctx context.Context) gin.HandlerFunc {
 		c.JSON(http.StatusCreated, gin.H{"data": res})
 	}
 }
+
 func (h *Handler) CreateHomework(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req domain.CreateCourseHomeworkRequest
-		if err := c.ShouldBindUri(&req); err != nil {
+		var (
+			uri domain.CreateHomeworkUriRequest
+			req domain.CreateCourseHomeworkRequest
+		)
+		if err := c.ShouldBindUri(&uri); err != nil {
+			fmt.Println(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if err := c.ShouldBindJSON(&req); err != nil {
-			// todo: test
+		if err := c.ShouldBind(&req); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if (req.CourseId == 0) || (len(req.Number) == 0) || (len(req.FileTitle) == 0) {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
+		req.SetupUri(&uri)
+		if req.File != nil && req.File.Size != 0 {
+			filename := uuid.New().String()
+			dst := fmt.Sprintf(h.conf.Server.HomeworkPathFormat, req.TeacherDomain, filename)
+			if err := c.SaveUploadedFile(req.File, dst); err != nil {
+				fmt.Println(err)
+				c.AbortWithStatus(http.StatusBadRequest)
+				return
+			}
+			req.SetFilename(filename)
 		}
+
 		res, err := h.Usecase.CreateHomework(ctx, &req)
 		if err != nil {
+			fmt.Println(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 		c.JSON(http.StatusCreated, gin.H{"data": res})
 	}
 }
-
 func (h *Handler) Get(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// todo: test
 		var req domain.GetCourseRequest
 		if err := c.ShouldBindUri(&req); err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
@@ -183,7 +199,6 @@ func (h *Handler) GetContent(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 		if err := c.ShouldBindQuery(&req); err != nil {
-			// todo: test
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
@@ -202,20 +217,23 @@ func (h *Handler) GetContent(ctx context.Context) gin.HandlerFunc {
 
 func (h *Handler) UpdateBulletin(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req domain.UpdateCourseBulletinRequest
-		if err := c.ShouldBindUri(&req); err != nil {
+		var (
+			uri domain.CourseBulletinUriRequest
+			req domain.UpdateCourseBulletinRequest
+		)
+		if err := c.ShouldBindUri(&uri); err != nil {
+			fmt.Println(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 		if err := c.ShouldBindJSON(&req); err != nil {
-			// todo: test
+			fmt.Println(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if (req.CourseId == 0) || (req.BulletinId == 0) || (len(req.Content) == 0) {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
+		req.SetupUri(uri)
+		fmt.Println(req)
+
 		res, err := h.Usecase.UpdateBulletin(ctx, &req)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
@@ -228,8 +246,9 @@ func (h *Handler) UpdateBulletin(ctx context.Context) gin.HandlerFunc {
 func (h *Handler) UpdateSlide(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var (
-			uri domain.CourseSlideIdRequest
+			uri domain.CourseSlideUriRequest
 			req domain.UpdateCourseSlideRequest
+			dst string
 		)
 		if err := c.ShouldBindUri(&uri); err != nil {
 			fmt.Println(err)
@@ -238,49 +257,71 @@ func (h *Handler) UpdateSlide(ctx context.Context) gin.HandlerFunc {
 		}
 		if err := c.ShouldBind(&req); err != nil {
 			fmt.Println(err)
-			// todo: test
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		req.SetupId(&uri)
+		req.SetupUri(&uri)
 
 		if req.File != nil && req.File.Size != 0 {
 			filename := uuid.New().String()
-			dst := fmt.Sprintf(h.conf.Server.SlidePathFormat, req.TeacherDomain, filename)
+			dst = fmt.Sprintf(h.conf.Server.SlidePathFormat, req.TeacherDomain, filename)
 			if err := c.SaveUploadedFile(req.File, dst); err != nil {
+				// todo: log error
 				fmt.Println(err)
 				c.AbortWithStatus(http.StatusBadRequest)
 				return
 			}
-			req.SetFileName(filename)
+			req.SetFilename(filename)
 		}
 		res, err := h.Usecase.UpdateSlide(ctx, &req)
 		if err != nil {
-			fmt.Println(err)
+			// Remove the file cause some errors
+			if req.File != nil && req.File.Size != 0 {
+				os.Remove(dst)
+			}
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"data": res})
 	}
 }
+
 func (h *Handler) UpdateHomework(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req domain.UpdateCourseHomeworkRequest
-		if err := c.BindUri(&req); err != nil {
+		var (
+			uri domain.CourseHomeworkUriRequest
+			req domain.UpdateCourseHomeworkRequest
+			dst string
+		)
+		if err := c.ShouldBindUri(&uri); err != nil {
+			fmt.Println(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if err := c.ShouldBindJSON(&req); err != nil {
-			// todo: test
+		if err := c.ShouldBind(&req); err != nil {
+			fmt.Println(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		if (req.CourseId == 0) || (req.HomeworkId == 0) || (len(req.Number) == 0) || (len(req.FileTitle) == 0) {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
+		req.SetupUri(&uri)
+
+		if req.File != nil && req.File.Size != 0 {
+			filename := uuid.New().String()
+			dst = fmt.Sprintf(h.conf.Server.HomeworkPathFormat, req.TeacherDomain, filename)
+			if err := c.SaveUploadedFile(req.File, dst); err != nil {
+				// todo: log error
+				fmt.Println(err)
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+			req.SetFilename(filename)
 		}
 		res, err := h.Usecase.UpdateHomework(ctx, &req)
 		if err != nil {
+			// Remove the file cause some errors
+			if req.File != nil && req.File.Size != 0 {
+				os.Remove(dst)
+			}
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
@@ -291,6 +332,7 @@ func (h *Handler) DeleteBulletin(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req domain.DeleteCourseBulletinRequest
 		if err := c.ShouldBindUri(&req); err != nil {
+			fmt.Println(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}

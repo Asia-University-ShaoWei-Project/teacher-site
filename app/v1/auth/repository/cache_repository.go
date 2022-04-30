@@ -7,13 +7,6 @@ import (
 	"github.com/go-redis/redis"
 )
 
-// hash keys & fields
-const (
-// keyInfo       = `info:%s`
-// fContent      = `content`
-// fLastModified = `last_modified`
-)
-
 // todo
 type CacheRepository struct {
 	db   *redis.Client

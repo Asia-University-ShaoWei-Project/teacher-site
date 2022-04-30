@@ -158,13 +158,8 @@ class Item {
       })
       .catch((err) => {
         console.log(err);
-        switch (err.response.statue) {
-          case HttpStatusCode.BAD_REQUEST:
-            console.error("bad request");
-            break;
-          default:
-            alert("Unknown error, please reload the page again.");
-            break;
+        if (err.response) {
+          errHandler(err.response.status);
         }
       });
   }
@@ -313,7 +308,7 @@ class SlideRow {
     return [
       "CH" + this.chapter,
       this.fileTitle,
-      createFileBtn("slide", this.filename),
+      createFileBtnElem("slide", this.filename),
     ];
   }
 }
@@ -355,20 +350,10 @@ class HomeworkRow {
     return [
       "#" + this.number,
       this.fileTitle,
-      createFileBtn("homework", this.filename),
+      createFileBtnElem("homework", this.filename),
     ];
   }
 }
 function newHomeworkRow(id, number, fileTitle, filename) {
   return new HomeworkRow(id, number, fileTitle, filename);
-}
-function createFileBtn(resourceName, filename) {
-  let url =
-    "/static/doc/" +
-    api.getTeacherDomain() +
-    "/" +
-    resourceName +
-    "/" +
-    filename;
-  return `<a href="${url}" target="_blank"><i class="fa fa-file-text" aria-hidden="true" ></i></a>`;
 }

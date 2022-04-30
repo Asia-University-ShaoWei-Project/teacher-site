@@ -11,11 +11,14 @@ type DbRepository struct{}
 func NewDbRepository() domain.CourseDbRepository {
 	return &DbRepository{}
 }
-func (r *DbRepository) CreateBulletin(ctx context.Context, bulletin *domain.BulletinBoards) error {
-	return nil
+func (r *DbRepository) CreateBulletin(ctx context.Context, bulletin *domain.BulletinBoards) (string, error) {
+	return "", nil
 }
-func (r *DbRepository) CreateSlide(ctx context.Context, slide *domain.Slides) error {
-	return nil
+func (r *DbRepository) CreateSlide(ctx context.Context, slide *domain.Slides) (string, error) {
+	return "", nil
+}
+func (r *DbRepository) CreateHomework(ctx context.Context, homework *domain.Homeworks) (string, error) {
+	return "", nil
 }
 
 func (r *DbRepository) GetByTeacherDomain(ctx context.Context, teacherDomain string) ([]domain.CourseResponse, error) {
@@ -28,14 +31,23 @@ func (r *DbRepository) GetLastModifiedByCourseId(ctx context.Context, courseId u
 	return "", nil
 }
 
-func (r *DbRepository) UpdateBulletinById(ctx context.Context, bulletin *domain.BulletinBoards) error {
-	return nil
+func (r *DbRepository) UpdateBulletinById(ctx context.Context, bulletin *domain.BulletinBoards) (string, error) {
+	return "", nil
 }
 func (r *DbRepository) UpdateSlideById(ctx context.Context, slide *domain.Slides) (string, error) {
 	return "", nil
 }
+func (r *DbRepository) UpdateHomeworkById(ctx context.Context, homework *domain.Homeworks) (string, error) {
+	return "", nil
+}
 
+func (r *DbRepository) DeleteBulletinById(ctx context.Context, bulletin *domain.BulletinBoards) (string, error) {
+	return "", nil
+}
 func (r *DbRepository) DeleteSlideById(ctx context.Context, slide *domain.Slides) (string, error) {
+	return "", nil
+}
+func (r *DbRepository) DeleteHomeworkById(ctx context.Context, homework *domain.Homeworks) (string, error) {
 	return "", nil
 }
 

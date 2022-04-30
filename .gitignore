@@ -12,3 +12,5 @@ swagger.yml
 .DS_Store
 .vscode/
 static/doc/domain/
+static/doc/rikki/homework/*
+static/doc/rikki/slide/*

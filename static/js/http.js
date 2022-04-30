@@ -26,3 +26,17 @@ var axiosConfig = { headers: headers };
 function clearAuthHeader() {
   headers[HeaderKeys.AUTH] = "";
 }
+function errHandler(statusCode) {
+  switch (statusCode) {
+    case HttpStatusCode.BAD_REQUEST:
+      alert("input error");
+      break;
+    case HttpStatusCode.UNAUTHORIZED:
+      alert("驗證過期，請重新登入");
+      location.replace("/login");
+      break;
+    case HttpStatusCode.NO_FOUND:
+      alert("Not found");
+      break;
+  }
+}

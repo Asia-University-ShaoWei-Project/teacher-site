@@ -5,7 +5,7 @@ const optionIcons = {
   COURSE: `<i class="fa fa-hand-o-right" aria-hidden="true"></i>`,
 };
 function showOptionButtons(data) {
-  console.log("show option buttons");
+  console.log(`show option buttons. data length: ${data.length}`);
   let infoIndex = 0;
   let infoOptionElem = createOptionButton(infoIndex, optionIcons.INFO);
   infoBoxElem.appendChild(infoOptionElem);
@@ -14,7 +14,6 @@ function showOptionButtons(data) {
     coursesBoxElem.appendChild(elem);
   }
 }
-var test;
 function createOptionButton(index, iconElem) {
   let optionItemElem = document.createElement("li");
   let optionBtnElem = document.createElement("a");
@@ -29,6 +28,5 @@ function createOptionButton(index, iconElem) {
   optionBtnElem.onclick = () => items[index].updateData();
   optionBtnElem.appendChild(optionTitleElem);
   optionItemElem.appendChild(optionBtnElem);
-  test = optionItemElem;
   return optionItemElem;
 }

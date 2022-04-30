@@ -28,7 +28,7 @@ func GenerateJwt(conf *config.Jwt, req *domain.JwtInfoRequest) (string, error) {
 }
 
 func ParseJwt(ctx context.Context, bearerToken string, secret []byte) (jwt.MapClaims, error) {
-	var claim jwt.MapClaims
+	var claims jwt.MapClaims
 
 	token, err := jwt.Parse(bearerToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -37,15 +37,15 @@ func ParseJwt(ctx context.Context, bearerToken string, secret []byte) (jwt.MapCl
 		return secret, nil
 	})
 	if err != nil {
-		return claim, err
+		return claims, err
 	}
 	// if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-	if claim, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// expire example: https://github.com/golang-jwt/jwt/blob/main/map_claims_test.go
 		// todo: expire handle! claims["exp"]
-		return claim, nil
+		return claims, nil
 	}
-	return claim, jwt.ErrInvalidKey
+	return claims, jwt.ErrInvalidKey
 }
 
 func GetJwtUser(claims jwt.MapClaims) string {

@@ -21,38 +21,54 @@ func NewDbRepository(db *gorm.DB, conf *config.DB) domain.CourseDbRepository {
 	}
 }
 
-// todo
+// ===== CREATE =====
 
-func (r *DbRepository) CreateBulletin(ctx context.Context, bulletin *domain.BulletinBoards) error {
+func (r *DbRepository) CreateBulletin(ctx context.Context, bulletin *domain.BulletinBoards) (string, error) {
+	course := domain.Courses{AutoModel: domain.AutoModel{Id: bulletin.CourseId}}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		course := domain.Courses{AutoModel: domain.AutoModel{Id: bulletin.CourseId}}
 		if err := updateCourseLastModified(tx, &course); err != nil {
 			return err
 		}
-		result := tx.Create(bulletin)
+		result := tx.Create(&bulletin)
 		if err := utildb.CheckErrAndExist(result); err != nil {
 			return err
 		}
 		return nil
 	})
-	return err
+	return course.LastModified, err
 }
 
-func (r *DbRepository) CreateSlide(ctx context.Context, slide *domain.Slides) error {
+func (r *DbRepository) CreateSlide(ctx context.Context, slide *domain.Slides) (string, error) {
+	course := domain.Courses{AutoModel: domain.AutoModel{Id: slide.CourseId}}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		course := domain.Courses{AutoModel: domain.AutoModel{Id: slide.CourseId}}
 		if err := updateCourseLastModified(tx, &course); err != nil {
 			return err
 		}
-		result := tx.Create(slide)
+		result := tx.Create(&slide)
 		if err := utildb.CheckErrAndExist(result); err != nil {
 			return err
 		}
 		return nil
 	})
-	return err
+	return course.LastModified, err
 }
 
+func (r *DbRepository) CreateHomework(ctx context.Context, homework *domain.Homeworks) (string, error) {
+	course := domain.Courses{AutoModel: domain.AutoModel{Id: homework.CourseId}}
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := updateCourseLastModified(tx, &course); err != nil {
+			return err
+		}
+		result := tx.Create(&homework)
+		if err := utildb.CheckErrAndExist(result); err != nil {
+			return err
+		}
+		return nil
+	})
+	return course.LastModified, err
+}
+
+// ===== GET =====
 func (r *DbRepository) GetByTeacherDomain(ctx context.Context, teacherDomain string) ([]domain.CourseResponse, error) {
 	var coursesRes []domain.CourseResponse
 	result := r.db.Model(&domain.Courses{}).
@@ -88,7 +104,9 @@ func (r *DbRepository) GetLastModifiedByCourseId(ctx context.Context, courseId u
 	return course.LastModified, err
 }
 
-func (r *DbRepository) UpdateBulletinById(ctx context.Context, bulletin *domain.BulletinBoards) error {
+// ===== UPDATE =====
+
+func (r *DbRepository) UpdateBulletinById(ctx context.Context, bulletin *domain.BulletinBoards) (string, error) {
 	course := domain.Courses{AutoModel: domain.AutoModel{Id: bulletin.CourseId}}
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := updateCourseLastModified(tx, &course); err != nil {
@@ -100,7 +118,7 @@ func (r *DbRepository) UpdateBulletinById(ctx context.Context, bulletin *domain.
 		err := utildb.CheckErrAndExist(result)
 		return err
 	})
-	return err
+	return course.LastModified, err
 }
 
 func (r *DbRepository) UpdateSlideById(ctx context.Context, slide *domain.Slides) (string, error) {
@@ -114,6 +132,43 @@ func (r *DbRepository) UpdateSlideById(ctx context.Context, slide *domain.Slides
 			Updates(&slide)
 		err := utildb.CheckErrAndExist(result)
 		return err
+	})
+	return course.LastModified, err
+}
+
+func (r *DbRepository) UpdateHomeworkById(ctx context.Context, homework *domain.Homeworks) (string, error) {
+	course := domain.Courses{AutoModel: domain.AutoModel{Id: homework.CourseId}}
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := updateCourseLastModified(tx, &course); err != nil {
+			return err
+		}
+		result := tx.Model(&homework).
+			Where("id=? AND course_id=?", homework.AutoModel.Id, homework.CourseId).
+			Updates(&homework)
+		err := utildb.CheckErrAndExist(result)
+		return err
+	})
+	return course.LastModified, err
+}
+
+// ===== DELETE =====
+
+func (r *DbRepository) DeleteBulletinById(ctx context.Context, bulletin *domain.BulletinBoards) (string, error) {
+	course := domain.Courses{AutoModel: domain.AutoModel{Id: bulletin.CourseId}}
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := updateCourseLastModified(tx, &course); err != nil {
+			return err
+		}
+		// todo: should i to find the slide by this step?
+		result := tx.Model(&bulletin).
+			Where(`id=? AND course_id=?`, bulletin.AutoModel.Id, bulletin.CourseId).
+			Find(&bulletin)
+		if err := utildb.CheckErrAndExist(result); err != nil {
+			return err
+		}
+		result = tx.Model(&bulletin).Delete(&bulletin)
+
+		return utildb.CheckErrAndExist(result)
 	})
 	return course.LastModified, err
 }
@@ -137,6 +192,27 @@ func (r *DbRepository) DeleteSlideById(ctx context.Context, slide *domain.Slides
 	})
 	return course.LastModified, err
 }
+
+func (r *DbRepository) DeleteHomeworkById(ctx context.Context, homework *domain.Homeworks) (string, error) {
+	course := domain.Courses{AutoModel: domain.AutoModel{Id: homework.CourseId}}
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := updateCourseLastModified(tx, &course); err != nil {
+			return err
+		}
+		// todo: should i to find the slide by this step?
+		result := tx.Model(&homework).
+			Where(`id=? AND course_id=?`, homework.AutoModel.Id, homework.CourseId).
+			Find(&homework)
+		if err := utildb.CheckErrAndExist(result); err != nil {
+			return err
+		}
+		result = tx.Model(&homework).Delete(&homework)
+
+		return utildb.CheckErrAndExist(result)
+	})
+	return course.LastModified, err
+}
+
 func (r *DbRepository) CheckByDomainAndCourseId(ctx context.Context, course *domain.Courses) error {
 	result := r.db.Model(&course).Where(`id=? AND teacher_id=?`, course.AutoModel.Id, course.TeacherId).Find(&course)
 	return utildb.CheckErrAndExist(result)

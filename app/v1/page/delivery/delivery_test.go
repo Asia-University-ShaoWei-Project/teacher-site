@@ -30,7 +30,6 @@ var (
 	conf        = config.New()
 )
 var (
-	url string
 	req *http.Request
 	w   *httptest.ResponseRecorder
 )

@@ -67,7 +67,7 @@ function setupAuthBtn() {
           }
         })
         .catch((err) => {
-          console.error(err);
+          location.reload();
         });
     };
     return;
@@ -192,12 +192,12 @@ function initCourseApi() {
                 )
               );
             });
+            courseWorkDone = true;
             clearInterval(work);
           }
           count += 1;
         }, delay);
       }
-      courseWorkDone = true;
     })
     .catch((err) => {
       console.error("getInfoApi:", err);
@@ -237,7 +237,6 @@ function createTable(recourseType, tableType, table) {
     tbody += createTableBodyElem(dataList, editBtnElem, deleteBtnElem);
   }
   if (isTeacher) {
-    console.log("create add button");
     addBtnElem = createAddButtonElem(recourseType, tableType);
   }
 

@@ -27,6 +27,7 @@ func NewUsecase(dbRepo domain.CourseDbRepository, cacheRepo domain.CourseCacheRe
 	}
 }
 
+// ===== CREATE =====
 // todo
 func (u *Usecase) Create(ctx context.Context, req *domain.CreateCourseRequest) (domain.CreateCourseResponse, error) {
 	var res domain.CreateCourseResponse
@@ -36,6 +37,92 @@ func (u *Usecase) Create(ctx context.Context, req *domain.CreateCourseRequest) (
 	return res, nil
 }
 
+func (u *Usecase) CreateBulletin(ctx context.Context, req *domain.CreateCourseBulletinRequest) (domain.CreateCourseBulletinResponse, error) {
+	var res domain.CreateCourseBulletinResponse
+	if err := u.checkByDomainAndCourseId(ctx, req.TeacherDomain, req.CourseId); err != nil {
+		return res, err
+	}
+	bulletin := domain.BulletinBoards{
+		CourseId: req.CourseId,
+		Content:  req.Content,
+	}
+	lastModified, err := u.DbRepository.CreateBulletin(ctx, &bulletin)
+	if err != nil {
+		u.log.Error(err)
+		return res, err
+	}
+	// todo: update the data in redis
+	res = domain.CreateCourseBulletinResponse{
+		Id:           bulletin.AutoModel.Id,
+		Date:         bulletin.AutoModel.CreatedAT.Format(domain.BulletinDateFormat),
+		LastModified: lastModified,
+	}
+	return res, nil
+}
+
+func (u *Usecase) CreateSlide(ctx context.Context, req *domain.CreateCourseSlideRequest) (domain.CreateCourseSlideResponse, error) {
+	var res domain.CreateCourseSlideResponse
+	if err := u.checkByDomainAndCourseId(ctx, req.TeacherDomain, req.CourseId); err != nil {
+		u.log.Error(err)
+		return res, err
+	}
+	slide := domain.Slides{
+		CourseId: req.CourseId,
+		Chapter:  req.Chapter,
+		File: domain.File{
+			Title: req.FileTitle,
+		},
+	}
+	if req.Filename != "" {
+		slide.SetFilename(req.Filename)
+	}
+	lastModified, err := u.DbRepository.CreateSlide(ctx, &slide)
+	if err != nil {
+		u.log.Error(err)
+		return res, err
+	}
+	// todo: create data from the cache
+	res = domain.CreateCourseSlideResponse{
+		Id:           slide.AutoModel.Id,
+		Filename:     slide.File.Name,
+		LastModified: lastModified,
+	}
+	return res, nil
+
+}
+
+func (u *Usecase) CreateHomework(ctx context.Context, req *domain.CreateCourseHomeworkRequest) (domain.CreateCourseHomeworkResponse, error) {
+	var res domain.CreateCourseHomeworkResponse
+	if err := u.checkByDomainAndCourseId(ctx, req.TeacherDomain, req.CourseId); err != nil {
+		u.log.Error(err)
+		return res, err
+	}
+	homework := domain.Homeworks{
+		CourseId: req.CourseId,
+		Number:   req.Number,
+		File: domain.File{
+			Title: req.FileTitle,
+		},
+	}
+	if req.Filename != "" {
+		homework.SetFilename(req.Filename)
+	}
+	lastModified, err := u.DbRepository.CreateHomework(ctx, &homework)
+	if err != nil {
+		u.log.Error(err)
+		return res, err
+	}
+	// todo: create data from the cache
+	res = domain.CreateCourseHomeworkResponse{
+		Id:           homework.AutoModel.Id,
+		Filename:     homework.File.Name,
+		LastModified: lastModified,
+	}
+	return res, nil
+
+}
+
+// ===== GET =====
 func (u *Usecase) Get(ctx context.Context, req *domain.GetCourseRequest) (domain.GetCourseResponse, error) {
 	var res domain.GetCourseResponse
 	courses, err := u.DbRepository.GetByTeacherDomain(ctx, req.TeacherDomain)
@@ -54,6 +141,7 @@ func (u *Usecase) GetContent(ctx context.Context, req *domain.GetCourseContentRe
 
 	lastModified, err := u.DbRepository.GetLastModifiedByCourseId(ctx, req.Id)
 	if err != nil {
+		u.log.Error(err)
 		return res, err
 	}
 	// Unnecessary to get new data if request last modified value is equal the last modified of repository value
@@ -73,33 +161,7 @@ func (u *Usecase) GetContent(ctx context.Context, req *domain.GetCourseContentRe
 // Update()
 // Delete()
 
-// todo
-func (u *Usecase) CreateBulletin(ctx context.Context, req *domain.CreateCourseBulletinRequest) (domain.CreateCourseBulletinResponse, error) {
-	var res domain.CreateCourseBulletinResponse
-	if err := u.checkByDomainAndCourseId(ctx, req.TeacherDomain, req.CourseId); err != nil {
-		return res, err
-	}
-	bulletin := domain.BulletinBoards{
-		CourseId: req.CourseId,
-		Content:  req.Content,
-	}
-	err := u.DbRepository.CreateBulletin(ctx, &bulletin)
-	if err != nil {
-		return res, err
-	}
-	lastModified, err := u.DbRepository.GetLastModifiedByCourseId(ctx, req.CourseId)
-	if err != nil {
-		// todo: get last modified error
-		u.log.Error(err)
-	}
-	// todo: update the data in redis
-	res = domain.CreateCourseBulletinResponse{
-		Id:           bulletin.AutoModel.Id,
-		Date:         bulletin.AutoModel.CreatedAT.Format(domain.BulletinDateFormat),
-		LastModified: lastModified,
-	}
-	return res, nil
-}
+// ===== UPDATE =====
 
 func (u *Usecase) UpdateBulletin(ctx context.Context, req *domain.UpdateCourseBulletinRequest) (domain.UpdateCourseBulletinResponse, error) {
 	var res domain.UpdateCourseBulletinResponse
@@ -107,17 +169,14 @@ func (u *Usecase) UpdateBulletin(ctx context.Context, req *domain.UpdateCourseBu
 		return res, err
 	}
 	bulletin := domain.BulletinBoards{
-		CourseId: req.CourseId,
-		Content:  req.Content,
+		AutoModel: domain.AutoModel{Id: req.BulletinId},
+		CourseId:  req.CourseId,
+		Content:   req.Content,
 	}
-
-	if err := u.DbRepository.UpdateBulletinById(ctx, &bulletin); err != nil {
-		return res, err
-	}
-	lastModified, err := u.DbRepository.GetLastModifiedByCourseId(ctx, req.CourseId)
+	lastModified, err := u.DbRepository.UpdateBulletinById(ctx, &bulletin)
 	if err != nil {
-		// todo: error at get last modified
 		u.log.Error(err)
+		return res, err
 	}
 	// todo: cache update
 	res = domain.UpdateCourseBulletinResponse{
@@ -126,55 +185,6 @@ func (u *Usecase) UpdateBulletin(ctx context.Context, req *domain.UpdateCourseBu
 	return res, nil
 }
 
-// todo
-func (u *Usecase) DeleteBulletin(ctx context.Context, req *domain.DeleteCourseBulletinRequest) (domain.DeleteCourseBulletinResponse, error) {
-	var res domain.DeleteCourseBulletinResponse
-	// ,err := u.DbRepository
-	// if err != nil {
-	// 	return res, err
-	// }
-	// res = domain.
-	return res, nil
-}
-
-// todo
-func (u *Usecase) CreateSlide(ctx context.Context, req *domain.CreateCourseSlideRequest) (domain.CreateCourseSlideResponse, error) {
-	var res domain.CreateCourseSlideResponse
-	if err := u.checkByDomainAndCourseId(ctx, req.TeacherDomain, req.CourseId); err != nil {
-		u.log.Error(err)
-		return res, err
-	}
-	slide := domain.Slides{
-		CourseId: req.CourseId,
-		Chapter:  req.Chapter,
-		File: domain.File{
-			Title: req.FileTitle,
-		},
-	}
-	if req.Filename != "" {
-		slide.SetFileName(req.Filename)
-	}
-
-	if err := u.DbRepository.CreateSlide(ctx, &slide); err != nil {
-		u.log.Error(err)
-		return res, err
-	}
-	lastModified, err := u.DbRepository.GetLastModifiedByCourseId(ctx, req.CourseId)
-	if err != nil {
-		// todo: error at get last modified
-		u.log.Error(err)
-	}
-	// todo: create data from the cache
-	res = domain.CreateCourseSlideResponse{
-		Id:           slide.AutoModel.Id,
-		Filename:     slide.File.Name,
-		LastModified: lastModified,
-	}
-	return res, nil
-
-}
-
-// todo
 func (u *Usecase) UpdateSlide(ctx context.Context, req *domain.UpdateCourseSlideRequest) (domain.UpdateCourseSlideResponse, error) {
 	var res domain.UpdateCourseSlideResponse
 	if err := u.checkByDomainAndCourseId(ctx, req.TeacherDomain, req.CourseId); err != nil {
@@ -190,7 +200,7 @@ func (u *Usecase) UpdateSlide(ctx context.Context, req *domain.UpdateCourseSlide
 		},
 	}
 	if req.Filename != "" {
-		slide.SetFileName(req.Filename)
+		slide.SetFilename(req.Filename)
 	}
 	lastModified, err := u.DbRepository.UpdateSlideById(ctx, &slide)
 	if err != nil {
@@ -205,7 +215,57 @@ func (u *Usecase) UpdateSlide(ctx context.Context, req *domain.UpdateCourseSlide
 	return res, nil
 }
 
-// todo
+func (u *Usecase) UpdateHomework(ctx context.Context, req *domain.UpdateCourseHomeworkRequest) (domain.UpdateCourseHomeworkResponse, error) {
+	var res domain.UpdateCourseHomeworkResponse
+	if err := u.checkByDomainAndCourseId(ctx, req.TeacherDomain, req.CourseId); err != nil {
+		u.log.Error(err)
+		return res, err
+	}
+	homework := domain.Homeworks{
+		AutoModel: domain.AutoModel{Id: req.HomeworkId},
+		CourseId:  req.CourseId,
+		Number:    req.Number,
+		File: domain.File{
+			Title: req.FileTitle,
+		},
+	}
+	if req.Filename != "" {
+		homework.SetFilename(req.Filename)
+	}
+	lastModified, err := u.DbRepository.UpdateHomeworkById(ctx, &homework)
+	if err != nil {
+		u.log.Error(err)
+		return res, err
+	}
+	// todo: cache update
+	res = domain.UpdateCourseHomeworkResponse{
+		Filename:     homework.File.Name,
+		LastModified: lastModified,
+	}
+	return res, nil
+}
+
+// ===== DELETE =====
+func (u *Usecase) DeleteBulletin(ctx context.Context, req *domain.DeleteCourseBulletinRequest) (domain.DeleteCourseBulletinResponse, error) {
+	var res domain.DeleteCourseBulletinResponse
+	if err := u.checkByDomainAndCourseId(ctx, req.TeacherDomain, req.CourseId); err != nil {
+		return res, err
+	}
+	bulletin := domain.BulletinBoards{
+		AutoModel: domain.AutoModel{Id: req.BulletinId},
+		CourseId:  req.CourseId,
+	}
+	lastModified, err := u.DbRepository.DeleteBulletinById(ctx, &bulletin)
+	if err != nil {
+		u.log.Error(err)
+		return res, err
+	}
+	res = domain.DeleteCourseBulletinResponse{
+		LastModified: lastModified,
+	}
+	return res, nil
+}
+
 func (u *Usecase) DeleteSlide(ctx context.Context, req *domain.DeleteCourseSlideRequest) (domain.DeleteCourseSlideResponse, error) {
 	var res domain.DeleteCourseSlideResponse
 	if err := u.checkByDomainAndCourseId(ctx, req.TeacherDomain, req.CourseId); err != nil {
@@ -221,15 +281,12 @@ func (u *Usecase) DeleteSlide(ctx context.Context, req *domain.DeleteCourseSlide
 		u.log.Error(err)
 		return res, err
 	}
-	// todo: delete the file
-	fmt.Println("slide filename:", slide.File.Name)
 	path := fmt.Sprintf(u.conf.Server.SlidePathFormat, req.TeacherDomain, slide.File.Name)
 	if slide.File.Name != "" {
 		u.log.Info("file name is not empty")
+		// todo: put the task to queue(remove again)
 		if err := os.Remove(path); err != nil {
-			u.log.Info("remove the file, the path:", path)
-			// todo: put the task to queue(remove again)
-			u.log.Error(err)
+			u.log.Error("remove the file, the path:%s, error got:%v", path, err)
 		}
 	}
 
@@ -239,36 +296,32 @@ func (u *Usecase) DeleteSlide(ctx context.Context, req *domain.DeleteCourseSlide
 	return res, nil
 }
 
-// todo
-func (u *Usecase) CreateHomework(ctx context.Context, req *domain.CreateCourseHomeworkRequest) (domain.CreateCourseHomeworkResponse, error) {
-	var res domain.CreateCourseHomeworkResponse
-	// ,err := u.DbRepository
-	// if err != nil {
-	// 	return res, err
-	// }
-	// res = domain.
-	return res, nil
-}
-
-// todo
-func (u *Usecase) UpdateHomework(ctx context.Context, req *domain.UpdateCourseHomeworkRequest) (domain.UpdateCourseHomeworkResponse, error) {
-	var res domain.UpdateCourseHomeworkResponse
-	// ,err := u.DbRepository
-	// if err != nil {
-	// 	return res, err
-	// }
-	// res = domain.
-	return res, nil
-}
-
-// todo
 func (u *Usecase) DeleteHomework(ctx context.Context, req *domain.DeleteCourseHomeworkRequest) (domain.DeleteCourseHomeworkResponse, error) {
 	var res domain.DeleteCourseHomeworkResponse
-	// ,err := u.DbRepository
-	// if err != nil {
-	// 	return res, err
-	// }
-	// res = domain.
+	if err := u.checkByDomainAndCourseId(ctx, req.TeacherDomain, req.CourseId); err != nil {
+		u.log.Error(err)
+		return res, err
+	}
+	homework := domain.Homeworks{
+		AutoModel: domain.AutoModel{Id: req.HomeworkId},
+		CourseId:  req.CourseId,
+	}
+	lastModified, err := u.DbRepository.DeleteHomeworkById(ctx, &homework)
+	if err != nil {
+		u.log.Error(err)
+		return res, err
+	}
+	path := fmt.Sprintf(u.conf.Server.SlidePathFormat, req.TeacherDomain, homework.File.Name)
+	if homework.File.Name != "" {
+		// todo: put the task to queue(remove again)
+		if err := os.Remove(path); err != nil {
+			u.log.Error("remove the file, the path:%s, error got:%v", path, err)
+		}
+	}
+
+	res = domain.DeleteCourseHomeworkResponse{
+		LastModified: lastModified,
+	}
 	return res, nil
 }
 func (u *Usecase) checkByDomainAndCourseId(ctx context.Context, teacherDomain string, courseId uint) error {

@@ -8,10 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// var (
-// 	db = database.NewDB("../../../../pkg/database", mock.Conf.DB)
-// )
-
 // rdbms
 type DbRepository struct{}
 
