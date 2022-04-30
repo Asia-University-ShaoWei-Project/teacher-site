@@ -31,8 +31,7 @@ func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.CourseUs
 	{
 		course.GET("", handler.GetContent(ctx))
 
-		auth := course.Group("")
-		// auth := course.Group("", mw.VerifyAuth(ctx, conf.Jwt.Secret))
+		auth := course.Group("", mw.VerifyAuth(ctx, conf.Jwt.Secret))
 		{
 			bulletin := auth.Group("/bulletin")
 			{
@@ -89,8 +88,8 @@ func (h *Handler) CreateBulletin(ctx context.Context) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
+		// todo: binding required
 		if (req.CourseId == 0) || (len(req.Content) == 0) {
-			fmt.Println("params error")
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
