@@ -22,7 +22,7 @@ services:
   #     - 5432:5432
   redis:
     restart: always
-    container_name: redis:alpine
+    container_name: redis
     image: redis:alpine
     ports:
       - 6379:6379

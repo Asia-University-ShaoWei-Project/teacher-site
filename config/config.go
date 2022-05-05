@@ -15,22 +15,33 @@ type Config struct {
 	DB     *DB
 }
 type Server struct {
-	Addr               string
-	StaticRelativePath string
-	StaticRootPath     string
-	TemplatePath       string
+	Addr string
+	Path Path
+
 	SlidePathFormat    string
 	HomeworkPathFormat string
 	MaxMultipartMemory int64
 }
+type Path struct {
+	StaticRelative string
+	StaticRoot     string
+	Template       string
+	Document       string
+}
+
+func (p *Path) GetDocPath() string {
+	return p.StaticRelative + p.Document
+}
+
 type Limit struct {
 	TeacherListPageCount int
 }
 type Secure struct {
-	Salt          []byte
-	SaltSize      int ``
-	HashCost      int
-	SessionSecret []byte
+	Salt              []byte
+	SaltSize          int ``
+	HashCost          int
+	SessionSecret     []byte
+	CookieTokenMaxAge int
 }
 type Jwt struct {
 	Secret          []byte
@@ -38,10 +49,11 @@ type Jwt struct {
 }
 
 type Redis struct {
-	MaxReTry int
-	Addr     string
-	Password string
-	Database int
+	MaxReTry           int
+	Addr               string
+	Password           string
+	Database           int
+	LastModifiedExpire time.Duration
 }
 type DB struct {
 	Filename string
@@ -59,10 +71,13 @@ func New() *Config {
 }
 func newServer() *Server {
 	return &Server{
-		Addr:               ":" + os.Getenv("PORT"),
-		StaticRelativePath: "/static",
-		StaticRootPath:     "./static",
-		TemplatePath:       "templates/*",
+		Addr: ":" + os.Getenv("PORT"),
+		Path: Path{
+			StaticRelative: "/static",
+			StaticRoot:     "./static",
+			Template:       "templates/*",
+			Document:       "/doc",
+		},
 		SlidePathFormat:    `static/doc/%s/slide/%s`,
 		HomeworkPathFormat: `static/doc/%s/homework/%s`,
 		MaxMultipartMemory: 8 << 20,
@@ -81,9 +96,10 @@ func newLimit() *Limit {
 }
 func newSecure() *Secure {
 	return &Secure{
-		SaltSize:      16,
-		HashCost:      10,
-		SessionSecret: []byte("secret"),
+		SaltSize:          16,
+		HashCost:          10,
+		SessionSecret:     []byte("secret"),
+		CookieTokenMaxAge: (20 * int(time.Minute.Seconds())),
 	}
 }
 func newJwt() *Jwt {
@@ -95,9 +111,10 @@ func newJwt() *Jwt {
 }
 func newRedis() *Redis {
 	return &Redis{
-		MaxReTry: 2,
-		Addr:     ":6379",
-		Password: "",
-		Database: 0,
+		MaxReTry:           2,
+		Addr:               ":6379",
+		Password:           "",
+		Database:           0,
+		LastModifiedExpire: 5 * time.Minute,
 	}
 }

@@ -25,6 +25,7 @@ type CourseUsecase interface {
 	Create(ctx context.Context, req *CreateCourseRequest) (CreateCourseResponse, error)
 	Get(ctx context.Context, req *GetCourseRequest) (GetCourseResponse, error)
 	GetContent(ctx context.Context, req *GetCourseContentRequest) (GetCourseContentResponse, error)
+	// todo
 	// Update()
 	// Delete()
 
@@ -62,8 +63,9 @@ type CourseDbRepository interface {
 	CheckByDomainAndCourseId(ctx context.Context, course *Courses) error
 }
 
-// todo: implement interface of the cache
 type CourseCacheRepository interface {
+	GetLastModifiedByCourseId(ctx context.Context, courseId uint) (string, error)
+	UpdateLastModifiedByCourseId(ctx context.Context, courseId uint, lastModified string) error
 }
 
 //* request & response

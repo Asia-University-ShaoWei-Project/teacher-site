@@ -35,15 +35,17 @@ func main() {
 	// todo: release(mode, migrate, config(port))
 	migrate.Setup(db)
 	if err := migrate.SetupDir(); err != nil {
+		logger.Error("fail to generate dir")
 		panic(err)
 	}
+
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.MaxMultipartMemory = conf.Server.MaxMultipartMemory
 	r.Use(sessions.Sessions("session", cookieStore))
 	r.Use(cors.Default())
-	r.Static(conf.Server.StaticRelativePath, conf.Server.StaticRootPath)
-	r.LoadHTMLGlob(conf.Server.TemplatePath)
+	r.Static(conf.Server.Path.StaticRelative, conf.Server.Path.StaticRoot)
+	r.LoadHTMLGlob(conf.Server.Path.Template)
 	app.SetupRoute(ctx, r, db, redis, logger, conf)
 	//? Graceful shutdown: https://blog.wu-boy.com/2020/02/what-is-graceful-shutdown-in-golang/
 	server := &http.Server{

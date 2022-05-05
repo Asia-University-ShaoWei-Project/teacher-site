@@ -22,7 +22,10 @@ const HeaderKeys = {
 
 var headers = {};
 
-var axiosConfig = { headers: headers };
+var axiosConfig = {
+  headers: headers,
+  withCredentials: true,
+};
 function clearAuthHeader() {
   headers[HeaderKeys.AUTH] = "";
 }

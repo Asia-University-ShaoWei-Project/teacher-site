@@ -16,7 +16,7 @@ type PageDbRepository interface {
 type PageCacheRepository interface {
 }
 type TeacherListRequest struct {
-	Page uint `uri:"page_number"`
+	Page uint `uri:"pageNumber"`
 }
 
 func (t *TeacherListRequest) SetToFirstPage() {

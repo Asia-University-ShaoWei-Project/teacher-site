@@ -23,7 +23,7 @@ func TestCreateHomework(t *testing.T) {
 		},
 		{
 			desc:     "Normal",
-			courseId: mock.PkNum,
+			courseId: mock.NumPk,
 			result:   nil,
 		},
 	}
@@ -39,7 +39,7 @@ func TestCreateHomework(t *testing.T) {
 
 func TestUpdateHomeworkById(t *testing.T) {
 	var homework domain.Homeworks
-	_newHomework := domain.Homeworks{CourseId: mock.PkNum}
+	_newHomework := domain.Homeworks{CourseId: mock.NumPk}
 
 	if _, err = repo.CreateHomework(ctx, &_newHomework); err != nil {
 		t.Fatal("create tmp homework error:", err)
@@ -94,7 +94,7 @@ func TestUpdateHomeworkById(t *testing.T) {
 }
 func TestDeleteHomeworkById(t *testing.T) {
 	var homework domain.Homeworks
-	_newHomework := domain.Homeworks{CourseId: mock.PkNum}
+	_newHomework := domain.Homeworks{CourseId: mock.NumPk}
 
 	if _, err = repo.CreateHomework(ctx, &_newHomework); err != nil {
 		t.Fatal("create tmp homework error:", err)

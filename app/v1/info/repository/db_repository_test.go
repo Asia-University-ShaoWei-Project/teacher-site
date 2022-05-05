@@ -39,7 +39,7 @@ func TestCreateInfo(t *testing.T) {
 		},
 		{
 			desc:   "existed info id",
-			infoId: mock.PkNum,
+			infoId: mock.NumPk,
 			result: nil,
 		},
 	}
@@ -99,7 +99,7 @@ func TestGetBulletinsByInfoId(t *testing.T) {
 		},
 		{
 			desc:   "existed info id",
-			infoId: mock.PkNum,
+			infoId: mock.NumPk,
 			result: nil,
 		},
 	}
@@ -126,7 +126,7 @@ func TestGetInfoLastUpdated(t *testing.T) {
 		},
 		{
 			desc:   "existed info id",
-			infoId: mock.PkNum,
+			infoId: mock.NumPk,
 			result: nil,
 		},
 	}
@@ -150,19 +150,19 @@ func TestUpdateInfo(t *testing.T) {
 		{
 			desc:       "Not found the info id",
 			infoId:     mock.UnknownNumPK,
-			bulletinId: mock.PkNum,
+			bulletinId: mock.NumPk,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "Not found the bulletin id",
-			infoId:     mock.PkNum,
+			infoId:     mock.NumPk,
 			bulletinId: mock.UnknownNumPK,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "normal",
-			infoId:     mock.PkNum,
-			bulletinId: mock.PkNum,
+			infoId:     mock.NumPk,
+			bulletinId: mock.NumPk,
 			result:     nil,
 		},
 	}
@@ -192,7 +192,7 @@ func TestDeleteInfo(t *testing.T) {
 	// generate a temporary bulletin for testcase(id)
 	bulletin, _ := repo.Create(ctx, &domain.CreateInfoBulletinRequest{
 		TeacherDomainRequest: domain.TeacherDomainRequest{TeacherDomain: mock.TeacherDomain},
-		InfoId:               mock.PkNum,
+		InfoId:               mock.NumPk,
 		Content:              mock.NewMsg(),
 	})
 	testCases := []struct {
@@ -210,13 +210,13 @@ func TestDeleteInfo(t *testing.T) {
 		},
 		{
 			desc:       "fail bulletin id",
-			infoId:     mock.PkNum,
+			infoId:     mock.NumPk,
 			bulletinId: mock.UnknownNumPK,
 			result:     gorm.ErrRecordNotFound,
 		},
 		{
 			desc:       "existed info, bulletin id",
-			infoId:     mock.PkNum,
+			infoId:     mock.NumPk,
 			bulletinId: bulletin.AutoModel.Id,
 			result:     nil,
 		},
@@ -271,13 +271,13 @@ func TestCheckByDomainAndId(t *testing.T) {
 		{
 			desc:          "fail teacherDomain",
 			teacherDomain: mock.Unknown,
-			infoId:        mock.PkNum,
+			infoId:        mock.NumPk,
 			result:        gorm.ErrRecordNotFound,
 		},
 		{
 			desc:          "normal",
 			teacherDomain: mock.TeacherDomain,
-			infoId:        mock.PkNum,
+			infoId:        mock.NumPk,
 			result:        nil,
 		},
 	}

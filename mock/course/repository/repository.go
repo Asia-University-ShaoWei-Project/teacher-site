@@ -55,12 +55,15 @@ func (r *DbRepository) CheckByDomainAndCourseId(ctx context.Context, course *dom
 	return nil
 }
 
-// func (r *DbRepository)  {
-// 	return domain.{}, nil
-// }
-// cache
 type CacheRepository struct{}
 
 func NewCacheRepository() domain.CourseCacheRepository {
 	return &CacheRepository{}
+}
+
+func (c *CacheRepository) GetLastModifiedByCourseId(ctx context.Context, courseId uint) (string, error) {
+	return "", nil
+}
+func (c *CacheRepository) UpdateLastModifiedByCourseId(ctx context.Context, courseId uint, lastModified string) error {
+	return nil
 }

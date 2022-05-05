@@ -22,6 +22,11 @@ func (u *Usecase) Logout(ctx context.Context, id string) error {
 	return nil
 }
 
+// todo
+func (u *Usecase) Register(ctx context.Context, req *domain.RegisterRequest) error {
+	return nil
+}
+
 // func (u *Usecase) Get(ctx context.Context, req *domain.GetInfoBulletinRequest) (domain.GetInfoBulletinResponse, error) {
 // 	return domain.GetInfoBulletinResponse{}, nil
 // }

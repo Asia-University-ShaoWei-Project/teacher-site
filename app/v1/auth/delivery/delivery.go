@@ -13,13 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AuthHandler struct {
+type Handler struct {
 	Usecase domain.AuthUsecase
 	conf    *config.Config
 }
 
 func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.AuthUsecase, conf *config.Config) {
-	handler := &AuthHandler{
+	handler := &Handler{
 		Usecase: usecase,
 		conf:    conf,
 	}
@@ -27,10 +27,11 @@ func NewHandler(ctx context.Context, r *gin.RouterGroup, usecase domain.AuthUsec
 	r.POST("/token", handler.GetToken(ctx))
 	r.POST("/login", handler.Login(ctx))
 	r.POST("/logout", handler.Logout(ctx))
+
 	// todo
-	// r.POST("/register", handler.Register(ctx))
+	r.POST("/register", handler.Register(ctx))
 }
-func (auth *AuthHandler) GetToken(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) GetToken(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		isTeacher := false
 		// todo: checkout the domain is existed
@@ -41,7 +42,7 @@ func (auth *AuthHandler) GetToken(ctx context.Context) gin.HandlerFunc {
 			_token := token.(string)
 			// todo: check expiration and certify the token with db
 			// Add token to the authorization header of response
-			if _, err := util.ParseJwt(ctx, _token, auth.conf.Jwt.Secret); err == nil {
+			if _, err := util.ParseJwt(ctx, _token, h.conf.Jwt.Secret); err == nil {
 				isTeacher = true
 				util.AddBearerHeader(c, _token)
 			} else {
@@ -55,14 +56,14 @@ func (auth *AuthHandler) GetToken(ctx context.Context) gin.HandlerFunc {
 	}
 }
 
-func (auth *AuthHandler) Login(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) Login(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var (
 			req domain.LoginRequest
 			err error
 		)
 
-		if mw.IsTeacher(ctx, c, auth.conf.Jwt.Secret) {
+		if mw.IsTeacher(ctx, c, h.conf.Jwt.Secret) {
 			// todo: redirect the teacher domain(response with doamin data)
 			c.AbortWithStatus(http.StatusFound)
 			return
@@ -73,11 +74,15 @@ func (auth *AuthHandler) Login(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		res, err := auth.Usecase.Login(ctx, &req)
+		res, err := h.Usecase.Login(ctx, &req)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
+		// todo: use httponly cookie instead of the session
+		// c.SetSameSite(http.SameSiteDefaultMode)
+		// utilcookie.SetToken(c, res.Token, h.conf.Secure.CookieTokenMaxAge)
+
 		s := sessions.Default(c)
 		util.SetSessionToken(s, res.Token)
 		util.AddBearerHeader(c, res.Token)
@@ -87,7 +92,7 @@ func (auth *AuthHandler) Login(ctx context.Context) gin.HandlerFunc {
 	}
 }
 
-func (auth *AuthHandler) Logout(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) Logout(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		bearerToken, err := util.GetBearerToken(ctx, c)
@@ -96,7 +101,7 @@ func (auth *AuthHandler) Logout(ctx context.Context) gin.HandlerFunc {
 			return
 		}
 
-		claims, err := util.ParseJwt(ctx, bearerToken, auth.conf.Jwt.Secret)
+		claims, err := util.ParseJwt(ctx, bearerToken, h.conf.Jwt.Secret)
 		if err != nil {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
@@ -104,7 +109,7 @@ func (auth *AuthHandler) Logout(ctx context.Context) gin.HandlerFunc {
 
 		id := util.GetJwtUser(claims)
 
-		if err = auth.Usecase.Logout(ctx, id); err != nil {
+		if err = h.Usecase.Logout(ctx, id); err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -115,29 +120,17 @@ func (auth *AuthHandler) Logout(ctx context.Context) gin.HandlerFunc {
 	}
 }
 
-// todo
-func (auth *AuthHandler) Register(ctx context.Context) gin.HandlerFunc {
+func (h *Handler) Register(ctx context.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		// checkUserAndDomain(ctx, req.UserID, req.Domain)
-		// salt, err := generateSalt(ctx, srv.conf.SaltSize)
-		// password, err := generatePassword(ctx, conf.HashCost, salt, req.UserPassword)
-
-		// token, err := uuid.NewUUID()
-
-		// auth := &domain.Auths{
-		// 	UserId:       req.UserID,
-		// 	UserPassword: password,
-		// 	Token:        token.String(),
-		// 	Salt:         string(salt),
-		// 	Teacher: domain.Teachers{
-		// 		Domain: req.Domain,
-		// 		NameZh: req.NameZh,
-		// 		Email:  req.Email,
-		// 	},
-		// }
-
-		// db.CreateUser(ctx, auth)
-		// todo: create dir(slide, hw) for user
+		var req *domain.RegisterRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		if err := h.Usecase.Register(ctx, req); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		c.Status(http.StatusCreated)
 	}
 }

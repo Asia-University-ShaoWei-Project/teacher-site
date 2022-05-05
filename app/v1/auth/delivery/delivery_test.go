@@ -78,7 +78,7 @@ func TestLogin(t *testing.T) {
 		t.Run(tC.desc, func(t *testing.T) {
 			w = httptest.NewRecorder()
 			data = fmt.Sprintf(dataFormat, tC.userId, tC.userPassword)
-			req, _ = http.NewRequest(methodPost, url, strings.NewReader(data))
+			req, _ = http.NewRequest("POST", url, strings.NewReader(data))
 			if tC.isLogged {
 				setupHeader(req, JsonContentType, token)
 			}
@@ -112,8 +112,58 @@ func TestLogout(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			w = httptest.NewRecorder()
-			req, _ = http.NewRequest(methodPost, url, nil)
+			req, _ = http.NewRequest("POST", url, nil)
 			setupHeader(req, JsonContentType, tC.authHeader)
+			r.ServeHTTP(w, req)
+			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))
+		})
+	}
+}
+func TestRegister(t *testing.T) {
+	NewHandler(ctx, route, usecaseMock, conf)
+	url := ApiUrl + "/register"
+
+	testCases := []struct {
+		desc   string
+		data   string
+		result HttpStatusCode
+	}{
+		{
+			desc:   "empty id",
+			data:   `{"id":"", "password":"password", "domain":"domain", "email":"email", "nameZh":"name"}`,
+			result: http.StatusBadRequest,
+		},
+		{
+			desc:   "empty password",
+			data:   `{"id":"id", "password":"", "domain":"domain", "email":"email", "nameZh":"name"}`,
+			result: http.StatusBadRequest,
+		},
+		{
+			desc:   "empty domain",
+			data:   `{"id":"id", "password":"password", "domain":"", "email":"email", "nameZh":"name"}`,
+			result: http.StatusBadRequest,
+		},
+		{
+			desc:   "empty email",
+			data:   `{"id":"id", "password":"password", "domain":"domain", "email":"", "nameZh":"name"}`,
+			result: http.StatusBadRequest,
+		},
+		{
+			desc:   "empty name",
+			data:   `{"id":"id", "password":"password", "domain":"domain", "email":"email", "nameZh":""}`,
+			result: http.StatusBadRequest,
+		},
+		{
+			desc:   "normal",
+			data:   `{"id":"id", "password":"password", "domain":"domain", "email":"email", "nameZh":"name"}`,
+			result: http.StatusCreated,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			w = httptest.NewRecorder()
+			req, _ = http.NewRequest("POST", url, strings.NewReader(tC.data))
+			req.Header.Add("Content-Type", "application/json")
 			r.ServeHTTP(w, req)
 			assert.Equal(t, tC.result, HttpStatusCode(w.Result().StatusCode))
 		})

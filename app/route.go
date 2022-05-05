@@ -13,5 +13,4 @@ import (
 
 func SetupRoute(ctx context.Context, r *gin.Engine, db *gorm.DB, c *redis.Client, logger *log.Logger, conf *config.Config) {
 	v1.SetupRoute(ctx, r, db, c, conf, logger)
-	// v2.SetupRoute(ctx, api)
 }

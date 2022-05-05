@@ -41,7 +41,7 @@ func (u *Usecase) Home(ctx context.Context, req *domain.HomeRequest) (domain.Hom
 	if req.Domain == mock.Unknown {
 		return res, gorm.ErrRecordNotFound
 	}
-	res = domain.HomeResponse{NameZh: mock.UserName}
+	res = domain.HomeResponse{NameZh: mock.UserNameZh}
 	return res, nil
 }
 

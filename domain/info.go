@@ -35,10 +35,8 @@ type InfoDbRepository interface {
 	Delete(ctx context.Context, req *DeleteInfoBulletinRequest) (Infos, error)
 }
 type InfoCacheRepository interface {
-	Get(ctx context.Context, req *GetInfoBulletinRequest) (string, error)
-	GetLastModified(ctx context.Context, teacherDomain string) (string, error)
-	Update(ctx context.Context, req *UpdateInfoBulletinRequest) error
-	UpdateInfoLastModified(ctx context.Context, req *UpdateInfoBulletinRequest, lastModified string) error
+	GetLastModifiedByTeacherDomain(ctx context.Context, teacherDomain string) (string, error)
+	UpdateLastModifiedByTeacherDomain(ctx context.Context, teacherDomain, lastModified string) error
 }
 
 //* request & response

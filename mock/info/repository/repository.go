@@ -5,7 +5,7 @@ import (
 	"teacher-site/domain"
 )
 
-var (
+const (
 	CurrLastModidied = "1"
 	LateLastModified = "0"
 )
@@ -48,18 +48,12 @@ type InfoCacheRepository struct{}
 func NewInfoCacheRepository() domain.InfoCacheRepository {
 	return &InfoCacheRepository{}
 }
-
-func (i *InfoCacheRepository) Get(ctx context.Context, req *domain.GetInfoBulletinRequest) (string, error) {
+func (i *InfoCacheRepository) UpdateInfoLastModified(ctx context.Context, req *domain.UpdateInfoBulletinRequest, lastModified string) error {
+	return nil
+}
+func (i *InfoCacheRepository) GetLastModifiedByTeacherDomain(ctx context.Context, teacherDomain string) (string, error) {
 	return "", nil
 }
-func (i *InfoCacheRepository) GetLastModified(ctx context.Context, teacherDomain string) (string, error) {
-	return CurrLastModidied, nil
-
-}
-func (i *InfoCacheRepository) Update(ctx context.Context, req *domain.UpdateInfoBulletinRequest) error {
-	return nil
-
-}
-func (i *InfoCacheRepository) UpdateInfoLastModified(ctx context.Context, req *domain.UpdateInfoBulletinRequest, lastModified string) error {
+func (i *InfoCacheRepository) UpdateLastModifiedByTeacherDomain(ctx context.Context, teacherDomain, lastModified string) error {
 	return nil
 }

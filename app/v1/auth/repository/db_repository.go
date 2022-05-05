@@ -4,6 +4,7 @@ import (
 	"context"
 	"teacher-site/config"
 	"teacher-site/domain"
+	"teacher-site/pkg/message"
 
 	"gorm.io/gorm"
 )
@@ -18,6 +19,17 @@ func NewDbRepository(db *gorm.DB, conf *config.DB) domain.AuthDbRepository {
 		db:   db,
 		conf: conf,
 	}
+}
+func (r *DbRepository) CreateTeacher(ctx context.Context, auth *domain.Auths) error {
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		result := tx.Create(&auth)
+		if err := checkErrAndExist(result); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	return err
 }
 
 func (r *DbRepository) GetAccountByUserId(ctx context.Context, id string) (domain.Auths, error) {
@@ -56,6 +68,20 @@ func (r *DbRepository) DeleteTokenById(ctx context.Context, id string) error {
 		return nil
 	})
 	return err
+}
+func (r *DbRepository) CheckUserExistByUserIdAndDomain(ctx context.Context, userId, teacherDomain string) error {
+	auth := domain.Auths{UserId: userId}
+	result := r.db.Model(&auth).Select("user_id").Find(&auth)
+	if result.RowsAffected != 0 {
+		return message.ErrExistUserId
+	}
+	teacher := domain.Teachers{Domain: teacherDomain}
+
+	result = r.db.Model(&teacher).Select("domain").Find(&teacher)
+	if result.RowsAffected != 0 {
+		return message.ErrExistTeacherDomain
+	}
+	return nil
 }
 
 func checkErrAndExist(result *gorm.DB) error {

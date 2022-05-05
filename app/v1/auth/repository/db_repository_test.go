@@ -5,6 +5,7 @@ import (
 	"teacher-site/config"
 	"teacher-site/mock"
 	"teacher-site/pkg/database"
+	"teacher-site/pkg/message"
 	"teacher-site/pkg/util"
 	"testing"
 
@@ -122,4 +123,42 @@ func TestDeleteToken(t *testing.T) {
 			assert.Equal(t, tC.result, err)
 		})
 	}
+}
+
+func TestCheckUserExistByUserIdAndDomain(t *testing.T) {
+	// todo: create temporary user
+	// mockAuth := mock.GenerateAuth()
+	// repo.CreateTeacher(ctx, &mockAuth)
+	testCases := []struct {
+		desc          string
+		userId        string
+		teacherDomain string
+		result        error
+	}{
+		{
+			desc:          "user id is existed",
+			userId:        mock.UserId,
+			teacherDomain: mock.Unknown,
+			result:        message.ErrExistUserId,
+		},
+		{
+			desc:          "teacher domain  is existed",
+			userId:        mock.Unknown,
+			teacherDomain: mock.TeacherDomain,
+			result:        message.ErrExistTeacherDomain,
+		},
+		{
+			desc:          "user id is existed",
+			userId:        mock.Unknown,
+			teacherDomain: mock.Unknown,
+			result:        nil,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			err = repo.CheckUserExistByUserIdAndDomain(ctx, tC.userId, tC.teacherDomain)
+			assert.Equal(t, tC.result, err)
+		})
+	}
+	// todo: delete temporary user
 }

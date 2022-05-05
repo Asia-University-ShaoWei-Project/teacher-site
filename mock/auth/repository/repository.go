@@ -5,6 +5,7 @@ import (
 	"teacher-site/domain"
 	"teacher-site/mock"
 	"teacher-site/pkg/database"
+	"teacher-site/pkg/message"
 
 	"gorm.io/gorm"
 )
@@ -19,12 +20,17 @@ type DbRepository struct{}
 func NewDbRepository() domain.AuthDbRepository {
 	return &DbRepository{}
 }
-
+func (i *DbRepository) CreateTeacher(ctx context.Context, auth *domain.Auths) error {
+	return nil
+}
 func (i *DbRepository) GetAccountByUserId(ctx context.Context, id string) (domain.Auths, error) {
-	if id == mock.Unknown {
-		return domain.Auths{}, gorm.ErrRecordNotFound
-	}
+
 	return testGetAccount(id)
+}
+func testGetAccount(id string) (domain.Auths, error) {
+	auth := domain.Auths{UserId: id}
+	result := db.Find(&auth)
+	return auth, result.Error
 }
 
 //todo
@@ -44,10 +50,14 @@ func (i *DbRepository) DeleteTokenById(ctx context.Context, id string) error {
 	return nil
 }
 
-func testGetAccount(id string) (domain.Auths, error) {
-	auth := domain.Auths{UserId: id}
-	result := db.Find(&auth)
-	return auth, result.Error
+func (i *DbRepository) CheckUserExistByUserIdAndDomain(ctx context.Context, userId, domain string) error {
+	if userId == mock.UserId {
+		return message.ErrExistUserId
+	}
+	if domain == mock.TeacherDomain {
+		return message.ErrExistTeacherDomain
+	}
+	return nil
 }
 
 // func (i *DbRepository) GetByTeacherDomain(ctx context.Context, teacherDomain string) (domain.Infos, error) {

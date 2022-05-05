@@ -13,7 +13,7 @@ const (
 	WordStr   = "word"
 	EmptyJson = "{}"
 
-	PkNum         = 1
+	NumPk         = 1
 	PkZeroStr     = "0"
 	PkStr         = "1"
 	NegativePkStr = "-1"

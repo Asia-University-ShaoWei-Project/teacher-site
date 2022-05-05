@@ -23,7 +23,7 @@ func TestCreateBulletin(t *testing.T) {
 		},
 		{
 			desc:     "Normal",
-			courseId: mock.PkNum,
+			courseId: mock.NumPk,
 			result:   nil,
 		},
 	}
@@ -38,7 +38,7 @@ func TestCreateBulletin(t *testing.T) {
 
 func TestUpdateBulletinById(t *testing.T) {
 	var bulletin domain.BulletinBoards
-	_newBulletin := domain.BulletinBoards{CourseId: mock.PkNum}
+	_newBulletin := domain.BulletinBoards{CourseId: mock.NumPk}
 
 	if _, err = repo.CreateBulletin(ctx, &_newBulletin); err != nil {
 		t.Fatal("create tmp bulletin error:", err)
@@ -90,7 +90,7 @@ func TestUpdateBulletinById(t *testing.T) {
 
 func TestDeleteBulletinById(t *testing.T) {
 	var bulletin domain.BulletinBoards
-	_newBulletin := domain.BulletinBoards{CourseId: mock.PkNum}
+	_newBulletin := domain.BulletinBoards{CourseId: mock.NumPk}
 
 	if _, err = repo.CreateBulletin(ctx, &_newBulletin); err != nil {
 		t.Fatal("create tmp bulletin error:", err)

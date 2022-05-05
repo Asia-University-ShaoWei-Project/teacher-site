@@ -58,7 +58,7 @@ func TestGetContentByCourseId(t *testing.T) {
 		},
 		{
 			desc:     "Normal",
-			courseId: mock.PkNum,
+			courseId: mock.NumPk,
 			result:   nil,
 		},
 	}
@@ -88,13 +88,13 @@ func TestCheckByDomainAndCourseId(t *testing.T) {
 		{
 			desc:          "Not have the course id",
 			teacherDomain: mock.Unknown,
-			courseId:      mock.PkNum,
+			courseId:      mock.NumPk,
 			result:        gorm.ErrRecordNotFound,
 		},
 		{
 			desc:          "Normal",
 			teacherDomain: mock.TeacherDomain,
-			courseId:      mock.PkNum,
+			courseId:      mock.NumPk,
 			result:        nil,
 		},
 	}
@@ -122,7 +122,7 @@ func TestGetLastModifiedByCourseId(t *testing.T) {
 		},
 		{
 			desc:     "Normal",
-			courseId: mock.PkNum,
+			courseId: mock.NumPk,
 			result:   nil,
 		},
 	}

@@ -200,7 +200,7 @@ function initCourseApi() {
       }
     })
     .catch((err) => {
-      console.error("getInfoApi:", err);
+      console.error("initCourseApi:", err);
       courseWorkDone = true;
     });
 }

@@ -51,7 +51,10 @@ func (u *Usecase) CreateBulletin(ctx context.Context, req *domain.CreateCourseBu
 		u.log.Error(err)
 		return res, err
 	}
-	// todo: update the data in redis
+	// todo:
+	if err := u.CacheRepository.UpdateLastModifiedByCourseId(ctx, bulletin.CourseId, lastModified); err != nil {
+		u.log.Error(err)
+	}
 	res = domain.CreateCourseBulletinResponse{
 		Id:           bulletin.AutoModel.Id,
 		Date:         bulletin.AutoModel.CreatedAT.Format(domain.BulletinDateFormat),
@@ -81,7 +84,9 @@ func (u *Usecase) CreateSlide(ctx context.Context, req *domain.CreateCourseSlide
 		u.log.Error(err)
 		return res, err
 	}
-	// todo: create data from the cache
+	if err := u.CacheRepository.UpdateLastModifiedByCourseId(ctx, slide.CourseId, lastModified); err != nil {
+		u.log.Error(err)
+	}
 	res = domain.CreateCourseSlideResponse{
 		Id:           slide.AutoModel.Id,
 		Filename:     slide.File.Name,
@@ -112,7 +117,9 @@ func (u *Usecase) CreateHomework(ctx context.Context, req *domain.CreateCourseHo
 		u.log.Error(err)
 		return res, err
 	}
-	// todo: create data from the cache
+	if err := u.CacheRepository.UpdateLastModifiedByCourseId(ctx, homework.CourseId, lastModified); err != nil {
+		u.log.Error(err)
+	}
 	res = domain.CreateCourseHomeworkResponse{
 		Id:           homework.AutoModel.Id,
 		Filename:     homework.File.Name,
@@ -139,7 +146,14 @@ func (u *Usecase) Get(ctx context.Context, req *domain.GetCourseRequest) (domain
 func (u *Usecase) GetContent(ctx context.Context, req *domain.GetCourseContentRequest) (domain.GetCourseContentResponse, error) {
 	var res domain.GetCourseContentResponse
 
-	lastModified, err := u.DbRepository.GetLastModifiedByCourseId(ctx, req.Id)
+	lastModified, err := u.CacheRepository.GetLastModifiedByCourseId(ctx, req.Id)
+	if err == nil {
+		if req.LastModified == lastModified {
+			return res, message.ErrUnnecessaryUpdate
+		}
+	}
+
+	lastModified, err = u.DbRepository.GetLastModifiedByCourseId(ctx, req.Id)
 	if err != nil {
 		u.log.Error(err)
 		return res, err
@@ -147,6 +161,9 @@ func (u *Usecase) GetContent(ctx context.Context, req *domain.GetCourseContentRe
 	// Unnecessary to get new data if request last modified value is equal the last modified of repository value
 	if req.LastModified == lastModified {
 		return res, message.ErrUnnecessaryUpdate
+	}
+	if err := u.CacheRepository.UpdateLastModifiedByCourseId(ctx, req.Id, lastModified); err != nil {
+		u.log.Error(err)
 	}
 
 	res, err = u.DbRepository.GetContentByCourseId(ctx, req.Id)
@@ -178,7 +195,9 @@ func (u *Usecase) UpdateBulletin(ctx context.Context, req *domain.UpdateCourseBu
 		u.log.Error(err)
 		return res, err
 	}
-	// todo: cache update
+	if err := u.CacheRepository.UpdateLastModifiedByCourseId(ctx, bulletin.CourseId, lastModified); err != nil {
+		u.log.Error(err)
+	}
 	res = domain.UpdateCourseBulletinResponse{
 		LastModified: lastModified,
 	}
@@ -207,7 +226,9 @@ func (u *Usecase) UpdateSlide(ctx context.Context, req *domain.UpdateCourseSlide
 		u.log.Error(err)
 		return res, err
 	}
-	// todo: cache update
+	if err := u.CacheRepository.UpdateLastModifiedByCourseId(ctx, slide.CourseId, lastModified); err != nil {
+		u.log.Error(err)
+	}
 	res = domain.UpdateCourseSlideResponse{
 		Filename:     slide.File.Name,
 		LastModified: lastModified,
@@ -237,7 +258,9 @@ func (u *Usecase) UpdateHomework(ctx context.Context, req *domain.UpdateCourseHo
 		u.log.Error(err)
 		return res, err
 	}
-	// todo: cache update
+	if err := u.CacheRepository.UpdateLastModifiedByCourseId(ctx, homework.CourseId, lastModified); err != nil {
+		u.log.Error(err)
+	}
 	res = domain.UpdateCourseHomeworkResponse{
 		Filename:     homework.File.Name,
 		LastModified: lastModified,
@@ -259,6 +282,9 @@ func (u *Usecase) DeleteBulletin(ctx context.Context, req *domain.DeleteCourseBu
 	if err != nil {
 		u.log.Error(err)
 		return res, err
+	}
+	if err := u.CacheRepository.UpdateLastModifiedByCourseId(ctx, bulletin.CourseId, lastModified); err != nil {
+		u.log.Error(err)
 	}
 	res = domain.DeleteCourseBulletinResponse{
 		LastModified: lastModified,
@@ -289,6 +315,9 @@ func (u *Usecase) DeleteSlide(ctx context.Context, req *domain.DeleteCourseSlide
 			u.log.Error("remove the file, the path:%s, error got:%v", path, err)
 		}
 	}
+	if err := u.CacheRepository.UpdateLastModifiedByCourseId(ctx, slide.CourseId, lastModified); err != nil {
+		u.log.Error(err)
+	}
 
 	res = domain.DeleteCourseSlideResponse{
 		LastModified: lastModified,
@@ -317,6 +346,9 @@ func (u *Usecase) DeleteHomework(ctx context.Context, req *domain.DeleteCourseHo
 		if err := os.Remove(path); err != nil {
 			u.log.Error("remove the file, the path:%s, error got:%v", path, err)
 		}
+	}
+	if err := u.CacheRepository.UpdateLastModifiedByCourseId(ctx, homework.CourseId, lastModified); err != nil {
+		u.log.Error(err)
 	}
 
 	res = domain.DeleteCourseHomeworkResponse{

@@ -23,7 +23,7 @@ func TestCreateSlide(t *testing.T) {
 		},
 		{
 			desc:     "Normal",
-			courseId: mock.PkNum,
+			courseId: mock.NumPk,
 			result:   nil,
 		},
 	}
@@ -39,7 +39,7 @@ func TestCreateSlide(t *testing.T) {
 
 func TestUpdateSlideById(t *testing.T) {
 	var slide domain.Slides
-	_newSlide := domain.Slides{CourseId: mock.PkNum}
+	_newSlide := domain.Slides{CourseId: mock.NumPk}
 
 	if _, err = repo.CreateSlide(ctx, &_newSlide); err != nil {
 		t.Fatal("create tmp slide error:", err)
@@ -94,7 +94,7 @@ func TestUpdateSlideById(t *testing.T) {
 }
 func TestDeleteSlideById(t *testing.T) {
 	var slide domain.Slides
-	_newSlide := domain.Slides{CourseId: mock.PkNum}
+	_newSlide := domain.Slides{CourseId: mock.NumPk}
 
 	if _, err = repo.CreateSlide(ctx, &_newSlide); err != nil {
 		t.Fatal("create tmp slide error:", err)
