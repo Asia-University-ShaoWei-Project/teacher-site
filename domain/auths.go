@@ -5,7 +5,7 @@ import "context"
 type Auths struct {
 	UserId       string `gorm:"primaryKey"`
 	UserPassword string
-	Salt         string
+	Salt         []byte
 	Token        string
 	Teacher      Teachers `gorm:"foreignKey:AuthId;references:UserId"`
 	Time

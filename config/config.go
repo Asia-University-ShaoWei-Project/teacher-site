@@ -57,6 +57,10 @@ type Redis struct {
 }
 type DB struct {
 	Filename string
+	Database string
+	User     string
+	Password string
+	Port     string
 }
 
 func New() *Config {
@@ -86,6 +90,10 @@ func newServer() *Server {
 func newDB() *DB {
 	return &DB{
 		Filename: "sqlite.db",
+		Database: "postgres",
+		User:     "postgres",
+		Password: "postgres",
+		Port:     "5432",
 	}
 }
 

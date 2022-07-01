@@ -8,7 +8,6 @@ import (
 	"syscall"
 	"teacher-site/app"
 	"teacher-site/config"
-	"teacher-site/migrate"
 	"teacher-site/pkg/database"
 	_log "teacher-site/pkg/log"
 	"time"
@@ -28,18 +27,19 @@ func main() {
 	conf := config.New()
 	redis := database.NewRedis(conf.Redis)
 	logger := _log.NewLogrus(ctx)
-	// todo: use postgres
+	// todo: use postgres as DB
 	db := database.NewDB("./pkg/database", conf.DB)
+	// db := database.NewDbByPostgres(conf.DB)
 	cookieStore := cookie.NewStore(conf.Secure.SessionSecret)
 
 	// todo: release(mode, migrate, config(port))
-	migrate.Setup(db)
-	if err := migrate.SetupDir(); err != nil {
-		logger.Error("fail to generate dir")
-		panic(err)
-	}
+	// migrate.Setup(db)
+	// if err := migrate.SetupDir(); err != nil {
+	// 	logger.Error("fail to generate dir")
+	// 	panic(err)
+	// }
 
-	gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.MaxMultipartMemory = conf.Server.MaxMultipartMemory
 	r.Use(sessions.Sessions("session", cookieStore))
@@ -57,6 +57,7 @@ func main() {
 			logger.Fatalf("listen: %s\n", err)
 		}
 	}()
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit

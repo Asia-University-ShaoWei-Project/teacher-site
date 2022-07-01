@@ -1,10 +1,12 @@
 package database
 
 import (
+	"fmt"
 	"strconv"
 	"teacher-site/config"
 	"time"
 
+	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -12,6 +14,15 @@ import (
 func NewDB(path string, conf *config.DB) *gorm.DB {
 	file := path + "/" + conf.Filename
 	db, err := gorm.Open(sqlite.Open(file))
+	if err != nil {
+		panic(err)
+	}
+	return db
+}
+func NewDbByPostgres(conf *config.DB) *gorm.DB {
+	conn := "host=localhost user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai"
+	dsn := fmt.Sprintf(conn, conf.User, conf.Password, conf.Database, conf.Port)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}

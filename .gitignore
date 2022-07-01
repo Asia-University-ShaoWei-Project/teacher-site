@@ -1,16 +1,16 @@
-package-lock.json
-test/
-tmp/
 # DB
 *.db
 *.sql
 /mock/database
-# doc
+# static
+static/doc/domain/
+static/doc/rikki/
+static/js/3rd/
 todo.md
 swagger.yml
+package-lock.json
 # other
 .DS_Store
 .vscode/
-static/doc/domain/
-static/doc/rikki/homework/*
-static/doc/rikki/slide/*
+test/
+tmp/

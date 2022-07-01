@@ -35,7 +35,7 @@ func (u *Usecase) Login(ctx context.Context, req *domain.LoginRequest) (domain.L
 	}
 
 	// compare password
-	saltPassword := []byte(req.UserPassword + account.Salt)
+	saltPassword := append([]byte(req.UserPassword), account.Salt...)
 	if err = bcrypt.CompareHashAndPassword([]byte(account.UserPassword), saltPassword); err != nil {
 		u.log.Error(err)
 		return res, err
@@ -76,7 +76,7 @@ func (u *Usecase) Register(ctx context.Context, req *domain.RegisterRequest) err
 	auth := &domain.Auths{
 		UserId:       req.UserId,
 		UserPassword: hashPassword,
-		Salt:         string(salt),
+		Salt:         salt,
 		Teacher: domain.Teachers{
 			Domain:  req.Domain,
 			NameZh:  req.NameZh,

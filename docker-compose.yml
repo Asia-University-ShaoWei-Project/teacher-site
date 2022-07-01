@@ -1,28 +1,28 @@
-
 version: '3'
 
 services:
-  # server:
-  #   build: .
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   environment:
-  #     SECURE_KEY: ${SECURE_KEY}
-  #     DB_FILE_NAME: ${DB_FILE_NAME}
-  # db:
-  #   image: postgres:alpine
-  #   restart: always
-  #   container_name: postgresql
-  #   environment:
-  #     POSTGRES_DB: ${POSTGRES_DB}
-  #     POSTGRES_USER: ${POSTGRES_USER}
-  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-  #   ports:
-  #     - 5432:5432
+  db:
+    image: postgres:alpine
+    restart: always
+    container_name: postgresql
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
   redis:
     restart: always
     container_name: redis
     image: redis:alpine
     ports:
       - 6379:6379
+    # go:
+    #   build: .
+    #   ports:
+    #     - "80:80"
+    #     - "443:443"
+    #   environment:
+    #     SECURE_KEY: ${SECURE_KEY}
+    #     DB_FILE_NAME: ${DB_FILE_NAME}
+    #     REDIS_HOST: redis

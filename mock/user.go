@@ -21,7 +21,7 @@ func GenerateAuth() domain.Auths {
 	return domain.Auths{
 		UserId:       UserId,
 		UserPassword: util.GeneralHashPassword(Ctx, UserPassword, Conf.Secure.Salt, Conf.Secure.HashCost),
-		Salt:         string(util.GeneralSalt(Ctx, Conf.Secure.SaltSize)),
+		Salt:         util.GeneralSalt(Ctx, Conf.Secure.SaltSize),
 		Teacher: domain.Teachers{
 			Domain:  TeacherDomain,
 			Email:   Email,

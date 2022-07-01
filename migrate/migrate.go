@@ -36,7 +36,8 @@ func createAll(db *gorm.DB) {
 		{
 			UserId:       "rikki",
 			UserPassword: string(hashPassword),
-			Salt:         string(salt),
+			Salt:         salt,
+			// Salt:         string(salt),
 			Teacher: domain.Teachers{
 				Domain:    "rikki",
 				Email:     "rikki@mail.tw",
@@ -73,9 +74,40 @@ func createAll(db *gorm.DB) {
 						參考資料(Reference)：<br>
 						James F. Kurose, Keith W. Ross, “Computer Networking - A Top-Down Approach,” 7th ed., Global Edition, Pearson, 2016, ISBN: 9781292153599.`},
 						},
-						Slide:    []domain.Slides{},
-						Homework: []domain.Homeworks{},
+						Slide: []domain.Slides{
+							{Chapter: "00", File: domain.File{Title: "Syllabus and Introduction(課程介紹)"}},
+							{Chapter: "01", File: domain.File{Title: "ISO OSI 7-layer Model (網路架構與OSI七層參考模式)"}},
+							{Chapter: "02", File: domain.File{Title: "Physical layer (實體層: Wired/Wireless, Hub)"}},
+							{Chapter: "03", File: domain.File{Title: "Data link layer (資料鏈結層: Protocol principles, PPP)"}},
+							{Chapter: "04-1", File: domain.File{Title: "MAC Sublayer (媒體存取控制層: Ethernet, IEEE 802.3, Bridge)"}},
+							{Chapter: "04-2", File: domain.File{Title: "MAC Sublayer (媒體存取控制層: Switch, IEEE 802.1D, VLAN)"}},
+							{Chapter: "05-1", File: domain.File{Title: "Network layer (網路層: IPv4, Subnetting, ARP)"}},
+							{Chapter: "05-2", File: domain.File{Title: "Network layer (網路層: QoS, Routers, Routing protocols)"}},
+						},
+						Homework: []domain.Homeworks{
+							{Number: "1", File: domain.File{Title: "第1-2章"}},
+							{Number: "2", File: domain.File{Title: "第3-4章"}},
+							{Number: "3", File: domain.File{Title: "第5章"}},
+						},
 					},
+					// Ch02. Physical layer (實體層: Wired/Wireless, Hub)(5.2MB)
+					// *** 計算機網路概論作業1(第1-2章)習題題目    (HW#1: English Version)
+					// *** Possible solutions for exercises (ISM)
+
+					// Ch03. Data link layer (資料鏈結層: Protocol principles, PPP)(3.4MB)
+
+					// Ch04-1. MAC Sublayer (媒體存取控制層: Ethernet, IEEE 802.3, Bridge)(3.7MB)
+					// *** 計算機網路概論作業2(第3-4章)習題題目    (HW#2: English Version)
+					// *** Possible solutions for exercises (ISM 5ed)
+					// *** Possible solutions for exercises (ISM 4ed)
+					// *** 第1~4章習題補充講解參考    (Supplementary Explanation for Exercises in Chapter 1-4)
+
+					// Ch04-2. MAC Sublayer (媒體存取控制層: Switch, IEEE 802.1D, VLAN)(2.7MB)
+
+					// Ch05-1. Network layer (網路層: IPv4, Subnetting, ARP)(2.7MB)
+					// Ch05-2. Network layer (網路層: QoS, Routers, Routing protocols)(3.6MB)
+					// *** 計算機網路概論作業3(第5章)習題題目    (HW#3: English Version)
+					// *** Possible solutions for exercises
 					{
 						LastModified: lastModified,
 						NameZh:       "無線網路",
@@ -91,8 +123,17 @@ func createAll(db *gorm.DB) {
 						2. 曾恕銘編譯, “無線通訊系統概論：行動通訊與網路 4/e,” 東華書局, 2016, ISBN-13：9789865632786。<br>
 						3. 陳裕賢、張志勇、陳宗禧、石貴平、吳世琳、廖文華、許智舜、林勻蔚, “無線網路與行動計算,” 全華書局, 2013/2, ISBN：9789572188637`},
 						},
-						Slide:    []domain.Slides{},
-						Homework: []domain.Homeworks{},
+						Slide: []domain.Slides{
+							{Chapter: "00", File: domain.File{Title: "Syllabus (課程大綱)"}},
+							{Chapter: "01", File: domain.File{Title: "Introduction (序論)"}},
+							{Chapter: "03", File: domain.File{Title: "Mobile Radio Propagation (行動無線電傳播)"}},
+							{Chapter: "04", File: domain.File{Title: "Channel Coding and Error Control (通道編碼與錯誤控制)"}},
+							{Chapter: "05", File: domain.File{Title: "Cellular Concept (蜂巢式概念)"}},
+						},
+						Homework: []domain.Homeworks{
+							{Number: "1", File: domain.File{Title: "第1-3章"}},
+							{Number: "2", File: domain.File{Title: "第4-5章"}},
+						},
 					},
 				},
 			},
@@ -100,10 +141,10 @@ func createAll(db *gorm.DB) {
 	}
 	db.Create(&users)
 }
-func generalHashPassword(password string, conf *config.Secure) (string, string) {
+func generalHashPassword(password string, conf *config.Secure) (string, []byte) {
 	var salt = make([]byte, conf.SaltSize)
 	rand.Read(salt[:])
 	saltPassword := append([]byte(password), salt...)
 	hashPassword, _ := bcrypt.GenerateFromPassword(saltPassword, conf.HashCost)
-	return string(hashPassword), string(salt)
+	return string(hashPassword), salt
 }
